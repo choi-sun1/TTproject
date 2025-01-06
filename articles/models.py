@@ -16,7 +16,7 @@ class Article(models.Model):
 
 
 class Comment(models.Model):
-    product = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments') # FK
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments') # FK
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) # FK
     content = models.TextField('내용')
     created_at = models.DateTimeField('작성일', auto_now_add=True)
