@@ -1,3 +1,4 @@
+from tokenize import TokenError
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
@@ -18,7 +19,8 @@ class SignupView(APIView):
     permission_classes = []     # 권한 없이 누구나 접근 가능
     
     def post(self, request):
-        serializer = SignupSerializer(data=request.data)
+        serializer = SignupSerializer(data=request.data) # 시리얼라이저 인스턴스 생성
+        # 시리얼라이저 유효성 검사
         if serializer.is_valid():
             serializer.save()
             return Response({
@@ -33,14 +35,15 @@ class LoginView(APIView):
     permission_classes = []     # 권한 없이 누구나 접근 가능
     
     def post(self, request):
+        # 요청 데이터에서 이메일과 비밀번호 가져오기
         email = request.data.get('email')
         password = request.data.get('password')
         user = User.objects.filter(email=email).first()
         
         # 사용자  인증
         user = authenticate(request, email=email, password=password)
+        # 사용자가 존재하면 JWT 토큰 생성
         if user is not None:
-            # JWT 토큰 생성
             refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 'access': str(refresh.access_token),
@@ -56,14 +59,18 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
     
     def post(self, request):
+        # 요청 데이터에서 refresh 토큰 가져오기
         try:
-            refresh_token = request.data['refresh']
+            refresh_token = request.data.get('refresh')
             token = RefreshToken(refresh_token)
             token.blacklist() # 토큰 블랙리스트 추가
             return Response({'message': '로그아웃 성공'}, status=200)
-        except Exception as e:
-            return Response({'error': '로그아웃 실패'}, status=400)
+        except KeyError:
+            return Response({'error': 'refresh 토큰이 제공되지 않았습니다.'}, status=400)
+        except TokenError:
+            return Response({'error': '유효하지 않은 토큰입니다.'}, status=400)
         
+
 class UserProfile(APIView):
     '''유저 프로필 조회'''
     permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
@@ -76,12 +83,14 @@ class UserProfile(APIView):
     def put(self, request):
         user = request.user
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
-        if not any(field in serializer.validated_data for field in serializer.fields):
-            return Response({
-                'message': '이 정보는 수정할 수 없습니다.'
-            }, status=status.HTTP_400_BAD_REQUEST)
 
         if serializer.is_valid():
+            # 수정할 데이터가 없는 경우
+            if not any(field in serializer.validated_data for field in serializer.fields):
+                return Response({
+                    'message': '이 정보는 수정할 수 없습니다.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
             serializer.save()
             return Response({
                 'message': '회원정보가 성공적으로 수정되었습니다.',
