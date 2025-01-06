@@ -105,3 +105,33 @@ class CommentListCreate(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class CommentLike(APIView):
+    '''댓글 좋아요 기능'''
+    def get_article(self, articleId):
+        return get_object_or_404(Article, pk=articleId)
+    
+    def get_comment(self, article, commentId):
+        return get_object_or_404(Comment, pk=commentId, article=article)
+
+    def post(self, request, articleId, commentId):
+        article = self.get_article(articleId)
+        comment = self.get_comment(article, commentId)
+        user = request.user
+        
+        # 이미 좋아요를 눌렀는지 확인
+        if comment.like_users.filter(pk=user.pk).exists():
+            # 좋아요 취소
+            comment.like_users.remove(user)
+            message = "댓글 좋아요가 취소되었습니다."
+        else:
+            # 좋아요 추가
+            comment.like_users.add(user)
+            message = "댓글을 좋아요 했습니다."
+
+        # 댓글 정보를 serializer를 통해 반환
+        serializer = CommentSerializer(comment, context={'request': request})
+        
+        return Response({
+            'message': message,
+            'comment': serializer.data
+        }, status=status.HTTP_200_OK)
