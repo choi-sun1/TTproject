@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from .models import Article, Comment
-from .serializers import ArticleListSerializer, ArticleDetailSerializer
+from .serializers import ArticleListSerializer, ArticleDetailSerializer, CommentSerializer
 from django.core.cache import cache
 
 
@@ -81,3 +81,27 @@ class ArticleDetail(APIView):
         article = self.get_object(articleId)
         article.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentListCreate(APIView):
+    '''댓글 CRUD'''
+    def get_article(self, articleId):
+        return get_object_or_404(Article, pk=articleId)
+
+
+    def get(self, request, articleId):
+        '''댓글 조회'''
+        article = self.get_article(articleId)
+        comments = article.comments.all() # 역참조로 모든 댓글 가져오기
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, articleId):
+        '''댓글 생성'''
+        article = self.get_article(articleId)
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user, article=article)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
