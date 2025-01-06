@@ -105,6 +105,27 @@ class CommentListCreate(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self, request, articleId):
+        '''댓글 수정'''
+        article = self.get_article(articleId)
+        comment = get_object_or_404(Comment, pk=request.data['commentId'], article=article)
+        serializer = CommentSerializer(
+            comment,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+
+    def delete(self, request, articleId):
+        '''댓글 삭제'''
+        article = self.get_article(articleId)
+        comment = get_object_or_404(Comment, pk=request.data['commentId'], article=article)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class CommentLike(APIView):
     '''댓글 좋아요 기능'''
     def get_article(self, articleId):
