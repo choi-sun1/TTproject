@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from .models import User
-from .serializers import SignupSerializer, UserProfileSerializer, UserUpdateSerializer 
+from .serializers import SignupSerializer, UserProfileSerializer, UserUpdateSerializer
 from django.core.cache import cache
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -38,8 +38,6 @@ class LoginView(APIView):
         # 요청 데이터에서 이메일과 비밀번호 가져오기
         email = request.data.get('email')
         password = request.data.get('password')
-        user = User.objects.filter(email=email).first()
-        
         # 사용자  인증
         user = authenticate(request, email=email, password=password)
         # 사용자가 존재하면 JWT 토큰 생성
@@ -51,8 +49,8 @@ class LoginView(APIView):
                 'message': '로그인 성공'
             }, status=200)
         else:
-            return JsonResponse({'error': '사용자명 또는 비밀번호가 올바르지 않습니다.'}, status=400)
-        
+            return JsonResponse({'error': '로그인 실패: 이메일 또는 비밀번호가 잘못되었습니다. 다시 시도해 주세요.'}, status=400)
+
 
 class LogoutView(APIView):
     '''로그아웃'''

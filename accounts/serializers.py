@@ -23,7 +23,10 @@ class SignupSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data.pop('password2') # password2 제거
-        return User.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
     
 # 유저 프로필 시리얼라이저 정의
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -36,11 +39,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_profile_image(self, obj):
         request = self.context.get('request')  # Serializer context에서 request 가져오기
         if obj.profile_image:
-            return request.build_absolute_uri(obj.profile_image.url)
+            if request:
+                return request.build_absolute_uri(obj.profile_image.url)
+            return obj.profile_image.url
         return None
     
 # 유저 정보 수정 시리얼라이저 정의
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['profile_image','nickname','gender','introduce']  
+        fields = ['profile_image','nickname','gender','introduce',]  

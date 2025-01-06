@@ -11,7 +11,7 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        user.save()
+        user.save(using=self._db)
         return user
 
     # 슈퍼유저 생성
@@ -27,13 +27,17 @@ class User(AbstractUser):
     profile_image = models.ImageField('프로필 이미지', upload_to='profile_images/', blank=True, null=True)
     nickname = models.CharField('닉네임', max_length=50)
     birth = models.DateField(verbose_name='생일', blank=True, null=True)
-    gender = models.CharField(verbose_name='성별', max_length=5, null=True, blank=True)
+    GENDER_CHOICES = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+    ]
+    gender = models.CharField(verbose_name='성별', max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
     introduce = models.TextField('자기소개', blank=True, null=True)
     
     USERNAME_FIELD = 'email'    # 로그인 시 email 사용
     REQUIRED_FIELDS = ['username']  # 필수 입력값       
 
-    objects = CustomUserManager()
-
     def __str__(self):
         return self.email
+
+    objects = CustomUserManager()
