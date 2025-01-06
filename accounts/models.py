@@ -31,7 +31,7 @@ class User(AbstractUser):
     introduce = models.TextField('자기소개', blank=True, null=True)
     
     USERNAME_FIELD = 'email'    # 로그인 시 email 사용
-    REQUIRED_FIELDS = []        
+    REQUIRED_FIELDS = ['username']  # 필수 입력값       
 
     objects = CustomUserManager()
 
