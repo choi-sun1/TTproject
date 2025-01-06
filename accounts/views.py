@@ -1,12 +1,20 @@
-from django.shortcuts import render
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 from .serializers import SignupSerializer, UserProfileSerializer, UserUpdateSerializer
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.http import JsonResponse
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
-# Create your views here.
+@api_view(['POST'])
+@permission_classes([])
+@authentication_classes([])
 def signup(request):
     serializer = SignupSerializer(data=request.data)
     if serializer.is_valid():
@@ -18,6 +26,9 @@ def signup(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([])
+@authentication_classes([])
 def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -35,7 +46,9 @@ def login(request):
         else:
             return JsonResponse({'error': '사용자명 또는 비밀번호가 올바르지 않습니다.'}, status=400)
 
-
+@api_view(['POST'])
+@permission_classes([])
+@authentication_classes([])
 def logout(request):
     print('---')
     try:
@@ -51,7 +64,7 @@ def logout(request):
             status=status.HTTP_400_BAD_REQUEST)
 
 
-
+@api_view(['GET','PUT','PATCH'])
 def profile(request):
     user = request.user # JWT 인증을 통해 얻은 현재 사용자
 
