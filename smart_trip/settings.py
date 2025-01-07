@@ -74,8 +74,12 @@ WSGI_APPLICATION = 'smart_trip.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME'연동할 데이터베이스 이름',
+        'USER': '연동할 데이터베이스 계정',
+        'PASSWORD': '연동할 데이터베이스 비밀번호',
+        'HOST': '실제 DB주소',
+        'PORT': '3306', # 포트번호
     }
 }
 
