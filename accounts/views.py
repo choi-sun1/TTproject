@@ -69,7 +69,7 @@ class LogoutView(APIView):
             return Response({'error': '유효하지 않은 토큰입니다.'}, status=400)
         
 
-class UserProfile(APIView):
+class UserProfileView(APIView):
     '''유저 프로필 조회'''
     permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
     

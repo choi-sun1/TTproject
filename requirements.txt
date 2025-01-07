@@ -1,14 +1,16 @@
 asgiref==3.8.1
+backports.zoneinfo==0.2.1
 Django==4.2.8
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 Faker==33.1.0
 pillow==10.2.0
 PyJWT==2.8.0
+PyMySQL==1.1.1
 python-dateutil==2.9.0.post0
 pytz==2024.2
 six==1.17.0
 sqlparse==0.5.3
 toposort==1.10
-typing_extensions==4.12.2
+typing-extensions==4.12.2
 tzdata==2024.2

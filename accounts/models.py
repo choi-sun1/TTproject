@@ -10,7 +10,6 @@ class RelatedModel(models.Model):
     def __str__(self):
         return f'Related data for {self.user.email}'
 
-    class Meta:
 
 # 유저모델 매니저 모델 생성
 class CustomUserManager(BaseUserManager):
