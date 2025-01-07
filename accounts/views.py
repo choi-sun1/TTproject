@@ -54,6 +54,7 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     '''로그아웃'''
+    authentication_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
     permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
     
     def post(self, request):
@@ -96,3 +97,16 @@ class UserProfile(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserDelete(APIView):
+    '''회원탈퇴'''
+    authentication_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
+    permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
+    
+    def post(self, request):
+        # user와 관련된 다른 모델의 데이터를 삭제하거나 업데이트
+        related_data = RelatedModel.objects.filter(user=request.user)
+        related_data.delete()
+        
+        user.delete()
+        return Response({'message': '회원탈퇴가 완료되었습니다.'}, status=status.HTTP_200_OK)
