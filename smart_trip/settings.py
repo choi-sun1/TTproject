@@ -75,9 +75,9 @@ WSGI_APPLICATION = 'smart_trip.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': '스키마 이름',
-        'USER': '계정',
-        'PASSWORD': '계정 비밀번호',
+        'NAME': 'team11',
+        'USER': 'root',
+        'PASSWORD': '1034',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
