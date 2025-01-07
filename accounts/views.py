@@ -1,4 +1,4 @@
-from tokenize import TokenError
+from rest_framework_simplejwt.exceptions import TokenError
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,8 +10,6 @@ from django.core.cache import cache
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
-
-
 
 class SignupView(APIView):
     '''회원가입'''
@@ -98,7 +96,7 @@ class UserProfile(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserDelete(APIView):
+class UserDeleteView(APIView):
     '''회원탈퇴'''
     authentication_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
     permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
@@ -108,5 +106,6 @@ class UserDelete(APIView):
         related_data = RelatedModel.objects.filter(user=request.user)
         related_data.delete()
         
+        user = request.user
         user.delete()
         return Response({'message': '회원탈퇴가 완료되었습니다.'}, status=status.HTTP_200_OK)
