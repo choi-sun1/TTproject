@@ -17,7 +17,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Article
-        fields = ('id', 'user', 'title', 'content', 'created_at', 'updated_at', 'view_count')
+        fields = ('id', 'user', 'title', 'content', 'created_at', 'updated_at', 'view_count','article_image')
         
     def get_is_liked(self, obj):
         request = self.context.get('request')
