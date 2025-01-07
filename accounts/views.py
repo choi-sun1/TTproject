@@ -101,7 +101,9 @@ class UserProfileView(APIView):
 
 class UserDeleteView(APIView):
     '''회원탈퇴'''
-    def post(self, request, username):
+    authentication_classes = [JWTAuthentication] # JWT 인증 클래스 사용
+
+    def delete(self, request, username):
         # user와 관련된 다른 모델의 데이터를 삭제하거나 업데이트
         user = get_object_or_404(User, username=username)
         related_data = RelatedModel.objects.filter(user=request.user)

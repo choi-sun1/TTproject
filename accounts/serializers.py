@@ -33,10 +33,11 @@ class SignupSerializer(serializers.ModelSerializer):
 # 유저 프로필 시리얼라이저 정의
 class UserProfileSerializer(serializers.ModelSerializer):
     profile_image = serializers.SerializerMethodField()
-
+    liked_articles = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ['email','username','profile_image','nickname','birth','gender','introduce',]  # 반환할 필드 'liked_articles' 추가 할것
+        fields = ['email','username','profile_image','nickname','birth','gender','introduce','liked_articles']  # 반환할 필드 'liked_articles' 추가 할것
 
     #좋아요누른 게시글 가져오기
     def get_liked_articles(self, obj):
