@@ -75,16 +75,17 @@ WSGI_APPLICATION = 'smart_trip.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME'연동할 데이터베이스 이름',
-        'USER': '연동할 데이터베이스 계정',
-        'PASSWORD': '연동할 데이터베이스 비밀번호',
-        'HOST': '실제 DB주소',
-        'PORT': '3306', # 포트번호
+        'NAME': 'team11',
+        'USER': 'root',
+        'PASSWORD': '1034',
+        'HOST': 'localhost',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"'
+        }
     }
 }
-}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
