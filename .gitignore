@@ -380,3 +380,5 @@ $RECYCLE.BIN/
 
 # Ignore media files
 media/
+
+migrations/
