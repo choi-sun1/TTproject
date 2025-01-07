@@ -34,7 +34,7 @@ class User(AbstractUser):
     email = models.EmailField('이메일', unique=True)
     username = models.CharField('유저네임', max_length=50, unique=True) 
     profile_image = models.ImageField('프로필 이미지', upload_to='profile_images/', blank=True, null=True)
-    nickname = models.CharField('닉네임', max_length=50)
+    nickname = models.CharField('닉네임', max_length=50, blank=True, null=True)
     birth = models.DateField(verbose_name='생일', blank=True, null=True)
     GENDER_CHOICES = [
         ('M', 'Male'),

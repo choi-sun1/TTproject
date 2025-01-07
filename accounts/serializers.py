@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from articles.models import Article
+
 
 User = get_user_model()
 
@@ -34,7 +36,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email','username','profile_image','nickname','birth','gender','introduce']  # 반환할 필드
+        fields = ['email','username','profile_image','nickname','birth','gender','introduce',]  # 반환할 필드 'liked_articles' 추가 할것
+
+    #좋아요누른 게시글 가져오기
+    def get_liked_articles(self, obj):
+        like_articles = Article.objects.filter(like_users=obj)
+        return [article.title for article in like_articles]
 
     def get_profile_image(self, obj):
         request = self.context.get('request')  # Serializer context에서 request 가져오기

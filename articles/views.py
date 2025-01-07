@@ -156,3 +156,31 @@ class CommentLike(APIView):
             'message': message,
             'comment': serializer.data
         }, status=status.HTTP_200_OK)
+
+
+class ArticleDetailLike(APIView):
+    '''게시글 좋아요 기능'''
+    def get_article(self, articleId):
+        return get_object_or_404(Article, pk=articleId)
+    
+    def post(self, request, articleId):
+        article = self.get_article(articleId)
+        user = request.user
+        
+        # 이미 좋아요를 눌렀는지 확인
+        if article.like_users.filter(pk=user.pk).exists():
+            # 좋아요 취소
+            article.like_users.remove(user)
+            message = "게시글 좋아요가 취소되었습니다"
+        else:
+            # 좋아요
+            article.like_users.add(user)
+            message = "게시글을 좋아요 했습니다"
+
+        # 댓글 정보를 serializer 를 통해 반환
+        serializer = ArticleDetailSerializer(article, context={'request':request})
+        
+        return Response({
+            'message': message,
+            'comment': serializer.data
+            }, status=status.HTTP_200_OK)

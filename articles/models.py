@@ -10,7 +10,8 @@ class Article(models.Model):
     created_at = models.DateTimeField('작성일', auto_now_add=True)
     updated_at = models.DateTimeField('수정일', auto_now=True)
     view_count = models.PositiveIntegerField('조회수', default=0) # 조회수 필드
-    
+    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_articles') # 게시글 좋아요
+
     def __str__(self):
         return self.title
 

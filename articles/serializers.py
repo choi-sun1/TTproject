@@ -18,6 +18,12 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ('id', 'user', 'title', 'content', 'created_at', 'updated_at', 'view_count')
+        
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated: # 현재 요청한 사용자가 게시글에 좋아요를 했는지
+            return obj.like_users.filter(pk=request.user.pk).exists()
+        return False
 
 class CommentSerializer(serializers.ModelSerializer):
     '''댓글 조회 및 생성 serializer'''
