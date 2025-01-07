@@ -2,6 +2,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+
+class RelatedModel(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    data = models.TextField()
+
+    def __str__(self):
+        return f'Related data for {self.user.email}'
+
+    class Meta:
+
 # 유저모델 매니저 모델 생성
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
