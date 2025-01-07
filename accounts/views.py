@@ -80,6 +80,7 @@ class UserProfileView(APIView):
         serializer = UserProfileSerializer(user, context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    '''유저 프로필 수정'''
     def put(self, request, username):
         user = get_object_or_404(User, username=username)
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
