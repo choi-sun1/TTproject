@@ -1,16 +1,17 @@
-from tokenize import TokenError
-from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.shortcuts import get_object_or_404, redirect
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
-from .models import User
+from .models import User, RelatedModel
 from .serializers import SignupSerializer, UserProfileSerializer, UserUpdateSerializer
 from django.core.cache import cache
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
-
+from articles.models import Article
 
 
 class SignupView(APIView):
@@ -54,7 +55,8 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     '''로그아웃'''
-    permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
+    authentication_classes = [] 
+    permission_classes = [] 
     
     def post(self, request):
         # 요청 데이터에서 refresh 토큰 가져오기
@@ -69,21 +71,22 @@ class LogoutView(APIView):
             return Response({'error': '유효하지 않은 토큰입니다.'}, status=400)
         
 
-class UserProfile(APIView):
+class UserProfileView(APIView):
     '''유저 프로필 조회'''
-    permission_classes = [IsAuthenticated] # 인증된 사용자만 접근 가능
+    authentication_classes = [JWTAuthentication] # JWT 토큰 인증    
     
-    def get(self, request):
-        user = request.user
-        serializer = UserProfileSerializer(user)
-        return Response(serializer.data)
+    def get(self, request, username):
+        user = get_object_or_404(User, username=username)
+        serializer = UserProfileSerializer(user, context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def put(self, request):
-        user = request.user
+    '''유저 프로필 수정'''
+    def put(self, request, username):
+        user = get_object_or_404(User, username=username)
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
-            # 수정할 데이터가 없는 경우
+            # 수정할 데이터가 없으면 에러 발생
             if not any(field in serializer.validated_data for field in serializer.fields):
                 return Response({
                     'message': '이 정보는 수정할 수 없습니다.'
@@ -96,3 +99,18 @@ class UserProfile(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserDeleteView(APIView):
+    '''회원탈퇴'''
+    authentication_classes = [JWTAuthentication] # JWT 인증 클래스 사용
+
+    def delete(self, request, username):
+        # user와 관련된 다른 모델의 데이터를 삭제하거나 업데이트
+        user = get_object_or_404(User, username=username)
+        related_data = RelatedModel.objects.filter(user=request.user)
+        related_data.delete()
+        
+        user = request.user
+        user.delete()
+        return Response({'message': '회원탈퇴가 완료되었습니다.'}, status=status.HTTP_200_OK)
+    
