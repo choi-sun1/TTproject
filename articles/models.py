@@ -11,7 +11,6 @@ class Article(models.Model):
     updated_at = models.DateTimeField('수정일', auto_now=True)
     view_count = models.PositiveIntegerField('조회수', default=0) # 조회수 필드
     like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_articles') # 게시글 좋아요
-#    article_image = models.ImageField('게시글 이미지', upload_to='article_images/', blank=True, null=True) # media/article_images/ 경로에 이미지 저장
     
     def __str__(self):
         return self.title
