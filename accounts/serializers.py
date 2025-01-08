@@ -44,6 +44,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         like_articles = Article.objects.filter(like_users=obj)
         return [article.title for article in like_articles]
 
+    # 프로필 이미지 url 가져오기
     def get_profile_image(self, obj):
         request = self.context.get('request')  # Serializer context에서 request 가져오기
         if obj.profile_image:
