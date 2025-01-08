@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
-from .models import Article, Comment
+from .models import Article, Comment, ArticleImage
 from .serializers import ArticleListSerializer, ArticleDetailSerializer, CommentSerializer
 from django.core.cache import cache
 
@@ -28,7 +28,15 @@ class ArticleListCreate(APIView):
         '''게시글 생성'''
         serializer = ArticleDetailSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True): # 유효성 검사: 유효하지 않으면 400 에러 반환
-            serializer.save(user=request.user) # permission 을 readonly 로 했기에 인자 넣어주기
+            article = serializer.save(user=request.user)  # 게시글 저장
+            
+            images = request.data.getlist('images') # 게시글 이미지
+            if len(images) > 5:
+                return Response({'message': '이미지는 최대 5개까지 업로드 가능합니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            for image in images:
+                ArticleImage.objects.create(article=article, image=image)  # 이미지 저장
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ArticleDetail(APIView):
@@ -66,8 +74,25 @@ class ArticleDetail(APIView):
             partial=True, # 부분적 수정 허용
         )
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
+            article = serializer.save()
+            # 이미지 처리
+            images = request.FILES.getlist('images')  # 새로 업로드된 이미지
+            if len(images) > 5:
+                return Response(
+                    {'message': '이미지는 최대 5개까지 업로드 가능합니다.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # 기존 이미지 전체 삭제
+            delete_images = request.data.get('delete_images', False)
+            if delete_images:  # 삭제 옵션이 있는 경우
+                article.images.all().delete()
+
+            # 새 이미지 추가
+            for image in images:
+                ArticleImage.objects.create(article=article, image=image)
+
+            return Response(ArticleDetailSerializer(article).data)
 
     def delete(self, request, articleId):
         '''게시글 삭제'''
