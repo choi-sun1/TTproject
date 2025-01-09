@@ -64,7 +64,7 @@
     <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
     <img src="https://img.shields.io/badge/Colab-F9AB00?style=for-the-badge&logo=googlecolab&color=525252">
     <img src="https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white">
-    <img src="https://camo.githubusercontent.com/4d842434da4f5a78dc12895b826f4e5f75719229a576e51bfd56093e241dccbf/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5a65702d3441313534423f7374796c653d666f722d7468652d6261646765266c6f676f3d5a6570266c6f676f436f6c6f723d464646464646">
+    <img src="https://img.shields.io/badge/ZEP-6758ff?style=for-the-badge&logo=visual%20studio%20code&logoColor=white">
 </div>
 
 
