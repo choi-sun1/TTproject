@@ -52,8 +52,6 @@
 
 ## 📚️ 기술스택
 
-
-
 ### Frontend & Tools
 
 <div>
@@ -69,6 +67,7 @@
     <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
     <img src="https://img.shields.io/badge/Colab-F9AB00?style=for-the-badge&logo=googlecolab&color=525252">
     <img src="https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white">
+    <img src="https://camo.githubusercontent.com/4d842434da4f5a78dc12895b826f4e5f75719229a576e51bfd56093e241dccbf/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5a65702d3441313534423f7374796c653d666f722d7468652d6261646765266c6f676f3d5a6570266c6f676f436f6c6f723d464646464646">
 </div>
 
 
@@ -76,7 +75,7 @@
 
 <div>
     <img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue">
-    <img src="https://img.shields.io/badge/django%20rest-ff1709?style=for-the-badge&logo=django&logoColor=white">
+    <img src="https://camo.githubusercontent.com/4c4a57a11a83f99eafb6eaaaaf65ea43e0fc446fccbf8533aac7e9be1067aaf7/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f446a616e676f2d3039324532303f7374796c653d666f722d7468652d6261646765266c6f676f3d446a616e676f266c6f676f436f6c6f723d7768697465">
     <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white">
     <img src="https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white">
     <img src="https://img.shields.io/badge/-HuggingFace-FDEE21?style=for-the-badge&logo=HuggingFace&logoColor=black">
@@ -88,39 +87,29 @@
     <img src="https://img.shields.io/badge/GIT-E44C30?style=for-the-badge&logo=git&logoColor=white">
     <img src="https://img.shields.io/badge/Colab-F9AB00?style=for-the-badge&logo=googlecolab&color=525252"/>
     <img src="https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white">
+    <img src="https://img.shields.io/badge/ZEP-6758ff?style=for-the-badge&logo=visual%20studio%20code&logoColor=white">
+    <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white">
+    
 </div>
 
 ### ✔️ Deploy
 
 <div>
-    <img src="https://img.shields.io/badge/Amazon_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white">
+    <img src="https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white">
 </div>
 
-### ✔️  DBMS
-
-<div>
-    <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white">
-</div>
-
-## 서비스 구조
+## 🌐 Architecture
 
 
 
-
-
-## 와이어프레임
-
-
-
-## API 명세서
 
 
 ## ERD
 
 
-## 프로젝트 파일 구조
+## 🗂️ 프로젝트 파일 구조
 
 
 
 
-## Trouble Shooting
+## 🚨 Trouble Shooting
