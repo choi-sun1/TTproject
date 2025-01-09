@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>챗봇</title>
+    <style>
+        /* 간단한 스타일 추가 */
+        #chatbox { width: 300px; height: 400px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
+        #inputBox { width: 100%; }
+        .user-message { text-align: right; }
+        .bot-message { text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>챗봇과 대화하기</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="inputBox" placeholder="메시지를 입력하세요...">
+    <button onclick="sendMessage()">보내기</button>
+
+    <script>
+        function sendMessage() {
+            const userMessage = document.getElementById('inputBox').value;
+            const chatbox = document.getElementById('chatbox');
+            
+            // 사용자 메시지 추가
+            chatbox.innerHTML += `<div class="user-message">${userMessage}</div>`;
+            
+            // 챗봇에 요청 보내기
+            fetch(`/chat/?message=${userMessage}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 챗봇의 답변 추가
+                    chatbox.innerHTML += `<div class="bot-message">${data.bot_reply}</div>`;
+                    document.getElementById('inputBox').value = '';  // 입력창 비우기
+                    chatbox.scrollTop = chatbox.scrollHeight;  // 채팅창 스크롤 아래로
+                });
+        }
+    </script>
+</body>
+</html>
