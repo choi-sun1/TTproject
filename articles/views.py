@@ -1,34 +1,42 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
-from .models import Article, Comment
+from .models import Article, Comment, ArticleImage
 from .serializers import ArticleListSerializer, ArticleDetailSerializer, CommentSerializer
 from django.core.cache import cache
 
 
 class ArticleListCreate(APIView):
     '''게시글 조회 및 생성 클래스'''
-    # 권한 명시 : settings.py REST_FRAMEWORK
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # 권한 명시 : settings.py REST_FRAMEWORK 에 권한 전역 설정이 있으므로 명시해줘야 함 -> 권한 명시 없으면 전역 설정이 적용됨
+    permission_classes = [IsAuthenticatedOrReadOnly] # 작성은 인증된 사용자만, 조회는 누구나 가능
 
     def get(self, request):
         '''게시글 목록 조회'''
-        # 1. 데이터 가져오기
+        # 데이터 가져오기
         article = Article.objects.all()
 
-        # 2. 직렬화
+        # 직렬화 : 가본적으로 Serializer는 단일 객체를 직렬화하도록 설계되어 있어서 many=True 옵션을 줌
         serializer = ArticleListSerializer(article, many=True)
 
-        # 3. 데이터 돌려주기
+        # 데이터 돌려주기
         return Response(serializer.data)
 
     def post(self, request):
         '''게시글 생성'''
         serializer = ArticleDetailSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True): # 유효성 검사
-            serializer.save(user=request.user) # permission 을 readonly 로 했기에 인자 넣어주기
+        if serializer.is_valid(raise_exception=True): # 유효성 검사: 유효하지 않으면 400 에러 반환
+            article = serializer.save(user=request.user)  # 게시글 저장
+            
+            images = request.data.getlist('images') # 게시글 이미지
+            if len(images) > 5:
+                return Response({'message': '이미지는 최대 5개까지 업로드 가능합니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            for image in images:
+                ArticleImage.objects.create(article=article, image=image)  # 이미지 저장
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ArticleDetail(APIView):
@@ -41,8 +49,8 @@ class ArticleDetail(APIView):
         # 1. article pk 조회
         article = self.get_object(articleId)
         
-        # 수정한 조회수
-        # 로그인한 사용자이고 작성자가 아닌 경우에만 조회수 증가 처리
+        '''조회수 기능'''
+        # 로그인한 사용자이고 작성자가 아닌 경우에만 조회수 증가
         # 24시간 동안 같은 IP에서 같은 게시글 조회 시 조회수가 증가하지 않음
         if request.user != article.user:
             # 해당 사용자의 IP와 게시글 ID로 캐시 키를 생성
@@ -54,14 +62,7 @@ class ArticleDetail(APIView):
                 article.save()
                 # 캐시 저장 (24시간 유효)
                 cache.set(cache_key, True, 60*60*24)
-        
-        # 기존의 조회수
-        # article.view_count += 1
-        # article.save()
-        
-        # 2. 직렬화
         serializer = ArticleDetailSerializer(article)
-        # 3. 반환
         return Response(serializer.data)
 
     def put(self, request, articleId):
@@ -69,12 +70,29 @@ class ArticleDetail(APIView):
         article = self.get_object(articleId)
         serializer = ArticleDetailSerializer(
             article,
-            data=request.data,
+            data=request.data, # 요청에 넣은 데이터
             partial=True, # 부분적 수정 허용
         )
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
+            article = serializer.save()
+            # 이미지 처리
+            images = request.FILES.getlist('images')  # 새로 업로드된 이미지
+            if len(images) > 5:
+                return Response(
+                    {'message': '이미지는 최대 5개까지 업로드 가능합니다.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # 기존 이미지 전체 삭제
+            delete_images = request.data.get('delete_images', False)
+            if delete_images:  # 삭제 옵션이 있는 경우
+                article.images.all().delete()
+
+            # 새 이미지 추가
+            for image in images:
+                ArticleImage.objects.create(article=article, image=image)
+
+            return Response(ArticleDetailSerializer(article).data)
 
     def delete(self, request, articleId):
         '''게시글 삭제'''
@@ -100,15 +118,15 @@ class CommentListCreate(APIView):
         '''댓글 생성'''
         article = self.get_article(articleId)
         serializer = CommentSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True): # 유효성 검사: 유효하지 않으면 400 에러 반환
             serializer.save(user=request.user, article=article)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # raise_exception=True 를 사용해서 필요 없음
 
     def put(self, request, articleId):
         '''댓글 수정'''
         article = self.get_article(articleId)
-        comment = get_object_or_404(Comment, pk=request.data['commentId'], article=article)
+        comment = get_object_or_404(Comment, pk=request.data['commentId'], article=article) # request.data['commentId'] -> 요청시 commentId 필요
         serializer = CommentSerializer(
             comment,
             data=request.data,
@@ -121,7 +139,7 @@ class CommentListCreate(APIView):
     def delete(self, request, articleId):
         '''댓글 삭제'''
         article = self.get_article(articleId)
-        comment = get_object_or_404(Comment, pk=request.data['commentId'], article=article)
+        comment = get_object_or_404(Comment, pk=request.data['commentId'], article=article) # request.data['commentId'] -> 요청시 commentId 필요
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

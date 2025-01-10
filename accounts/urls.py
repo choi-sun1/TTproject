@@ -9,4 +9,8 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('<str:username>/', views.UserProfileView.as_view(), name='profile'),
     path('<str:username>/delete/', views.UserDeleteView.as_view(), name='delete'),
+    # 소셜 로그인 
+    path('google/login', views.google_login, name='google_login'),
+    path('google/callback/', views.google_callback, name='google_callback'),
+    path('google/login/finish/', views.GoogleLofin.as_view(), name='google_login_todjango'),
 ]

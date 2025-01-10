@@ -7,6 +7,9 @@
 .AppleDouble
 .LSOverride
 
+# api keys
+secrets.json
+
 # Icon must end with two \r
 Icon
 
