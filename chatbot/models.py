@@ -1,27 +1,26 @@
 from django.db import models
-
-class User(models.Model):
-    username = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.username
-
+from django.conf import settings
 
 class Conversation(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='conversations')
-    message = models.TextField()  # 사용자가 입력한 메시지
-    bot_reply = models.TextField()  # 챗봇의 답변
-    timestamp = models.DateTimeField(auto_now_add=True)  # 대화 시간
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    message = models.TextField()
+    bot_reply = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Conversation with {self.user.username} at {self.timestamp}"
+        return f"Conversation with {self.user.username} at {self.created_at}"
 
-
-class FAQ(models.Model):
-    question = models.CharField(max_length=255)
-    answer = models.TextField()
+class ChatState(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    current_step = models.CharField(max_length=255, default="start")  # 대화 단계
+    data = models.JSONField(default=dict)  # 대화 중 수집된 데이터
 
     def __str__(self):
-        return self.question
+        return f"ChatState for {self.user.username}"
+

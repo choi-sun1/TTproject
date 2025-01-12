@@ -9,10 +9,10 @@ from .models import User, RelatedModel
 from .serializers import SignupSerializer, UserProfileSerializer, UserUpdateSerializer
 from django.core.cache import cache
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
 from django.http import JsonResponse
 from articles.models import Article
-
+from rest_framework.decorators import api_view
 
 class SignupView(APIView):
     '''회원가입'''
@@ -114,3 +114,17 @@ class UserDeleteView(APIView):
         user.delete()
         return Response({'message': '회원탈퇴가 완료되었습니다.'}, status=status.HTTP_200_OK)
     
+@api_view(['POST'])
+def verify_token(request):
+    authentication_classes = [JWTAuthentication]
+
+    token = request.data.get('token')
+
+    if not token:
+        return Response({'error': '토큰이 제공되지 않았습니다.'}, status=400)
+
+    try:
+        UntypedToken(token)  # 토큰 검증
+        return Response({'message': '유효한 토큰입니다.'}, status=200)
+    except Exception as e:
+        return Response({'error': '유효하지 않은 토큰입니다.'}, status=403)
