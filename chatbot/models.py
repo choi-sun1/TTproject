@@ -14,13 +14,13 @@ class Conversation(models.Model):
         return f"Conversation with {self.user.username} at {self.created_at}"
 
 class ChatState(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE
     )
-    current_step = models.CharField(max_length=255, default="start")  # 대화 단계
-    data = models.JSONField(default=dict)  # 대화 중 수집된 데이터
+    current_step = models.CharField(max_length=50, default='start')  # 현재 대화 상태
+    context_data = models.JSONField(default=dict)  # 대화 중 저장할 추가 정보
 
     def __str__(self):
-        return f"ChatState for {self.user.username}"
+        return f"{self.user.email} - {self.current_step}"
 
