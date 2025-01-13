@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
-from .models import ChatState
+from .models import ChatState, Conversation
 import re, openai
 
 openai.api_key = 'your-openai-api-key' 
@@ -41,27 +41,19 @@ class ChatbotResponseView(APIView):
                 chat_state.context_data['duration'] = {'nights': num_nights, 'days': num_days}
                 bot_reply = f"{num_nights}박 {num_days}일 여행을 계획하셨군요! 추천 활동을 준비 중입니다."
                 chat_state.current_step = 'get_activities'
-
-                # GPT-4 API 호출 (여행 계획 생성)
-                gpt_prompt = f"여행지: {chat_state.context_data['location']}, 예산: {chat_state.context_data['budget']}원, 여행 기간: {num_nights}박 {num_days}일. 이 정보를 바탕으로 여행 일정을 추천해 주세요."
-                
-                try:
-                    gpt_response = openai.Completion.create(
-                        model="gpt-4",
-                        prompt=gpt_prompt,
-                        max_tokens=150
-                    )
-                    gpt_reply = gpt_response.choices[0].text.strip()
-                    bot_reply += f"\n추천 일정: {gpt_reply}"
-                except Exception as e:
-                    bot_reply += "\nGPT-4 요청에 실패했습니다. 다시 시도해주세요."
-
             else:
                 bot_reply = "여행 기간을 'X박 Y일' 형식으로 입력해주세요. 예: '2박 3일'"
             
         else:
             bot_reply = "감사합니다. 추천 결과를 정리하고 있어요!"
             chat_state.current_step = 'start'  # 대화 리셋
+
+        # 대화 내용 Conversation 모델에 저장
+        Conversation.objects.create(
+            user=user,
+            message=user_message,
+            bot_reply=bot_reply
+        )
 
         # 상태 저장
         chat_state.save()
