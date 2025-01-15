@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    {% if profile_user.profile_image %}
+                        <img src="{{ profile_user.profile_image.url }}" alt="프로필 이미지" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-4x"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <h4 class="mb-3">{{ profile_user.nickname|default:profile_user.username }}</h4>
+                    <p class="text-muted mb-4">{{ profile_user.email }}</p>
+
+                    {% if user == profile_user %}
+                        <div class="mb-4">
+                            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i> 프로필 수정
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if profile_user.gender or profile_user.birth_date %}
+                        <hr>
+                        <div class="text-start mt-4">
+                            {% if profile_user.gender %}
+                                <p><i class="fas fa-venus-mars me-2"></i>{{ profile_user.get_gender_display }}</p>
+                            {% endif %}
+                            {% if profile_user.birth_date %}
+                                <p><i class="fas fa-birthday-cake me-2"></i>{{ profile_user.birth_date|date:"Y년 m월 d일" }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if profile_user.bio %}
+                        <hr>
+                        <div class="mt-4">
+                            <h6 class="text-start mb-3">자기소개</h6>
+                            <p class="text-muted text-start">{{ profile_user.bio }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="m-0">최근 게시글</h5>
+                </div>
+                <div class="card-body">
+                    {% if posts %}
+                        <div class="list-group">
+                            {% for post in posts %}
+                                <a href="{% url 'board:detail' post.pk %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ post.title }}</h6>
+                                        <small>{{ post.created_at|date:"Y.m.d" }}</small>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">작성한 게시글이 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if user == profile_user %}
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="m-0">최근 예약</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if bookings %}
+                            <div class="list-group">
+                                {% for booking in bookings %}
+                                    <div class="list-group-item">
+                                        <h6 class="mb-1">{{ booking.stay.name }}</h6>
+                                        <p class="mb-1">{{ booking.check_in|date:"Y.m.d" }} ~ {{ booking.check_out|date:"Y.m.d" }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">{{ booking.guests }}명 · ₩{{ booking.total_price|floatformat:0|intcomma }}</small>
+                                            <form action="{% url 'stays:cancel_booking' booking.pk %}" method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('예약을 취소하시겠습니까?')">
+                                                    예약 취소
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center my-3">예약 내역이 없습니다.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
