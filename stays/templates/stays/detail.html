@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load humanize %}  <!-- humanize 태그 로드 추가 -->
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">{{ stay.name }}</h2>
+                    <p class="text-muted">{{ stay.address }}</p>
+                    <div id="map" style="height: 300px; width: 100%; border-radius: 10px; margin: 20px 0;"></div>
+                    <div class="mt-4">
+                        <h4>숙소 정보</h4>
+                        <p>{{ stay.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-primary mb-4">₩{{ stay.price_per_night|floatformat:0|intcomma }}<small class="text-muted">/박</small></h3>
+                    <form method="post" action="{% url 'stays:book' stay.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="check_in" class="form-label">체크인</label>
+                            <input type="date" class="form-control" id="check_in" name="check_in" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="check_out" class="form-label">체크아웃</label>
+                            <input type="date" class="form-control" id="check_out" name="check_out" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="guests" class="form-label">인원</label>
+                            <input type="number" class="form-control" id="guests" name="guests" min="1" required>
+                        </div>
+                        <input type="hidden" name="nights" id="nights" value="1">
+                        <button type="submit" class="btn btn-primary w-100">예약하기</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function initMap() {
+    const location = { lat: {{ stay.latitude }}, lng: {{ stay.longitude }} };
+    const map = new google.maps.Map(document.getElementById('map'), {
+        center: location,
+        zoom: 15
+    });
+    new google.maps.Marker({
+        position: location,
+        map: map,
+        title: "{{ stay.name }}"
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const checkIn = document.getElementById('check_in');
+    const checkOut = document.getElementById('check_out');
+    const nights = document.getElementById('nights');
+
+    function updateNights() {
+        if (checkIn.value && checkOut.value) {
+            const start = new Date(checkIn.value);
+            const end = new Date(checkOut.value);
+            const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            nights.value = diff > 0 ? diff : 1;
+        }
+    }
+
+    checkIn.addEventListener('change', updateNights);
+    checkOut.addEventListener('change', updateNights);
+});
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+{% endblock %}

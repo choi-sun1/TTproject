@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="main-header">
+    <div class="container">
+        <h1 class="display-4">Smart Trip과 함께하는 스마트한 여행</h1>
+        <p class="lead">AI가 추천하는 최적의 여행 경로와 숙소를 만나보세요</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-hotel fa-3x mb-3" style="color: #667eea;"></i>
+                    <h5 class="card-title">숙박 예약</h5>
+                    <p class="card-text">전국의 다양한 숙박 시설을 찾아보세요.</p>
+                    <a href="{% url 'stays:list' %}" class="btn btn-primary">숙박 검색</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-3x mb-3" style="color: #667eea;"></i>
+                    <h5 class="card-title">여행 정보</h5>
+                    <p class="card-text">다양한 여행 정보를 공유하세요.</p>
+                    <a href="{% url 'board:list' %}" class="btn btn-primary">게시판 보기</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    {% if user.is_authenticated %}
+                        <i class="fas fa-user-circle fa-3x mb-3" style="color: #667eea;"></i>
+                        <h5 class="card-title">내 프로필</h5>
+                        <p class="card-text">예약 내역과 작성한 글을 확인하세요.</p>
+                        <a href="{% url 'accounts:profile' user.username %}" class="btn btn-primary">프로필 보기</a>
+                    {% else %}
+                        <i class="fas fa-sign-in-alt fa-3x mb-3" style="color: #667eea;"></i>
+                        <h5 class="card-title">시작하기</h5>
+                        <p class="card-text">로그인하고 더 많은 기능을 이용하세요.</p>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary">로그인</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

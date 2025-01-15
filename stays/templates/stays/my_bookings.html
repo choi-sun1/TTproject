@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">내 예약 관리</h2>
+
+    <div class="row">
+        <div class="col-12">
+            {% if bookings %}
+                <div class="card shadow">
+                    <div class="card-body">
+                        {% for booking in bookings %}
+                            <div class="booking-item {% if not forloop.last %}border-bottom{% endif %} py-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <h5 class="mb-1">{{ booking.stay.name }}</h5>
+                                        <p class="text-muted mb-0">{{ booking.stay.address }}</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">체크인</small>
+                                        <span>{{ booking.check_in|date:"Y.m.d" }}</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">체크아웃</small>
+                                        <span>{{ booking.check_out|date:"Y.m.d" }}</span>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <form action="{% url 'stays:cancel_booking' booking.pk %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger" onclick="return confirm('예약을 취소하시겠습니까?')">
+                                                예약 취소
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">예약 인원: {{ booking.guests }}명 · 결제 금액: ₩{{ booking.total_price|floatformat:0|intcomma }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h4 class="text-muted">예약 내역이 없습니다</h4>
+                    <a href="{% url 'stays:list' %}" class="btn btn-primary mt-3">숙소 검색하기</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

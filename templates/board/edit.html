@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="board-container">
+    <div class="board-header">
+        <h2>게시글 수정</h2>
+    </div>
+    <form method="post" class="post-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" id="title" name="title" class="form-control" 
+                   value="{{ post.title }}" required>
+        </div>
+
+        <div class="editor-toolbar">
+            <button type="button" class="toolbar-btn" onclick="insertMarkdown('**', '**')" title="굵게">
+                <i class="fas fa-bold"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertMarkdown('_', '_')" title="기울임">
+                <i class="fas fa-italic"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertMarkdown('# ', '')" title="제목">
+                <i class="fas fa-heading"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertMarkdown('- ', '')" title="목록">
+                <i class="fas fa-list"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertMarkdown('> ', '')" title="인용">
+                <i class="fas fa-quote-right"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertMarkdown('```\n', '\n```')" title="코드">
+                <i class="fas fa-code"></i>
+            </button>
+            <button type="button" class="toolbar-btn" onclick="insertMarkdown('[링크텍스트](', ')')" title="링크">
+                <i class="fas fa-link"></i>
+            </button>
+        </div>
+
+        <div class="form-group">
+            <label for="content">내용</label>
+            <textarea id="content" name="content" class="form-control editor" rows="15" required>{{ post.content }}</textarea>
+            <div id="preview" class="markdown-preview"></div>
+        </div>
+
+        <div class="form-group">
+            <label>현재 이미지</label>
+            <div class="current-images">
+                {% for image in post.images.all %}
+                <div class="current-image-item">
+                    <img src="{{ image.image.url }}" alt="현재 이미지">
+                    <div class="image-controls">
+                        <label class="image-delete">
+                            <input type="checkbox" name="delete_images" value="{{ image.id }}">
+                            삭제
+                        </label>
+                        <button type="button" class="btn-insert-image" 
+                                onclick="insertImageMarkdown('{{ image.image.url }}')"
+                                title="본문에 삽입">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="new_images">새 이미지 추가</label>
+            <input type="file" id="new_images" name="images" multiple 
+                   accept="image/*" class="form-control"
+                   onchange="previewImages(this)">
+            <small class="form-text text-muted">
+                최대 10개의 이미지 파일(각 5MB 이하)을 선택할 수 있습니다.
+            </small>
+            <div id="imagePreview" class="image-preview"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">수정완료</button>
+            <button type="button" class="btn-preview" onclick="togglePreview()">미리보기</button>
+            <a href="{% url 'board:detail' post.id %}" class="btn-cancel">취소</a>
+        </div>
+    </form>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+let isPreviewMode = false;
+
+function insertMarkdown(prefix, suffix) {
+    const textarea = document.getElementById('content');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const before = text.substring(0, start);
+    const selection = text.substring(start, end);
+    const after = text.substring(end);
+    
+    textarea.value = before + prefix + selection + suffix + after;
+    textarea.focus();
+    textarea.selectionStart = start + prefix.length;
+    textarea.selectionEnd = start + prefix.length + selection.length;
+}
+
+function insertImageMarkdown(imageUrl) {
+    const markdown = `![이미지](${imageUrl})`;
+    insertMarkdown(markdown, '');
+}
+
+function togglePreview() {
+    const editor = document.getElementById('content');
+    const preview = document.getElementById('preview');
+    const previewBtn = document.querySelector('.btn-preview');
+    
+    isPreviewMode = !isPreviewMode;
+    if (isPreviewMode) {
+        preview.innerHTML = marked.parse(editor.value);
+        preview.style.display = 'block';
+        editor.style.display = 'none';
+        previewBtn.textContent = '에디터';
+    } else {
+        preview.style.display = 'none';
+        editor.style.display = 'block';
+        previewBtn.textContent = '미리보기';
+    }
+}
+
+function previewImages(input) {
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    if (input.files.length > 10) {
+        alert('이미지는 최대 10개까지만 선택할 수 있습니다.');
+        input.value = '';
+        return;
+    }
+
+    for (let file of input.files) {
+        if (file.size > 5 * 1024 * 1024) {
+            alert('각 이미지의 크기는 5MB를 초과할 수 없습니다.');
+            input.value = '';
+            preview.innerHTML = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            preview.appendChild(div);
+        }
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+
+<style>
+.editor-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.toolbar-btn {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toolbar-btn:hover {
+    background: #f1f3f5;
+}
+
+.current-image-item {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.image-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.btn-insert-image {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.markdown-preview {
+    display: none;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load humanize %}  <!-- humanize 태그 로드 추가 -->
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">예약이 완료되었습니다</h2>
+                    <div class="booking-details">
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-muted">숙소</div>
+                            <div class="col-md-8">{{ booking.stay.name }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-muted">주소</div>
+                            <div class="col-md-8">{{ booking.stay.address }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-muted">체크인</div>
+                            <div class="col-md-8">{{ booking.check_in|date:"Y년 m월 d일" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-muted">체크아웃</div>
+                            <div class="col-md-8">{{ booking.check_out|date:"Y년 m월 d일" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-muted">인원</div>
+                            <div class="col-md-8">{{ booking.guests }}명</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-muted">총 금액</div>
+                            <div class="col-md-8">₩{{ booking.total_price|floatformat:0|intcomma }}</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <form action="{% url 'stays:cancel_booking' booking.pk %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger me-2" onclick="return confirm('예약을 취소하시겠습니까?')">
+                                예약 취소하기
+                            </button>
+                        </form>
+                        <a href="{% url 'stays:list' %}" class="btn btn-outline-primary me-2">숙소 더 보기</a>
+                        <a href="{% url 'accounts:profile' user.username %}" class="btn btn-primary">예약 내역 확인</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

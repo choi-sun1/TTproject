@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>회원가입</h2>
+    <form method="post" action="{% url 'accounts:register' %}" class="auth-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+            <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+            <small class="form-text text-danger">{{ field.errors|join:", " }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn-primary">가입하기</button>
+    </form>
+    <p class="auth-links">
+        이미 계정이 있으신가요? <a href="{% url 'accounts:login' %}">로그인</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="board-container">
+    <div class="board-header">
+        <h2>게시판</h2>
+        <a href="{% url 'board:write' %}" class="btn-write">글쓰기</a>
+    </div>
+    
+    <div class="sort-options">
+        <a href="?sort=latest{% if request.GET.page %}&page={{ request.GET.page }}{% endif %}" 
+           class="sort-btn {% if current_sort == 'latest' %}active{% endif %}">최신순</a>
+        <a href="?sort=likes{% if request.GET.page %}&page={{ request.GET.page }}{% endif %}" 
+           class="sort-btn {% if current_sort == 'likes' %}active{% endif %}">추천순</a>
+        <a href="?sort=views{% if request.GET.page %}&page={{ request.GET.page }}{% endif %}" 
+           class="sort-btn {% if current_sort == 'views' %}active{% endif %}">조회순</a>
+    </div>
+
+    <div class="board-list">
+        {% for post in posts %}
+        <div class="board-item">
+            <div class="board-info">
+                <h3><a href="{% url 'board:detail' post.id %}">{{ post.title }}</a></h3>
+                <span class="author">{{ post.author }}</span>
+                <span class="date">{{ post.created_at|date:"Y-m-d" }}</span>
+            </div>
+            <div class="board-meta">
+                <span class="likes">추천 {{ post.likes.count }}</span>
+                <span class="views">조회 {{ post.views }}</span>
+                <span class="comments">댓글 {{ post.comments.count }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="pagination">
+        {% if posts.has_previous %}
+            <a href="?page={{ posts.previous_page_number }}{% if current_sort != 'latest' %}&sort={{ current_sort }}{% endif %}">&laquo; 이전</a>
+        {% endif %}
+        <span class="current">{{ posts.number }} / {{ posts.paginator.num_pages }}</span>
+        {% if posts.has_next %}
+            <a href="?page={{ posts.next_page_number }}{% if current_sort != 'latest' %}&sort={{ current_sort }}{% endif %}">다음 &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

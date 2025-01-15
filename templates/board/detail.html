@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="post-container">
+    <div class="post-header">
+        <h2>{{ post.title }}</h2>
+        <div class="post-meta">
+            <span class="author">작성자: {{ post.author }}</span>
+            <span class="date">작성일: {{ post.created_at|date:"Y-m-d H:i" }}</span>
+            <span class="views">조회수: {{ post.views }}</span>
+        </div>
+    </div>
+    <div class="post-content markdown-content">
+        <div id="markdown-content">{{ post.content }}</div>
+        {% if post.images.all %}
+        <div class="post-images">
+            {% for image in post.images.all %} 
+            <div class="post-image">
+                <img src="{{ image.image.url }}" alt="게시글 이미지">
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="post-actions">
+        <button class="btn-like {% if user in post.likes.all %}liked{% endif %}" 
+                data-post-id="{{ post.id }}">
+            <i class="fas fa-heart"></i>
+            <span class="like-count">{{ post.likes.count }}</span>
+        </button>
+        {% if user == post.author %}
+        <a href="{% url 'board:edit' post.id %}" class="btn-edit">수정</a>
+        <form method="post" action="{% url 'board:delete' post.id %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-delete" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+        </form>
+        {% endif %}
+    </div>
+    
+    <div class="comments-section">
+        <h3>댓글</h3>
+        {% for comment in post.comments.all %}
+        <div class="comment">
+            <div class="comment-info">
+                <span class="comment-author">{{ comment.author }}</span>
+                <span class="comment-date">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            <p class="comment-content">{{ comment.content }}</p>
+        </div>
+        {% endfor %}
+        
+        <form method="post" action="{% url 'board:comment_create' post.id %}" class="comment-form">
+            {% csrf_token %}
+            <textarea name="content" required placeholder="댓글을 입력하세요"></textarea>
+            <button type="submit" class="btn-submit">댓글 작성</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelector('.btn-like').addEventListener('click', function() {
+    const postId = this.dataset.postId;
+    fetch(`/board/${postId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        this.classList.toggle('liked', data.liked);
+        this.querySelector('.like-count').textContent = data.count;
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const content = document.getElementById('markdown-content');
+    content.innerHTML = marked.parse(content.textContent);
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+.markdown-content {
+    line-height: 1.6;
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+.markdown-content ul, 
+.markdown-content ol {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: #666;
+}
+</style>
+{% endblock %}
