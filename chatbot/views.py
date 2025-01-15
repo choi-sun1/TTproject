@@ -1,61 +1,56 @@
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.http import JsonResponse
-from .models import ChatState, Conversation
-import re, openai
+from django.shortcuts import render
+from .models import ChatHistory, Location, Review
+from .forms import ChatForm
+from openai import OpenAI
+import requests
+from django.conf import settings
 
-openai.api_key = 'your-openai-api-key' 
-#환경변수나 설정파일에서 가져오는 방법 사용하기
+# OpenAI API 키
+CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY)
+GOOGLE_MAPS_API_KEY = settings.GOOGLE_PLACES_API_KEY
 
-class ChatbotResponseView(APIView):
-    permission_classes = [IsAuthenticated]
+def chat_view(request):
+    completion = None
+    prompt = '''
+    너는 여행 계획을 돕는 챗봇이야.
+    국내 여행만을 대상으로 도와줄 수 있어.'''
+    if request.method == "POST":
+        form = ChatForm(request.POST)
+        if form.is_valid():
+            user_message = form.cleaned_data["user_message"]
 
-    def post(self, request):
-        user = request.user  # 인증된 사용자
-        user_message = request.data.get('message', '')
+            # OpenAI API와 통신
+            completion = CLIENT.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system",
+                    "content": prompt},
+                    {"role": "user",
+                    "content": user_message
+                    }
+                ]
+            )
+            bot_response = completion.choices[0].message.content
 
-        # 대화 상태 확인
-        chat_state, created = ChatState.objects.get_or_create(user=user)
+            # Google Maps API를 사용하여 장소 찾기
+            if "place" in user_message.lower():  # 예제 조건
+                google_maps_url = f"https://maps.googleapis.com/maps/api/place/textsearch/json?query={user_message}&key={GOOGLE_MAPS_API_KEY}"
+                place_data = requests.get(google_maps_url).json()
+                if place_data.get("results"):
+                    place = place_data["results"][0]
+                    location = Location.objects.create(
+                        name=place["name"],
+                        address=place["formatted_address"],
+                        latitude=place["geometry"]["location"]["lat"],
+                        longitude=place["geometry"]["location"]["lng"],
+                    )
+                    bot_response += f"\n추천 장소: {location.name}, {location.address}"
 
-        # 상태에 따른 로직 처리
-        if chat_state.current_step == 'start':
-            bot_reply = "여행 지역을 알려주세요."
-            chat_state.current_step = 'get_location'
+            # 대화 기록 저장
+            ChatHistory.objects.create(user_message=user_message, bot_response=bot_response)
 
-        elif chat_state.current_step == 'get_location':
-            chat_state.context_data['location'] = user_message
-            bot_reply = f"{user_message}에서 여행을 계획하시나요? 예산을 알려주세요."
-            chat_state.current_step = 'get_budget'
+    else:
+        form = ChatForm()
 
-        elif chat_state.current_step == 'get_budget':
-            chat_state.context_data['budget'] = user_message
-            bot_reply = f"예산이 {user_message}원이군요! 여행 기간을 알려주세요."
-            chat_state.current_step = 'get_duration'
-
-        elif chat_state.current_step == 'get_duration':
-            # 여행 기간 입력 처리 (예: "2박 3일")
-            duration_match = re.match(r"(\d+)박 (\d+)일", user_message)
-            if duration_match:
-                num_nights = int(duration_match.group(1))  # 2박
-                num_days = int(duration_match.group(2))  # 3일
-                chat_state.context_data['duration'] = {'nights': num_nights, 'days': num_days}
-                bot_reply = f"{num_nights}박 {num_days}일 여행을 계획하셨군요! 추천 활동을 준비 중입니다."
-                chat_state.current_step = 'get_activities'
-            else:
-                bot_reply = "여행 기간을 'X박 Y일' 형식으로 입력해주세요. 예: '2박 3일'"
-            
-        else:
-            bot_reply = "감사합니다. 추천 결과를 정리하고 있어요!"
-            chat_state.current_step = 'start'  # 대화 리셋
-
-        # 대화 내용 Conversation 모델에 저장
-        Conversation.objects.create(
-            user=user,
-            message=user_message,
-            bot_reply=bot_reply
-        )
-
-        # 상태 저장
-        chat_state.save()
-
-        return JsonResponse({'bot_reply': bot_reply})
+    chat_history = ChatHistory.objects.all().order_by("-timestamp")[:10]  # 최근 대화 10개 표시
+    return render(request, "chatbot/chatbot.html", {"form": form, "response": completion, "chat_history": chat_history})
