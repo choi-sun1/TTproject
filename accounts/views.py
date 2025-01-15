@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -8,10 +8,16 @@ from rest_framework.views import APIView
 from .models import User, RelatedModel
 from .serializers import SignupSerializer, UserProfileSerializer, UserUpdateSerializer
 from django.core.cache import cache
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from articles.models import Article
+from django.contrib import messages
+from .forms import UserRegisterForm, UserLoginForm
+from django.contrib.auth.decorators import login_required
+from board.models import Post
+from stays.models import Booking
+from datetime import date
 
 
 class SignupView(APIView):
@@ -113,4 +119,69 @@ class UserDeleteView(APIView):
         user = request.user
         user.delete()
         return Response({'message': '회원탈퇴가 완료되었습니다.'}, status=status.HTTP_200_OK)
+
+
+def register_view(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserRegisterForm()
+    return render(request, 'accounts/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = UserLoginForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, '로그인되었습니다.')
+                return redirect('home')
+            else:
+                messages.error(request, '아이디 또는 비밀번호가 올바르지 않습니다.')
+    else:
+        form = UserLoginForm()
+    return render(request, 'accounts/login.html', {'form': form})
+
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, '로그아웃되었습니다.')
+    return redirect('home')
+
+@login_required
+def profile_view(request, username):
+    user = get_object_or_404(User, username=username)
+    context = {
+        'profile_user': user,
+        'posts': Post.objects.filter(author=user).order_by('-created_at')[:5],
+        'bookings': Booking.objects.filter(user=user).order_by('-created_at')[:5],
+        'today': date.today().strftime('%Y-%m-%d')
+    }
+    return render(request, 'accounts/profile.html', context)
+
+@login_required
+def profile_edit(request):
+    if request.method == 'POST':
+        user = request.user
+        user.nickname = request.POST.get('nickname', user.nickname)
+        user.gender = request.POST.get('gender', user.gender)
+        birth_date = request.POST.get('birth_date')
+        if birth_date:
+            user.birth_date = birth_date
+        user.bio = request.POST.get('bio', user.bio)
+        
+        if 'profile_image' in request.FILES:
+            user.profile_image = request.FILES['profile_image']
+        
+        user.save()
+        messages.success(request, '프로필이 성공적으로 수정되었습니다.')
+        return redirect('accounts:profile', username=user.username)
     
+    return render(request, 'accounts/profile_edit.html')

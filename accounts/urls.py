@@ -1,12 +1,12 @@
-from django.urls import path, include
+from django.urls import path
 from . import views
 
 app_name = 'accounts'
 
 urlpatterns = [
-    path('signup/', views.SignupView.as_view(), name='signup'),
-    path('login/', views.LoginView.as_view(), name='login'),
-    path('logout/', views.LogoutView.as_view(), name='logout'),
-    path('<str:username>/', views.UserProfileView.as_view(), name='profile'),
-    path('<str:username>/delete/', views.UserDeleteView.as_view(), name='delete'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('register/', views.register_view, name='register'),
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/<str:username>/', views.profile_view, name='profile'),
 ]
