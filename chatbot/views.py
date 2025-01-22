@@ -4,8 +4,8 @@ from django.http import JsonResponse
 from .models import ChatState, Conversation
 import re, openai
 
-openai.api_key = 'your-openai-api-key' 
-#환경변수나 설정파일에서 가져오는 방법 사용하기
+openai.api_key = 'your-openai-api-key'
+# 환경변수나 설정파일에서 API 키 가져오는 방법 사용하기
 
 class ChatbotResponseView(APIView):
     permission_classes = [IsAuthenticated]
@@ -33,17 +33,34 @@ class ChatbotResponseView(APIView):
             chat_state.current_step = 'get_duration'
 
         elif chat_state.current_step == 'get_duration':
-            # 여행 기간 입력 처리 (예: "2박 3일")
+            # 여행 기간 입력 처리 (예: "2박 3일" 또는 "당일")
             duration_match = re.match(r"(\d+)박 (\d+)일", user_message)
             if duration_match:
                 num_nights = int(duration_match.group(1))  # 2박
                 num_days = int(duration_match.group(2))  # 3일
                 chat_state.context_data['duration'] = {'nights': num_nights, 'days': num_days}
-                bot_reply = f"{num_nights}박 {num_days}일 여행을 계획하셨군요! 추천 활동을 준비 중입니다."
-                chat_state.current_step = 'get_activities'
+
+                # 당일여행 여부 확인
+                if num_nights == 0:
+                    bot_reply = f"{num_days}일 동안의 당일 여행을 계획하셨군요! 추천 활동을 준비 중입니다."
+                    chat_state.current_step = 'get_activities'  # 숙박 질문 건너뛰기
+                else:
+                    bot_reply = f"{num_nights}박 {num_days}일 여행을 계획하셨군요! 숙박 조건을 알려주세요."
+                    chat_state.current_step = 'get_accommodation'
             else:
-                bot_reply = "여행 기간을 'X박 Y일' 형식으로 입력해주세요. 예: '2박 3일'"
-            
+                bot_reply = "여행 기간을 'X박 Y일' 형식으로 입력해주세요. 예: '2박 3일' 또는 '당일'"
+
+        elif chat_state.current_step == 'get_accommodation':
+            # 숙박 조건 입력 받기
+            chat_state.context_data['accommodation'] = user_message
+            bot_reply = "숙박 조건을 저장했습니다. 추천 활동을 준비 중입니다."
+            chat_state.current_step = 'get_activities'
+
+        elif chat_state.current_step == 'get_activities':
+            # LLM 또는 RAG 기반 추천 로직 추가
+            bot_reply = "추천 활동 리스트를 준비 중이에요! 잠시만 기다려주세요."
+            chat_state.current_step = 'start'  # 대화 리셋
+
         else:
             bot_reply = "감사합니다. 추천 결과를 정리하고 있어요!"
             chat_state.current_step = 'start'  # 대화 리셋
