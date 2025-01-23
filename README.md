@@ -1,3 +1,9 @@
+## SQL라이트로 교체
+ - 교체이유 : 원활한 데이터 공유
+- SQL서버 설정 따로 필요없음
+- 패키지 설치로 쉽게 설치
+- 테스트용 데이터 입력 쉬움
+
 ## 가상환경 활성화
 venv\Scripts\activate  # Windows
 source venv/bin/activate  # macOS/Linux
