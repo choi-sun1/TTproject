@@ -1,0 +1,45 @@
+# 가상환경
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Django 
+*/migrations/*
+!*/migrations/__init__.py
+
+# 환경변수
+.env
+*.env
+
+# 시스템 파일
+.DS_Store
+
+# 미디어 파일
+media/
+
+# 정적 파일
+static/admin/
+
+# MySQL 관련
+*.sql
+mysql_data/
+
+# IDE 관련
+.idea/
+.vscode/
+
+# 로그 파일
+*.log
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# SQLite
+*.sqlite3

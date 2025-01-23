@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}여행 이야기 - SmartTrip{% endblock %}
+
+{% block content %}
+<div class="articles-container">
+    <div class="articles-header">
+        <h2>여행 이야기</h2>
+        {% if user.is_authenticated %}
+        <a href="{% url 'articles:create' %}" class="btn btn-primary">글쓰기</a>
+        {% endif %}
+    </div>
+    
+    <div class="articles-list">
+        {% for article in articles %}
+        <div class="article-card">
+            {% if article.image %}
+            <img src="{{ article.image.url }}" alt="{{ article.title }}">
+            {% endif %}
+            <div class="article-content">
+                <h3><a href="{% url 'articles:detail' article.pk %}">{{ article.title }}</a></h3>
+                <div class="article-meta">
+                    <span>{{ article.author.nickname }}</span>
+                    <span>{{ article.created_at|date:"Y.m.d" }}</span>
+                    <span>조회 {{ article.views }}</span>
+                    <span>좋아요 {{ article.likes.count }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>아직 게시글이 없습니다.</p>
+        {% endfor %}
+    </div>
+
+    {% include 'includes/pagination.html' %}
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>SmartTrip</h3>
+                <p>여행 계획의 시작과 끝</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links</h3>
+                <ul>
+                    <li><a href="{% url 'home' %}">홈</a></li>
+                    <li><a href="{% url 'articles:list' %}">여행 이야기</a></li>
+                    <li><a href="{% url 'itineraries:list' %}">여행 일정</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 SmartTrip. All rights reserved.</p>
+        </div>
+    </div>
+</footer>

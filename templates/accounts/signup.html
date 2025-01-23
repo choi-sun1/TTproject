@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}회원가입 - SmartTrip{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>회원가입</h2>
+    <form method="post" class="auth-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">가입하기</button>
+    </form>
+    <div class="auth-links">
+        <a href="{% url 'accounts:login' %}">이미 계정이 있으신가요?</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+SmartTrip/
+├── .gitignore                  # Git 제외 파일 설정
+├── manage.py                   # Django 프로젝트 관리 스크립트
+├── requirements.txt            # 프로젝트 의존성 목록
+├── venv/                       # 가상환경 디렉토리
+├── smart_trip/                # 메인 프로젝트 디렉토리
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py            # 프로젝트 설정
+│   ├── urls.py                # URL 라우팅
+│   └── wsgi.py
+├── accounts/                  # 사용자 계정 관리 앱
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py              # 폼 정의
+│   ├── models.py             # User 모델 정의
+│   ├── serializers.py        # DRF 시리얼라이저
+│   ├── urls.py               # URL 패턴
+│   ├── views.py              # 뷰 로직
+│   └── migrations/
+├── articles/                 # 게시글 관리 앱
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py            # Article, Comment 등 모델
+│   ├── serializers.py       # DRF 시리얼라이저
+│   ├── urls.py              # URL 패턴
+│   ├── views.py             # 뷰 로직
+│   ├── api/                 # API 관련 모듈
+│   │   ├── __init__.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   └── migrations/
+├── itineraries/             # 여행 일정 관리 앱
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py           # Itinerary, Place 등 모델
+│   ├── serializers.py      # DRF 시리얼라이저
+│   ├── urls.py             # URL 패턴
+│   ├── views.py            # 뷰 로직
+│   └── migrations/
+├── chatbot/                # 챗봇 기능 앱
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py          # Chatbot, Message 등 모델
+│   ├── serializers.py     # DRF 시리얼라이저
+│   ├── urls.py            # URL 패턴
+│   ├── views.py           # 뷰 로직
+│   └── migrations/
+├── templates/             # 프로젝트 전체 템플릿
+│   ├── base.html         # 기본 템플릿
+│   ├── includes/         # 재사용 가능한 템플릿 조각
+│   │   ├── navbar.html   # 네비게이션 바
+│   │   ├── footer.html   # 푸터
+│   │   └── pagination.html # 페이지네이션
+│   ├── accounts/         # 계정 관련 템플릿
+│   │   ├── login.html    # 로그인
+│   │   ├── signup.html   # 회원가입
+│   │   ├── profile.html  # 프로필 조회
+│   │   ├── profile_edit.html # 프로필 수정
+│   │   ├── password_reset.html # 비밀번호 재설정
+│   │   └── password_reset_*.html # 비밀번호 재설정 관련
+│   ├── articles/         # 게시글 관련 템플릿
+│   │   ├── list.html    # 게시글 목록
+│   │   ├── detail.html  # 게시글 상세
+│   │   ├── create.html  # 게시글 작성
+│   │   └── edit.html    # 게시글 수정
+│   ├── itineraries/      # 여행 일정 관련 템플릿
+│   │   ├── list.html    # 일정 목록
+│   │   ├── detail.html  # 일정 상세
+│   │   ├── create.html  # 일정 작성
+│   │   └── edit.html    # 일정 수정
+│   └── chatbot/         # 챗봇 관련 템플릿
+│       └── chat.html    # 챗봇 인터페이스
+├── static/               # 정적 파일 저장소
+│   ├── css/             # CSS 파일들
+│   │   ├── style.css    # 기본 스타일
+│   │   ├── auth.css     # 인증 관련 스타일
+│   │   ├── articles.css # 게시글 관련 스타일
+│   │   ├── itineraries.css # 일정 관련 스타일
+│   │   └── chatbot.css  # 챗봇 관련 스타일
+│   ├── js/              # JavaScript 파일들
+│   │   ├── main.js      # 공통 스크립트
+│   │   ├── articles.js  # 게시글 관련 스크립트
+│   │   └── chatbot.js   # 챗봇 관련 스크립트
+│   └── images/          # 이미지 파일들
+├── media/               # 사용자 업로드 파일
+│   ├── article_images/  # 게시글 이미지
+│   ├── profiles/       # 프로필 이미지
+│   └── images/         # 기타 이미지
+└── logs/               # 로그 파일 디렉토리
+    └── .gitkeep       # 빈 디렉토리 유지용 파일

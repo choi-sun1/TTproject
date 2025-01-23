@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI 여행 추천 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>AI 여행 플래너</h2>
+        <p class="chat-description">여행 계획을 도와드릴게요!</p>
+    </div>
+    
+    <div class="chat-messages" id="chat-messages">
+        <!-- 메시지들이 여기에 동적으로 추가됩니다 -->
+    </div>
+    
+    <div class="chat-input-container">
+        <form id="chat-form" class="chat-form">
+            {% csrf_token %}
+            <input type="text" id="user-input" placeholder="메시지를 입력하세요..." required>
+            <button type="submit" class="btn-send">전송</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/chatbot.js' %}"></script>
+{% endblock %}
