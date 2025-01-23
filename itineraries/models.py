@@ -7,8 +7,7 @@ class Itinerary(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='itineraries',
-        verbose_name=_('작성자'),
-        null=True  # 임시로 null 허용
+        verbose_name=_('작성자')
     )
     title = models.CharField(_('제목'), max_length=200)
     description = models.TextField(_('설명'), blank=True)
@@ -17,21 +16,21 @@ class Itinerary(models.Model):
     created_at = models.DateTimeField(_('작성일'), auto_now_add=True)
     updated_at = models.DateTimeField(_('수정일'), auto_now=True)
     is_public = models.BooleanField(_('공개여부'), default=True)
+    views = models.PositiveIntegerField(_('조회수'), default=0)
     likes = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        through='ItineraryLike',
         related_name='liked_itineraries',
-        verbose_name=_('좋아요')
+        verbose_name=_('좋아요'),
+        blank=True
     )
-    views = models.PositiveIntegerField(_('조회수'), default=0)
-
-    def __str__(self):
-        return self.title
 
     class Meta:
         verbose_name = _('여행 일정')
         verbose_name_plural = _('여행 일정들')
         ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
 
 class ItineraryDay(models.Model):
     itinerary = models.ForeignKey(
@@ -54,28 +53,10 @@ class ItineraryDay(models.Model):
 
 class Place(models.Model):
     name = models.CharField(_('장소명'), max_length=200)
-    description = models.TextField(_('설명'), blank=True)
     address = models.CharField(_('주소'), max_length=255)
     latitude = models.DecimalField(_('위도'), max_digits=9, decimal_places=6)
     longitude = models.DecimalField(_('경도'), max_digits=9, decimal_places=6)
-    
-    PLACE_TYPES = [
-        ('restaurant', '음식점'),
-        ('cafe', '카페'),
-        ('attraction', '관광지'),
-        ('shopping', '쇼핑'),
-        ('culture', '문화시설'),
-        ('other', '기타'),
-    ]
-    place_type = models.CharField(_('장소 유형'), max_length=20, choices=PLACE_TYPES)
-    
-    # Google Places API 관련 필드
-    google_place_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
-    rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
-    price_level = models.PositiveSmallIntegerField(null=True, blank=True)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    description = models.TextField(_('설명'), blank=True)
 
     class Meta:
         verbose_name = _('장소')

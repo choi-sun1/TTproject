@@ -44,6 +44,16 @@ class SignupForm(UserCreationForm):
     password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
+    birth_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        })
+    )
+    gender = forms.ChoiceField(
+        choices=[('M', 'Male'), ('F', 'Female')],
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     profile_image = forms.ImageField(
         required=False,
         widget=forms.FileInput(attrs={'class': 'form-control'})
@@ -51,7 +61,7 @@ class SignupForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('email', 'nickname', 'password1', 'password2', 'profile_image')
+        fields = ('email', 'nickname', 'password1', 'password2', 'birth_date', 'gender', 'profile_image')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

@@ -1,14 +1,10 @@
 .navbar {
-    background-color: #1a73e8;  /* Google Blue */
-    box-shadow: var(--shadow-sm);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+    background-color: #1a73e8;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 0.75rem 0;
-    transform: translateY(0);
-    transition: transform 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .navbar .container {
@@ -20,8 +16,12 @@
     padding: 0 1rem;
 }
 
+.navbar-brand {
+    flex-shrink: 0;
+}
+
 .brand-logo {
-    color: #ffffff;
+    color: white;
     font-size: 1.5rem;
     font-weight: bold;
     text-decoration: none;
@@ -43,6 +43,7 @@
     padding: 0.5rem;
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;     /* Firefox */
+    margin-left: 2rem;
 }
 
 .navbar-menu::-webkit-scrollbar {
@@ -51,9 +52,9 @@
 
 .nav-link {
     white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--radius-md);
-    color: rgba(255, 255, 255, 0.9);  /* 밝은 텍스트 색상 */
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    color: white;
     text-decoration: none;
     transition: all 0.2s ease;
     font-weight: 500;
@@ -61,7 +62,6 @@
 }
 
 .nav-link:hover {
-    color: #ffffff;
     background-color: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
 }
@@ -190,10 +190,12 @@
         display: flex;
         flex-wrap: nowrap;
         overflow-x: auto;
+        gap: 0.5rem;
+        margin-left: 1rem;
     }
 
     .nav-link {
-        padding: 0.6rem 1rem;
+        padding: 0.5rem;
         font-size: 0.9rem;
         color: rgba(255, 255, 255, 0.9);
     }

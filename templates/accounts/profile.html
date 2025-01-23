@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}프로필 - SmartTrip{% endblock %}
+{% block title %}{{ user.nickname }}님의 프로필 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profiles.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="profile-container">
@@ -14,8 +18,38 @@
             {% endif %}
         </div>
         <div class="profile-info">
-            <h2>{{ user.username }}</h2>
+            <h2>{{ user.nickname }}</h2>
             <p>{{ user.email }}</p>
+            <!-- 생일과 성별 정보 추가 -->
+            <div class="user-details">
+                {% if user.birth_date %}
+                    <p><i class="fas fa-birthday-cake"></i> {{ user.birth_date|date:"Y년 m월 d일" }}</p>
+                {% endif %}
+                {% if user.gender %}
+                    <p><i class="fas fa-venus-mars"></i> 
+                        {% if user.gender == 'M' %}남성
+                        {% elif user.gender == 'F' %}여성
+                        {% else %}기타
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ user.itineraries.count|default:"0" }}</div>
+                    <div class="stat-label">여행 일정</div>
+                </div>
+                {% if user.articles.exists %}
+                <div class="stat-item">
+                    <div class="stat-number">{{ user.articles.count|default:"0" }}</div>
+                    <div class="stat-label">여행 이야기</div>
+                </div>
+                {% endif %}
+                <div class="stat-item">
+                    <div class="stat-number">{{ user.reviews.count|default:"0" }}</div>
+                    <div class="stat-label">후기</div>
+                </div>
+            </div>
             {% if user == request.user %}
                 <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">프로필 수정</a>
             {% endif %}
@@ -24,17 +58,31 @@
 
     <div class="profile-content">
         <div class="profile-section">
-            <h3>내 여행 일정</h3>
+            <h3>
+                <i class="fas fa-route"></i>
+                내 여행 일정
+            </h3>
             <div class="itinerary-list">
-                {% for itinerary in user.itineraries.all %}
-                    <div class="itinerary-card">
-                        <h4>{{ itinerary.title }}</h4>
-                        <p>{{ itinerary.start_date }} - {{ itinerary.end_date }}</p>
-                        <a href="{% url 'itineraries:detail' itinerary.id %}">자세히 보기</a>
+                {% if user.itineraries.exists %}
+                    {% for itinerary in user.itineraries.all %}
+                        <div class="itinerary-card">
+                            <h4>{{ itinerary.title }}</h4>
+                            <p>{{ itinerary.start_date|date:"Y.m.d" }} - {{ itinerary.end_date|date:"Y.m.d" }}</p>
+                            <a href="{% url 'itineraries:detail' itinerary.id %}">
+                                자세히 보기 
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>아직 작성한 여행 일정이 없습니다.</p>
+                        <a href="{% url 'itineraries:create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            새 여행 일정 만들기
+                        </a>
                     </div>
-                {% empty %}
-                    <p>아직 작성한 여행 일정이 없습니다.</p>
-                {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>

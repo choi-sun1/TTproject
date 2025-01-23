@@ -16,6 +16,13 @@ pip install -r requirements.txt
 ## 마그레이션 생성
 python manage.py makemigrations
 
+## 특정 앱의 마그레이션 생성
+python manage.py makemigrations itineraries
+
+python manage.py makemigrations accounts
+
+python manage.py makemigrations articles
+
 ## 마그레이션 적용
 python manage.py migrate
 
@@ -26,7 +33,24 @@ python manage.py createsuperuser
 python manage.py runserver
 
 ## 현재 구현 기능
+메인페이지 : http://127.0.0.1:8000/
+
+회원가입 페이지 : http://127.0.0.1:8000/accounts/signup/
+
+로그인 페이지 : http://127.0.0.1:8000/accounts/login/
+
+프로필 페이지 : 
+
+게시판 페이지 : 
+
+챗봇 페이지 : 
+
+여핼일정 만들기 페이지 :
+
+
+
 API 문서: http://localhost:8000/swagger/
+
 ReDoc 문서: http://localhost:8000/redoc/
 
 # 시스템 코드 커버리지 테스트

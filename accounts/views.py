@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import CreateView, View, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from .forms import SignupForm, LoginForm
+from .forms import SignupForm, LoginForm, UserChangeForm  # UserChangeForm import 추가
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -79,4 +79,17 @@ def profile_view(request):
 
 @login_required
 def profile_edit(request):
-    return render(request, 'accounts/profile_edit.html')
+    if request.method == 'POST':
+        form = UserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, '프로필이 성공적으로 수정되었습니다.')
+            return redirect('accounts:profile')
+    else:
+        form = UserChangeForm(instance=request.user)
+    
+    context = {
+        'form': form,
+        'user': request.user
+    }
+    return render(request, 'accounts/profile_edit.html', context)

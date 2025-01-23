@@ -11,32 +11,81 @@
 <div class="auth-wrapper">
     <div class="auth-container">
         <h2 class="auth-title">회원가입</h2>
+        <p class="auth-description">SmartTrip과 함께 여행을 시작해보세요!</p>
+        
         <form method="post" class="auth-form" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
-                <label for="id_email">이메일</label>
+                <label for="id_email">이메일 <span class="required">*</span></label>
                 {{ form.email }}
+                <small class="form-text">로그인 및 알림에 사용될 이메일 주소를 입력해주세요.</small>
+                {% if form.email.errors %}
+                <div class="error-message">{{ form.email.errors.0 }}</div>
+                {% endif %}
             </div>
+
             <div class="form-group">
-                <label for="id_nickname">닉네임</label>
+                <label for="id_nickname">닉네임 <span class="required">*</span></label>
                 {{ form.nickname }}
+                <small class="form-text">다른 사용자들에게 보여질 이름입니다. (2~10자)</small>
+                {% if form.nickname.errors %}
+                <div class="error-message">{{ form.nickname.errors.0 }}</div>
+                {% endif %}
             </div>
+
             <div class="form-group">
-                <label for="id_password1">비밀번호</label>
+                <label for="id_password1">비밀번호 <span class="required">*</span></label>
                 {{ form.password1 }}
+                <small class="form-text">
+                    <ul class="password-rules">
+                        <li>8자 이상의 길이</li>
+                        <li>영문 대/소문자, 숫자, 특수문자 조합</li>
+                        <li>이메일 주소와 동일할 수 없음</li>
+                    </ul>
+                </small>
+                {% if form.password1.errors %}
+                <div class="error-message">{{ form.password1.errors.0 }}</div>
+                {% endif %}
             </div>
+
             <div class="form-group">
-                <label for="id_password2">비밀번호 확인</label>
+                <label for="id_password2">비밀번호 확인 <span class="required">*</span></label>
                 {{ form.password2 }}
+                <small class="form-text">비밀번호를 다시 한 번 입력해주세요.</small>
+                {% if form.password2.errors %}
+                <div class="error-message">{{ form.password2.errors.0 }}</div>
+                {% endif %}
             </div>
+
+            <div class="form-group">
+                <label for="id_birth_date">생년월일</label>
+                {{ form.birth_date }}
+                <small class="form-text">선택사항: YYYY-MM-DD 형식으로 입력해주세요.</small>
+                {% if form.birth_date.errors %}
+                <div class="error-message">{{ form.birth_date.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_gender">성별</label>
+                {{ form.gender }}
+                <small class="form-text">선택사항: 성별을 선택해주세요.</small>
+                {% if form.gender.errors %}
+                <div class="error-message">{{ form.gender.errors.0 }}</div>
+                {% endif %}
+            </div>
+
             <div class="form-group">
                 <label for="id_profile_image">프로필 이미지</label>
                 {{ form.profile_image }}
+                <small class="form-text">선택사항: JPG, PNG 파일 (최대 5MB)</small>
             </div>
+
             <button type="submit" class="btn btn-primary btn-block">가입하기</button>
         </form>
+
         <div class="auth-links">
-            <a href="{% url 'accounts:login' %}">이미 계정이 있으신가요?</a>
+            <p>이미 계정이 있으신가요? <a href="{% url 'accounts:login' %}">로그인</a></p>
         </div>
     </div>
 </div>
