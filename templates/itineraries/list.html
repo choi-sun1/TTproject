@@ -1,33 +1,62 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}여행 일정 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/itineraries.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="itineraries-container">
     <div class="itineraries-header">
-        <h2>여행 일정</h2>
+        <h1>여행 일정</h1>
         {% if user.is_authenticated %}
-        <a href="{% url 'itineraries:create' %}" class="btn btn-primary">일정 만들기</a>
+        <a href="{% url 'web:itineraries:create' %}" class="btn btn-primary">일정 만들기</a>
         {% endif %}
+        <div class="itineraries-filters">
+            <select id="sort-select" class="form-select">
+                <option value="latest">최신순</option>
+                <option value="popular">인기순</option>
+                <option value="upcoming">출발 임박순</option>
+            </select>
+            <input type="text" id="search-input" class="form-input" placeholder="목적지나 제목으로 검색">
+        </div>
     </div>
-    
-    <div class="itineraries-list">
+
+    <div class="itineraries-grid" id="itineraries-container">
         {% for itinerary in itineraries %}
         <div class="itinerary-card">
-            <div class="itinerary-content">
-                <h3><a href="{% url 'itineraries:detail' itinerary.pk %}">{{ itinerary.title }}</a></h3>
-                <div class="itinerary-meta">
-                    <span>{{ itinerary.start_date|date:"Y.m.d" }} ~ {{ itinerary.end_date|date:"Y.m.d" }}</span>
-                    <span>{{ itinerary.author.nickname }}</span>
-                    <span>조회 {{ itinerary.views }}</span>
-                </div>
+            <div class="itinerary-header">
+                <span class="dates">{{ itinerary.start_date|date:"Y.m.d" }} ~ {{ itinerary.end_date|date:"Y.m.d" }}</span>
+                <span class="duration">{{ itinerary.total_days }}일간</span>
+            </div>
+            <h3><a href="{% url 'web:itineraries:detail' itinerary.pk %}">{{ itinerary.title }}</a></h3>
+            <div class="itinerary-meta">
+                <span class="author">{{ itinerary.author.nickname }}</span>
+                <span class="views">조회 {{ itinerary.views }}</span>
+                <span class="likes">좋아요 {{ itinerary.likes.count }}</span>
+            </div>
+            <div class="itinerary-places">
+                {% for place in itinerary.places.all|slice:":3" %}
+                <span class="place">{{ place.name }}</span>
+                {% if forloop.counter == 3 and itinerary.places.count > 3 %}
+                <span class="more">+{{ itinerary.places.count|add:"-3" }}</span>
+                {% endif %}
+                {% endfor %}
             </div>
         </div>
         {% empty %}
-        <p>아직 일정이 없습니다.</p>
+        <div class="no-itineraries">
+            <p>아직 등록된 일정이 없습니다.</p>
+        </div>
         {% endfor %}
     </div>
 
     {% include 'includes/pagination.html' %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/itineraries.js' %}"></script>
 {% endblock %}

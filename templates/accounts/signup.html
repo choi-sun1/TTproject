@@ -1,17 +1,43 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}회원가입 - SmartTrip{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="auth-container">
-    <h2>회원가입</h2>
-    <form method="post" class="auth-form" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">가입하기</button>
-    </form>
-    <div class="auth-links">
-        <a href="{% url 'accounts:login' %}">이미 계정이 있으신가요?</a>
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <h2 class="auth-title">회원가입</h2>
+        <form method="post" class="auth-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_email">이메일</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_nickname">닉네임</label>
+                {{ form.nickname }}
+            </div>
+            <div class="form-group">
+                <label for="id_password1">비밀번호</label>
+                {{ form.password1 }}
+            </div>
+            <div class="form-group">
+                <label for="id_password2">비밀번호 확인</label>
+                {{ form.password2 }}
+            </div>
+            <div class="form-group">
+                <label for="id_profile_image">프로필 이미지</label>
+                {{ form.profile_image }}
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">가입하기</button>
+        </form>
+        <div class="auth-links">
+            <a href="{% url 'accounts:login' %}">이미 계정이 있으신가요?</a>
+        </div>
     </div>
 </div>
 {% endblock %}

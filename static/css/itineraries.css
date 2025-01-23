@@ -1,0 +1,104 @@
+.itineraries-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.itineraries-header {
+    margin-bottom: 2rem;
+}
+
+.itineraries-filters {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.itineraries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.itinerary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.itinerary-card:hover {
+    transform: translateY(-4px);
+}
+
+.itinerary-header {
+    display: flex;
+    justify-content: space-between;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.dates {
+    font-size: 0.9rem;
+}
+
+.duration {
+    font-weight: bold;
+}
+
+.itinerary-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0.5rem 0;
+}
+
+.itinerary-places {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.place {
+    background: var(--background-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+
+.more {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+}
+
+.form-select, .form-input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-select {
+    min-width: 120px;
+}
+
+.form-input {
+    flex: 1;
+    max-width: 300px;
+}
+
+@media (max-width: 768px) {
+    .itineraries-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .itineraries-filters {
+        flex-direction: column;
+    }
+    
+    .form-input {
+        max-width: 100%;
+    }
+}

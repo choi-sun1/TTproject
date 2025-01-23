@@ -5,19 +5,25 @@ SmartTrip/
 ├── venv/                       # 가상환경 디렉토리
 ├── smart_trip/                # 메인 프로젝트 디렉토리
 │   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py            # 프로젝트 설정
-│   ├── urls.py                # URL 라우팅
-│   └── wsgi.py
+│   ├── asgi.py               # ASGI 애플리케이션 설정
+│   ├── wsgi.py               # WSGI 애플리케이션 설정
+│   ├── celery.py            # Celery 워커 설정
+│   ├── settings.py          # Django 프로젝트 설정
+│   ├── urls.py              # 메인 URL 라우팅
+│   └── views.py             # 기본 뷰 정의
 ├── accounts/                  # 사용자 계정 관리 앱
 │   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
-│   ├── forms.py              # 폼 정의
+│   ├── forms.py              # 인증 폼 정의
 │   ├── models.py             # User 모델 정의
 │   ├── serializers.py        # DRF 시리얼라이저
-│   ├── urls.py               # URL 패턴
-│   ├── views.py              # 뷰 로직
+│   ├── urls.py               # 웹 URL 패턴
+│   ├── views.py              # 웹 뷰 로직
+│   ├── api/                  # API 관련 모듈
+│   │   ├── __init__.py
+│   │   ├── urls.py          # API URL 패턴
+│   │   └── views.py         # API 뷰 로직
 │   └── migrations/
 ├── articles/                 # 게시글 관리 앱
 │   ├── __init__.py
@@ -38,53 +44,90 @@ SmartTrip/
 │   ├── apps.py
 │   ├── models.py           # Itinerary, Place 등 모델
 │   ├── serializers.py      # DRF 시리얼라이저
-│   ├── urls.py             # URL 패턴
-│   ├── views.py            # 뷰 로직
+│   ├── urls.py             # 웹 URL 패턴
+│   ├── views.py            # 웹 뷰 로직
+│   ├── api/                # API 관련 모듈
+│   │   ├── __init__.py
+│   │   ├── urls.py        # API URL 패턴
+│   │   └── views.py       # API 뷰 로직
+│   ├── services/          # 서비스 계층
+│   │   ├── __init__.py
+│   │   └── ai_recommendation.py # AI 추천 서비스
+│   └── migrations/
+├── stays/                   # 숙박 시설 관리 앱
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py           # Stay, Booking, Review 등 모델
+│   ├── serializers.py      # DRF 시리얼라이저
+│   ├── urls.py             # 웹 URL 패턴
+│   ├── views.py            # 웹 뷰 로직
+│   ├── utils.py            # 유틸리티 함수
+│   ├── api/                # API 관련 모듈
+│   │   ├── __init__.py
+│   │   ├── urls.py        # API URL 패턴
+│   │   └── views.py       # API 뷰 로직
+│   ├── services/          # 서비스 계층
+│   │   ├── __init__.py
+│   │   └── google_maps.py # Google Maps 서비스
 │   └── migrations/
 ├── chatbot/                # 챗봇 기능 앱
 │   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
 │   ├── models.py          # Chatbot, Message 등 모델
-│   ├── serializers.py     # DRF 시리얼라이저
-│   ├── urls.py            # URL 패턴
-│   ├── views.py           # 뷰 로직
-│   └── migrations/
+│   ├── serializers.py     # 챗봇 관련 시리얼라이저
+│   ├── urls.py            # 웹 URL 패턴
+│   ├── views.py           # 웹 뷰 로직
+│   ├── utils.py           # 유틸리티 함수
+│   ├── api/               # API 관련 모듈
+│   │   ├── __init__.py
+│   │   ├── urls.py       # API URL 패턴
+│   │   └── views.py      # API 뷰 로직
+│   └── services/          # 서비스 계층
+│       ├── __init__.py
+│       └── gpt.py        # GPT 서비스 구현
 ├── templates/             # 프로젝트 전체 템플릿
 │   ├── base.html         # 기본 템플릿
 │   ├── includes/         # 재사용 가능한 템플릿 조각
 │   │   ├── navbar.html   # 네비게이션 바
-│   │   ├── footer.html   # 푸터
-│   │   └── pagination.html # 페이지네이션
+│   │   └── footer.html   # 푸터
 │   ├── accounts/         # 계정 관련 템플릿
-│   │   ├── login.html    # 로그인
-│   │   ├── signup.html   # 회원가입
-│   │   ├── profile.html  # 프로필 조회
-│   │   ├── profile_edit.html # 프로필 수정
-│   │   ├── password_reset.html # 비밀번호 재설정
-│   │   └── password_reset_*.html # 비밀번호 재설정 관련
+│   │   ├── login.html    # 로그인 페이지
+│   │   ├── signup.html   # 회원가입 페이지
+│   │   ├── profile.html  # 프로필 페이지
+│   │   └── password_reset.html # 비밀번호 재설정
 │   ├── articles/         # 게시글 관련 템플릿
-│   │   ├── list.html    # 게시글 목록
-│   │   ├── detail.html  # 게시글 상세
-│   │   ├── create.html  # 게시글 작성
-│   │   └── edit.html    # 게시글 수정
+│   │   ├── list.html     # 게시글 목록
+│   │   └── detail.html   # 게시글 상세
 │   ├── itineraries/      # 여행 일정 관련 템플릿
-│   │   ├── list.html    # 일정 목록
-│   │   ├── detail.html  # 일정 상세
-│   │   ├── create.html  # 일정 작성
-│   │   └── edit.html    # 일정 수정
-│   └── chatbot/         # 챗봇 관련 템플릿
-│       └── chat.html    # 챗봇 인터페이스
+│   │   ├── list.html     # 일정 목록
+│   │   └── detail.html   # 일정 상세
+│   ├── stays/           # 숙박 시설 관련 템플릿
+│   │   ├── list.html    # 숙소 목록 페이지
+│   │   └── detail.html  # 숙소 상세 페이지
+│   └── chatbot/          # 챗봇 관련 템플릿
+│       └── chat.html     # 챗봇 인터페이스
 ├── static/               # 정적 파일 저장소
 │   ├── css/             # CSS 파일들
-│   │   ├── style.css    # 기본 스타일
+│   │   ├── style.css    # 전역 스타일
+│   │   ├── components.css # 공통 컴포넌트 스타일
+│   │   ├── navbar.css   # 네비게이션 바 스타일
 │   │   ├── auth.css     # 인증 관련 스타일
 │   │   ├── articles.css # 게시글 관련 스타일
-│   │   ├── itineraries.css # 일정 관련 스타일
+│   │   ├── article-detail.css # 게시글 상세 스타일
+│   │   ├── profiles.css # 프로필 관련 스타일
+│   │   ├── itineraries.css # 일정 목록 스타일
+│   │   ├── itinerary-detail.css # 일정 상세 스타일
+│   │   ├── stays.css    # 숙소 목록 스타일
+│   │   ├── stay-detail.css # 숙소 상세 스타일
 │   │   └── chatbot.css  # 챗봇 관련 스타일
 │   ├── js/              # JavaScript 파일들
-│   │   ├── main.js      # 공통 스크립트
-│   │   ├── articles.js  # 게시글 관련 스크립트
+│   │   ├── main.js      # 공통 유틸리티 함수
+│   │   ├── articles.js  # 게시글 목록 관련 스크립트
+│   │   ├── article-detail.js  # 게시글 상세 스크립트
+│   │   ├── itineraries.js # 여행 일정 목록 스크립트
+│   │   ├── itinerary-detail.js # 일정 상세 스크립트
 │   │   └── chatbot.js   # 챗봇 관련 스크립트
 │   └── images/          # 이미지 파일들
 ├── media/               # 사용자 업로드 파일

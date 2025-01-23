@@ -30,19 +30,50 @@ class UserChangeForm(BaseUserChangeForm):
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
+class SignupForm(UserCreationForm):
+    email = forms.EmailField(
+        max_length=255,
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+    nickname = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = User
+        fields = ('email', 'nickname', 'password1', 'password2')
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('이미 사용중인 이메일입니다.')
+        return email
+
+    def clean_nickname(self):
+        nickname = self.cleaned_data.get('nickname')
+        if User.objects.filter(nickname=nickname).exists():
+            raise forms.ValidationError('이미 사용중인 닉네임입니다.')
+        return nickname
+
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
-        label='이메일',
-        max_length=254,
+        max_length=255,
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
 
 class CustomSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(
-        label='새 비밀번호',
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
     new_password2 = forms.CharField(
-        label='새 비밀번호 확인',
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )

@@ -1,33 +1,63 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}AI 여행 추천 - SmartTrip{% endblock %}
+{% block title %}AI 여행 플래너 - SmartTrip{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="chat-container">
-    <div class="chat-header">
-        <h2>AI 여행 플래너</h2>
-        <p class="chat-description">여행 계획을 도와드릴게요!</p>
+<div class="chatbot-container">
+    <div class="sidebar">
+        <div class="chat-list">
+            <button id="new-chat" class="btn btn-primary">새로운 대화</button>
+            <div id="conversations-list">
+                <!-- 대화 목록이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
     </div>
-    
-    <div class="chat-messages" id="chat-messages">
-        <!-- 메시지들이 여기에 동적으로 추가됩니다 -->
+
+    <div class="chat-main">
+        <div class="chat-header">
+            <h2>AI 여행 플래너</h2>
+            <p>여행 계획을 도와드릴게요! 여행하고 싶은 지역을 알려주세요.</p>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot">
+                <div class="avatar">AI</div>
+                <div class="message-content">
+                    안녕하세요! 어떤 여행을 계획하고 계신가요?
+                </div>
+            </div>
+            <!-- 메시지들이 여기에 동적으로 추가됩니다 -->
+        </div>
+
+        <div class="chat-input">
+            <form id="chat-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" id="user-input" placeholder="메시지를 입력하세요..." required>
+                    <button type="submit" class="btn-send">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+            <div class="typing-indicator" style="display: none;">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
     </div>
-    
-    <div class="chat-input-container">
-        <form id="chat-form" class="chat-form">
-            {% csrf_token %}
-            <input type="text" id="user-input" placeholder="메시지를 입력하세요..." required>
-            <button type="submit" class="btn-send">전송</button>
-        </form>
+
+    <div class="suggestions">
+        <h3>추천 질문</h3>
+        <div class="suggestion-buttons">
+            <button class="suggestion-btn">서울 2박3일 여행 추천해줘</button>
+            <button class="suggestion-btn">제주도 맛집 추천해줘</button>
+            <button class="suggestion-btn">부산 관광지 추천해줘</button>
+            <button class="suggestion-btn">겨울 여행지 추천해줘</button>
+        </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/chatbot.js' %}"></script>
 {% endblock %}

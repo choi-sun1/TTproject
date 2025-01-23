@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}프로필 - SmartTrip{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" alt="프로필 이미지">
+            {% else %}
+                <img src="{% static 'images/default-avatar.png' %}" alt="기본 프로필">
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.username }}</h2>
+            <p>{{ user.email }}</p>
+            {% if user == request.user %}
+                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">프로필 수정</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <h3>내 여행 일정</h3>
+            <div class="itinerary-list">
+                {% for itinerary in user.itineraries.all %}
+                    <div class="itinerary-card">
+                        <h4>{{ itinerary.title }}</h4>
+                        <p>{{ itinerary.start_date }} - {{ itinerary.end_date }}</p>
+                        <a href="{% url 'itineraries:detail' itinerary.id %}">자세히 보기</a>
+                    </div>
+                {% empty %}
+                    <p>아직 작성한 여행 일정이 없습니다.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

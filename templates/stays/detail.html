@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ stay.name }} - SmartTrip{% endblock %}
+
+{% block content %}
+<div class="stay-detail">
+    <div class="stay-header">
+        <h1>{{ stay.name }}</h1>
+        <div class="stay-meta">
+            <span class="location">{{ stay.address }}</span>
+            {% if stay.rating %}
+            <span class="rating">평점 {{ stay.rating }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stay-images">
+        {% for image in stay.images.all %}
+        <img src="{{ image.image.url }}" alt="{{ stay.name }}">
+        {% endfor %}
+    </div>
+
+    <div class="stay-content">
+        <div class="stay-info">
+            <h2>숙소 정보</h2>
+            <p>{{ stay.description }}</p>
+            <div class="amenities">
+                {% if stay.has_wifi %}
+                <span>와이파이</span>
+                {% endif %}
+                {% if stay.has_parking %}
+                <span>주차장</span>
+                {% endif %}
+                {% if stay.has_breakfast %}
+                <span>조식 포함</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="booking-section">
+            <div class="booking-card">
+                <h3>₩{{ stay.price_per_night|intcomma }}<span>/박</span></h3>
+                <form id="booking-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>체크인/체크아웃</label>
+                        <div class="date-inputs">
+                            <input type="date" name="check_in" required>
+                            <input type="date" name="check_out" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>인원</label>
+                        <input type="number" name="guests" min="1" max="{{ stay.capacity }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">예약하기</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="reviews-section">
+        <h2>후기 <span>({{ stay.reviews.count }})</span></h2>
+        <div class="reviews-list">
+            {% for review in stay.reviews.all %}
+            <div class="review">
+                <div class="review-header">
+                    <div class="reviewer">{{ review.user.nickname }}</div>
+                    <div class="rating">{{ review.rating }}점</div>
+                </div>
+                <p class="review-content">{{ review.comment }}</p>
+                <div class="review-date">{{ review.created_at|date }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/stay-detail.js' %}"></script>
+{% endblock %}

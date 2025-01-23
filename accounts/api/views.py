@@ -1,32 +1,23 @@
-from rest_framework import status
+from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import get_user_model
+from ..serializers import (
+    UserSerializer, RegisterSerializer, UserProfileSerializer,
+    UserUpdateSerializer, UserDetailSerializer
+)
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from ..serializers import UserSerializer, RegisterSerializer
-from ..models import User
 
-class RegisterAPIView(APIView):
-    permission_classes = [AllowAny]
+User = get_user_model()
 
-    def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            token = RefreshToken.for_user(user)
-            return Response({
-                'user': UserSerializer(user).data,
-                'token': {
-                    'refresh': str(token),
-                    'access': str(token.access_token),
-                }
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class RegisterAPIView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = RegisterSerializer
 
 class LoginAPIView(APIView):
-    permission_classes = [AllowAny]
-
+    permission_classes = (permissions.AllowAny,)
+    
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -37,7 +28,8 @@ class LoginAPIView(APIView):
             return Response({
                 'user': UserSerializer(user).data,
                 'token': {
-                    'refresh': str(token.access_token),
+                    'refresh': str(token),
+                    'access': str(token.access_token),
                 }
             })
         return Response(
@@ -45,20 +37,22 @@ class LoginAPIView(APIView):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-class UserProfileAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+class ProfileAPIView(generics.RetrieveAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = UserProfileSerializer
 
-    def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+    def get_object(self):
+        return self.request.user
 
-    def put(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ProfileUpdateAPIView(generics.UpdateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = UserUpdateSerializer
 
-    def delete(self, request):
-        request.user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_object(self):
+        return self.request.user
+
+class UserProfileDetailAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer
+    lookup_field = 'nickname'
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)

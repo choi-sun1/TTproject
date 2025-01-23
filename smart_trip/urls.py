@@ -54,18 +54,17 @@ urlpatterns = [
     
     # Frontend routes
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
-    path('web/', include([
-        path('accounts/', include('accounts.urls', namespace='accounts')),
-        path('articles/', include('articles.urls', namespace='articles')),
-        path('itineraries/', include('itineraries.urls', namespace='itineraries')),
-        path('chatbot/', include('chatbot.urls', namespace='chatbot')),
-    ])),
+    path('accounts/', include('accounts.urls', namespace='accounts')),
+    path('articles/', include('articles.urls', namespace='articles')),
+    path('itineraries/', include('itineraries.urls', namespace='itineraries')),
+    path('chatbot/', include('chatbot.urls', namespace='chatbot')),
+    path('stays/', include('stays.urls', namespace='stays')),
     
     # API URLs
     path('api/v1/', include([
         path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
         path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-        path('accounts/', include('accounts.urls', namespace='accounts_api')),
+        path('accounts/', include('accounts.api.urls', namespace='accounts_api')),
         path('articles/', include('articles.urls', namespace='articles_api')),
         path('itineraries/', include('itineraries.urls', namespace='itineraries_api')),
         path('chatbot/', include('chatbot.urls', namespace='chatbot_api')),

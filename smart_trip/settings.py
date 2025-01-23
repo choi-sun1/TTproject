@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'articles.apps.ArticlesConfig',
     'itineraries.apps.ItinerariesConfig',
     'chatbot.apps.ChatbotConfig',
+    'stays.apps.StaysConfig',  # stays 앱 추가
     
     # Third party apps
     'rest_framework',

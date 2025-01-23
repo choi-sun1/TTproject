@@ -134,3 +134,14 @@ class ProvideFeedbackView(generics.CreateAPIView):
         message_id = self.kwargs.get('pk')
         message = get_object_or_404(Message, id=message_id)
         serializer.save(user=self.request.user, message=message)
+
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class ChatbotView(LoginRequiredMixin, TemplateView):
+    template_name = 'chatbot/chat.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['KAKAO_MAPS_API_KEY'] = self.request.COOKIES.get('KAKAO_MAPS_API_KEY', '')
+        return context

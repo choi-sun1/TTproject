@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}숙소 목록 - SmartTrip{% endblock %}
+
+{% block content %}
+<div class="stays-container">
+    <div class="search-section">
+        <form id="search-form">
+            <input type="text" name="location" placeholder="지역명으로 검색">
+            <input type="date" name="check_in" placeholder="체크인">
+            <input type="date" name="check_out" placeholder="체크아웃">
+            <input type="number" name="guests" placeholder="인원 수">
+            <button type="submit" class="btn btn-primary">검색</button>
+        </form>
+    </div>
+
+    <div id="map" class="map-container"></div>
+
+    <div class="stays-list" id="stays-container">
+        {% for stay in stays %}
+        <div class="stay-card">
+            {% if stay.images.exists %}
+            <img src="{{ stay.images.first.image.url }}" alt="{{ stay.name }}">
+            {% endif %}
+            <div class="stay-info">
+                <h3>{{ stay.name }}</h3>
+                <p class="address">{{ stay.address }}</p>
+                <p class="price">₩{{ stay.price_per_night|intcomma }}/박</p>
+                <div class="stay-meta">
+                    <span>최대 {{ stay.capacity }}인</span>
+                    {% if stay.rating %}
+                    <span>평점 {{ stay.rating }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_MAPS_API_KEY }}"></script>
+<script src="{% static 'js/stays.js' %}"></script>
+{% endblock %}
