@@ -1,54 +1,160 @@
 .navbar {
-    background-color: var(--primary-color);
-    padding: 1rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: #1a73e8;  /* Google Blue */
+    box-shadow: var(--shadow-sm);
     position: fixed;
-    width: 100%;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
+    padding: 0.75rem 0;
+    transform: translateY(0);
+    transition: transform 0.3s ease;
 }
 
 .navbar .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
 .brand-logo {
+    color: #ffffff;
     font-size: 1.5rem;
     font-weight: bold;
-    color: white;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.brand-logo img {
+    height: 32px;
+    margin-right: 0.5rem;
 }
 
 .navbar-menu {
     display: flex;
-    gap: 1.5rem;
     align-items: center;
+    gap: 1.5rem;
+    flex-wrap: nowrap;  /* 줄바꿈 방지 */
+    overflow-x: auto;   /* 가로 스크롤 허용 */
+    padding: 0.5rem;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+.navbar-menu::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
 }
 
 .nav-link {
-    color: white;
+    white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    color: rgba(255, 255, 255, 0.9);  /* 밝은 텍스트 색상 */
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    position: relative;
 }
 
 .nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.75rem;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--primary-color);
 }
 
 .user-menu {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    position: relative;
+    margin-left: auto;  /* 오른쪽 정렬 */
 }
 
-.user-profile {
+.dropdown-toggle {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: inherit;
+}
+
+.dropdown-toggle i {
+    font-size: 0.8em;
+    transition: transform 0.2s;
+}
+
+.dropdown:hover .dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    min-width: 200px;
+    padding: 0.5rem;
+    margin-top: 0.75rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown.active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f3f4;
 }
 
 .profile-image {
@@ -56,4 +162,54 @@
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 0.5rem 0;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        position: sticky;
+    }
+
+    .navbar-menu {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    .nav-link {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .nav-link:hover {
+        color: #ffffff;
+    }
+
+    .user-menu {
+        position: static;
+        width: auto;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        width: 200px;
+    }
 }

@@ -14,7 +14,7 @@ class RelatedModel(models.Model):
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError(_('이메일은 필수 입력 항목입니다.'))
+            raise ValueError('이메일은 필수입니다')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -27,23 +27,31 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class User(AbstractUser):
-    username = None  # username 필드 제거
+    username = None  # username 필드 비활성화
     email = models.EmailField(_('이메일'), unique=True)
-    nickname = models.CharField(_('닉네임'), max_length=50, unique=True)
+    nickname = models.CharField(_('닉네임'), max_length=30, unique=True)
     profile_image = models.ImageField(_('프로필 이미지'), upload_to='profiles/', null=True, blank=True)
-    birth_date = models.DateField(_('생년월일'), null=True, blank=True)
-    gender = models.CharField(_('성별'), max_length=1, choices=[('M', '남성'), ('F', '여성')], null=True, blank=True)
     bio = models.TextField(_('자기소개'), max_length=500, blank=True)
+    birth_date = models.DateField(_('생년월일'), null=True, blank=True)
     
-    # 이메일을 유저네임 필드로 사용
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nickname']
+    GENDER_CHOICES = [
+        ('M', '남성'),
+        ('F', '여성'),
+        ('O', '기타'),
+    ]
+    gender = models.CharField(_('성별'), max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
+    
+    created_at = models.DateTimeField(_('가입일'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('수정일'), auto_now=True)
 
     objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['nickname']
 
     class Meta:
         verbose_name = _('사용자')
         verbose_name_plural = _('사용자들')
 
     def __str__(self):
-        return self.nickname or self.username
+        return self.email

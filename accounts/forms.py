@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
 from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from .models import User
 
 User = get_user_model()
@@ -32,13 +33,9 @@ class UserChangeForm(BaseUserChangeForm):
 
 class SignupForm(UserCreationForm):
     email = forms.EmailField(
-        max_length=255,
-        required=True,
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
     nickname = forms.CharField(
-        max_length=30,
-        required=True,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     password1 = forms.CharField(
@@ -47,22 +44,33 @@ class SignupForm(UserCreationForm):
     password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
+    profile_image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = User
-        fields = ('email', 'nickname', 'password1', 'password2')
+        fields = ('email', 'nickname', 'password1', 'password2', 'profile_image')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('이미 사용중인 이메일입니다.')
+            raise ValidationError('이미 사용중인 이메일입니다.')
         return email
 
     def clean_nickname(self):
         nickname = self.cleaned_data.get('nickname')
         if User.objects.filter(nickname=nickname).exists():
-            raise forms.ValidationError('이미 사용중인 닉네임입니다.')
+            raise ValidationError('이미 사용중인 닉네임입니다.')
         return nickname
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = None  # username 필드를 명시적으로 None으로 설정
+        if commit:
+            user.save()
+        return user
 
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
@@ -76,4 +84,18 @@ class CustomSetPasswordForm(SetPasswordForm):
     )
     new_password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+
+class LoginForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': '이메일 주소'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': '비밀번호'
+        })
     )

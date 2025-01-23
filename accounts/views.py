@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import CreateView, View, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from .forms import SignupForm
+from .forms import SignupForm, LoginForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -13,28 +13,43 @@ class SignupView(CreateView):
     model = User
     form_class = SignupForm
     template_name = 'accounts/signup.html'
-    success_url = reverse_lazy('accounts:login')
+    success_url = reverse_lazy('home')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = form.save()
+        login(self.request, user)  # 회원가입 후 자동 로그인
+        messages.success(self.request, '회원가입이 완료되었습니다.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, '입력한 정보를 다시 확인해주세요.')
+        return super().form_invalid(form)
 
 class LoginView(View):
     template_name = 'accounts/login.html'
-    
+    form_class = LoginForm
+
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('home')
-        return render(request, self.template_name)
-    
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
     def post(self, request):
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        user = authenticate(email=email, password=password)
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, email=email, password=password)
+            if user is not None:
+                login(request, user)
+                next_url = request.GET.get('next', 'home')
+                return redirect(next_url)
+            else:
+                form.add_error(None, '이메일 또는 비밀번호가 잘못되었습니다.')
         
-        if user is not None:
-            login(request, user)
-            next_url = request.GET.get('next', 'home')
-            return redirect(next_url)
-        else:
-            messages.error(request, '이메일 또는 비밀번호가 잘못되었습니다.')
-            return render(request, self.template_name)
+        return render(request, self.template_name, {'form': form})
 
 class LogoutView(View):
     def get(self, request):

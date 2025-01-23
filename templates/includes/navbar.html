@@ -6,9 +6,36 @@
         <div class="navbar-menu">
             <a href="{% url 'articles:list' %}" class="nav-link">여행 이야기</a>
             <a href="{% url 'itineraries:list' %}" class="nav-link">여행 일정</a>
+            <a href="{% url 'stays:list' %}" class="nav-link">숙소</a>
             <a href="{% url 'chatbot:chat' %}" class="nav-link">AI 여행 플래너</a>
+            
             {% if user.is_authenticated %}
-                // ...existing code...
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="nav-link user-profile dropdown-toggle">
+                            {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" alt="프로필" class="profile-image">
+                            {% endif %}
+                            <span>{{ user.nickname }}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="{% url 'accounts:profile' %}" class="dropdown-item">
+                                <i class="fas fa-user"></i> 내 프로필
+                            </a>
+                            <a href="{% url 'articles:create' %}" class="dropdown-item">
+                                <i class="fas fa-pen"></i> 글쓰기
+                            </a>
+                            <a href="{% url 'itineraries:create' %}" class="dropdown-item">
+                                <i class="fas fa-calendar-plus"></i> 일정 만들기
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'accounts:logout' %}" class="dropdown-item text-danger">
+                                <i class="fas fa-sign-out-alt"></i> 로그아웃
+                            </a>
+                        </div>
+                    </div>
+                </div>
             {% else %}
                 <a href="{% url 'accounts:login' %}" class="nav-link">로그인</a>
                 <a href="{% url 'accounts:signup' %}" class="nav-link">회원가입</a>

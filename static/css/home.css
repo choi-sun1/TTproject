@@ -5,12 +5,29 @@
 }
 
 .hero-section {
+    background: linear-gradient(135deg, rgba(26,115,232,0.1) 0%, rgba(66,133,244,0.1) 100%);
+    padding: 5rem 0;
+    border-radius: var(--radius-lg);
     text-align: center;
-    padding: 4rem 0;
-    background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), 
-                url('../images/hero-bg.jpg') center/cover;
-    border-radius: 12px;
-    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../images/pattern.svg') center/cover;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.hero-section > * {
+    position: relative;
+    z-index: 1;
 }
 
 .hero-section h1 {
@@ -39,11 +56,18 @@
 }
 
 .feature-card {
-    background: white;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
     padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
 }
 
 .feature-card h3 {
