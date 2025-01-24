@@ -11,6 +11,8 @@ source venv/bin/activate  # macOS/Linux
 ## 패키지 설치
 pip install -r requirements.txt
 
+## 테스트용 데이터 생성
+숙소 : python manage.py create_sample_stays 
 
 # 데이터 베이스 초기화
 ## 마그레이션 생성
@@ -59,6 +61,9 @@ python manage.py runserver
 API 문서: http://localhost:8000/swagger/
 
 ReDoc 문서: http://localhost:8000/redoc/
+
+
+
 
 # 시스템 코드 커버리지 테스트
 ## 정적 파일 수집

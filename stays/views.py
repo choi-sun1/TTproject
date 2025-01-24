@@ -16,6 +16,7 @@ from .services.google_maps import GoogleMapsService
 from rest_framework.views import APIView
 from django.db.models import Q
 from django.conf import settings
+import googlemaps
 
 class StayListView(ListView):
     model = Stay
@@ -130,14 +131,63 @@ class StayViewSet(viewsets.ModelViewSet):
         return Response(nearby_places)
 
 def stay_list(request):
-    """숙소 목록 페이지"""
     stays = Stay.objects.all()
-    return render(request, 'stays/list.html', {'stays': stays})
+    
+    # 검색 필터 적용
+    location = request.GET.get('location')
+    check_in = request.GET.get('check_in')
+    check_out = request.GET.get('check_out')
+    people = request.GET.get('people')
+    
+    if location:
+        # 위치 기반 검색 개선
+        stays = stays.filter(
+            Q(name__icontains=location) |
+            Q(location__icontains=location)
+        ).distinct()
+        
+        # 검색된 위치 중심으로 지도 초기화를 위한 중심점 계산
+        center_stay = stays.first()
+        map_center = {
+            'lat': center_stay.latitude if center_stay else 37.5665,
+            'lng': center_stay.longitude if center_stay else 126.9780,
+        }
+    else:
+        map_center = {'lat': 37.5665, 'lng': 126.9780}  # 서울 중심점
+    
+    # 날짜 및 인원 필터
+    if check_in and check_out:
+        unavailable_stays = Booking.objects.filter(
+            Q(check_in__lte=check_out) & Q(check_out__gte=check_in),
+            status='confirmed'
+        ).values_list('stay_id', flat=True)
+        stays = stays.exclude(id__in=unavailable_stays)
+    
+    if people:
+        stays = stays.filter(capacity__gte=int(people))
+    
+    # map_center JSON 직접 문자열로 변환
+    import json
+    context = {
+        'stays': stays,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+        'map_center_json': json.dumps(map_center),
+        'search_params': {
+            'location': location,
+            'check_in': check_in,
+            'check_out': check_out,
+            'people': people
+        }
+    }
+    return render(request, 'stays/list.html', context)
 
 def stay_detail(request, pk):
-    """숙소 상세 페이지"""
     stay = get_object_or_404(Stay, pk=pk)
-    return render(request, 'stays/detail.html', {'stay': stay})
+    context = {
+        'stay': stay,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY
+    }
+    return render(request, 'stays/detail.html', context)
 
 def stay_map(request):
     """숙소 지도 페이지"""
@@ -285,3 +335,39 @@ class StayListCreateAPIView(generics.ListCreateAPIView):
                 Q(name__icontains=location)
             )
         return queryset
+
+class NearbyPlacesAPIView(APIView):
+    def get(self, request):
+        lat = request.GET.get('lat')
+        lng = request.GET.get('lng')
+        
+        if not lat or not lng:
+            return Response({'error': '위도와 경도가 필요합니다.'}, status=400)
+        
+        try:
+            gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
+            
+            # 주변 장소 검색 (관광지, 식당 등)
+            places_result = gmaps.places_nearby(
+                location=(float(lat), float(lng)),
+                radius=1000,  # 1km 반경
+                type=['tourist_attraction', 'restaurant', 'cafe']
+            )
+            
+            # 결과 처리
+            places = []
+            if places_result.get('results'):
+                for place in places_result['results'][:10]:  # 상위 10개만
+                    places.append({
+                        'name': place.get('name'),
+                        'lat': place['geometry']['location']['lat'],
+                        'lng': place['geometry']['location']['lng'],
+                        'type': place.get('types', [])[0] if place.get('types') else 'place',
+                        'icon': place.get('icon'),
+                        'rating': place.get('rating', 0),
+                    })
+            
+            return Response(places)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)

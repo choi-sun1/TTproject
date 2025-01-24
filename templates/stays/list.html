@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load humanize %}  <!-- humanize 템플릿 태그 로드 -->
+{% load humanize %}
 
 {% block title %}숙소 - SmartTrip{% endblock %}
 
@@ -10,10 +10,6 @@
 
 {% block content %}
 <div class="stays-container">
-    <div class="stays-header">
-        <h1>숙소</h1>
-    </div>
-
     <div class="search-section">
         <form id="search-form" method="get">
             <input type="text" name="location" placeholder="지역 검색..." value="{{ request.GET.location|default:'' }}">
@@ -29,35 +25,54 @@
         </form>
     </div>
 
-    <div class="stays-list">
-        {% for stay in stays %}
-            <div class="stay-card">
-                {% if stay.image %}
-                    <img src="{{ stay.image.url }}" alt="{{ stay.name }}">
-                {% endif %}
-                <div class="stay-info">
-                    <h3>{{ stay.name }}</h3>
-                    <p class="location">{{ stay.location }}</p>
-                    <p class="price">₩{{ stay.price|intcomma }}/박</p>
-                    <div class="stay-meta">
-                        <span class="rating">
-                            <i class="fas fa-star"></i> {{ stay.rating|default:"0.0" }}
-                        </span>
-                        <span class="reviews">({{ stay.reviews.count }})</span>
+    <div class="content-wrapper">
+        <div class="map-container">
+            <div id="map" 
+                 data-center='{{ map_center_json|safe }}'
+                 data-search-location="{{ search_params.location }}">
+            </div>
+        </div>
+        <div class="stays-list-container">
+            <div class="stays-header">
+                <h1>숙소</h1>
+            </div>
+            <div class="stays-grid">
+                {% for stay in stays %}
+                    <div class="stay-card" 
+                         data-lat="{{ stay.latitude }}" 
+                         data-lng="{{ stay.longitude }}" 
+                         data-name="{{ stay.name }}" 
+                         data-id="{{ stay.id }}"
+                         data-price="{{ stay.price }}"
+                         data-rating="{{ stay.rating|default:'0.0' }}">
+                        {% if stay.image %}
+                            <img src="{{ stay.image.url }}" alt="{{ stay.name }}">
+                        {% endif %}
+                        <div class="stay-info">
+                            <h3>{{ stay.name }}</h3>
+                            <p class="location">{{ stay.location }}</p>
+                            <p class="price">₩{{ stay.price|intcomma }}/박</p>
+                            <div class="stay-meta">
+                                <span class="rating">
+                                    <i class="fas fa-star"></i> {{ stay.rating|default:"0.0" }}
+                                </span>
+                                <span class="reviews">({{ stay.reviews.count }})</span>
+                            </div>
+                            <a href="{% url 'stays:detail' stay.id %}" class="btn btn-outline-primary">자세히 보기</a>
+                        </div>
                     </div>
-                    <a href="{% url 'stays:detail' stay.id %}" class="btn btn-outline-primary">자세히 보기</a>
-                </div>
+                {% empty %}
+                    <div class="no-stays">
+                        <p>검색 결과가 없습니다.</p>
+                    </div>
+                {% endfor %}
             </div>
-        {% empty %}
-            <div class="no-stays">
-                <p>검색 결과가 없습니다.</p>
-            </div>
-        {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_MAPS_API_KEY }}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
 <script src="{% static 'js/stays.js' %}"></script>
 {% endblock %}

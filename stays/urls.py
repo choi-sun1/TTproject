@@ -15,4 +15,5 @@ urlpatterns = [
     path('api/stays/', views.StayListCreateAPIView.as_view(), name='api_list_create'),
     path('api/stays/<int:pk>/reviews/', views.ReviewListCreateAPIView.as_view(), name='review_list_create'),
     path('api/bookings/', views.BookingListCreateAPIView.as_view(), name='booking_list_create'),
+    path('api/stays/nearby/', views.NearbyPlacesAPIView.as_view(), name='nearby_places'),
 ]

@@ -8,6 +8,7 @@ class Stay(models.Model):
     description = models.TextField(_('설명'))
     location = models.CharField(_('위치'), max_length=255)
     price = models.IntegerField(_('1박 가격'))
+    price_per_night = models.IntegerField(_('1박 가격'), default=0)  # 추가
     capacity = models.IntegerField(_('수용 인원'), default=2)
     image = models.ImageField(_('대표 이미지'), upload_to='stays/')
     rating = models.FloatField(
@@ -16,6 +17,8 @@ class Stay(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(5)]
     )
     amenities = models.JSONField(_('편의시설'), default=dict)
+    latitude = models.FloatField('위도', null=True, blank=True)
+    longitude = models.FloatField('경도', null=True, blank=True)
     created_at = models.DateTimeField(_('등록일'), auto_now_add=True)
     updated_at = models.DateTimeField(_('수정일'), auto_now=True)
 
