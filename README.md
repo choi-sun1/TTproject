@@ -11,8 +11,62 @@ source venv/bin/activate  # macOS/Linux
 ## 패키지 설치
 pip install -r requirements.txt
 
+## .env 파일 생성
+```
+# API Keys (실제 키는 별도로 안전하게 보관)
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+OPENAI_API_KEY=your-openai-api-key
+
+# Django settings
+SECRET_KEY=django-insecure-your-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Email settings
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=your-email@gmail.com
+
+# Database settings (SQLite)
+DATABASE_URL=sqlite:///db.sqlite3
+```
+
 ## 테스트용 데이터 생성
-숙소 : python manage.py create_sample_stays 
+숙소(admin페이지에서 수정가능) : python manage.py create_jeju_stays
+일정 생성(admin페이지에서 수정가능) : python manage.py create_jeju_places
+리뷰데이터 생성 : python manage.py create_stay_reviews
+제주도 위주로 구성
+
+## wget설치 (환경변수 설정필요요)
+https://eternallybored.org/misc/wget/
+
+## 라이브러리 설치
+### Bootstrap
+wget https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css -O static/vendors/bootstrap/css/bootstrap.min.css
+
+wget https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js -O static/vendors/bootstrap/js/bootstrap.bundle.min.js
+### Font Awesome
+#### Font Awesome Pro 라이선스가 필요하므로 Free 버전 사용
+npm install @fortawesome/fontawesome-free
+
+cp -r node_modules/@fortawesome/fontawesome-free/* static/vendors/fontawesome/
+
+### Swiper
+wget https://unpkg.com/swiper@9.3.0/swiper-bundle.min.css -O static/vendors/swiper/css/swiper-bundle.min.css
+
+wget https://unpkg.com/swiper@9.3.0/swiper-bundle.min.js -O static/vendors/swiper/js/swiper-bundle.min.js
+
+### CKEditor
+wget https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js -O static/vendors/ckeditor/ckeditor.js
+
+### Sortable
+wget https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js -O static/vendors/sortable/Sortable.min.js
+
 
 # 데이터 베이스 초기화
 ## 마그레이션 생성

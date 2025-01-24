@@ -32,6 +32,15 @@
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
     --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
     --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+
+    /* Light theme */
+    --background-color: #ffffff;
+    --surface-bg: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #e0e0e0;
+    --primary-color: #1a73e8;
+    --primary-color-rgb: 26, 115, 232;
 }
 
 [data-theme="dark"] {
@@ -61,6 +70,15 @@
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
     --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
     --shadow-lg: 0 10px 15px rgba(0,0,0,0.3);
+
+    /* Dark theme */
+    --background-color: #121212;
+    --surface-bg: #1e1e1e;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --border-color: #333333;
+    --primary-color: #64b5f6;
+    --primary-color-rgb: 100, 181, 246;
 }
 
 /* 전역 body 스타일 - 모든 페이지에 적용될 기본 스타일 */

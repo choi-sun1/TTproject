@@ -1,0 +1,328 @@
+body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* 기본 레이아웃 */
+.stays-container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* 검색 섹션 */
+.search-section {
+    background: var(--surface-bg);
+    padding: 1.5rem 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+
+#search-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+#search-form input,
+#search-form select {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+/* 컨텐츠 레이아웃 */
+.content-wrapper {
+    display: flex;
+    gap: 2rem;
+    min-height: calc(100vh - 9rem);
+    margin-top: 2rem;
+}
+
+/* 지도 컨테이너 */
+.map-container {
+    position: sticky;
+    top: 7rem;
+    height: calc(100vh - 9rem);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    flex: 1.2;
+    min-width: 500px;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-lg);
+    background-color: var(--surface-bg);
+}
+
+/* 숙소 목록 컨테이너 */
+.stays-list-container {
+    flex: 0.8;
+    overflow-y: auto;
+    padding-left: 1rem;
+    height: calc(100vh - 7rem);
+    min-width: 320px;
+}
+
+.stays-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* 숙소 카드 */
+.stay-card {
+    background: var(--surface-bg);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    isolation: isolate;
+}
+
+.stay-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stay-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.stay-info {
+    padding: 1.5rem;
+    color: var(--text-primary);
+}
+
+.stay-info h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* 가격 태그 */
+.price {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--surface-bg);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+/* 메타 정보 */
+.stay-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.rating i {
+    color: #ffd700;
+}
+
+/* 지도 관련 컴포넌트 */
+.nearby-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--surface-bg);
+    padding: 8px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    z-index: 1;
+}
+
+.nearby-btn {
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.nearby-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.places-list {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    width: 300px;
+    max-height: calc(100% - 80px);
+    overflow-y: auto;
+    background: var(--surface-bg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+}
+
+.map-info-window {
+    padding: 1rem;
+    max-width: 250px;
+    background: var(--surface-bg);
+    border-radius: var(--radius-sm);
+}
+
+/* 마커 정보창 스타일 개선 */
+.map-info-window {
+    padding: 1rem;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.map-info-window h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.map-info-window .price {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 0.5rem 0;
+}
+
+.map-info-window .rating {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.map-info-window .rating i {
+    color: #ffd700;
+}
+
+.map-info-window .map-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.map-info-window .map-link:hover {
+    background: var(--secondary-dark);
+}
+
+/* Street View 관련 스타일 */
+.street-view-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.street-view-btn:hover {
+    background: var(--secondary-dark);
+}
+
+.exit-street-view {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+.exit-street-view:hover {
+    background: var(--background-color);
+}
+
+.info-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+
+    .map-container {
+        height: 400px;
+        position: relative;
+        top: 0;
+        margin-bottom: 2rem;
+        min-width: 100%;
+    }
+
+    .stays-list-container {
+        padding-left: 0;
+        height: auto;
+        width: 100%;
+    }
+
+    #search-form {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    #search-form {
+        grid-template-columns: 1fr;
+    }
+
+    .stays-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stays-container {
+        padding: 1rem;
+    }
+}

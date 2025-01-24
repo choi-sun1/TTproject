@@ -27,21 +27,18 @@
     <link rel="preload" href="{% static 'css/components.css' %}" as="style">
     <link rel="preload" href="{% static 'js/theme.js' %}" as="script">
     
-    <!-- 스타일시트 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <!-- 스타일시트 로딩 순서 수정 -->
+    <!-- 1. 기본 스타일 -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- 2. 컴포넌트 스타일 -->
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <!-- 3. 레이아웃 스타일 -->
     <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <!-- 4. 외부 라이브러리 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- 5. 페이지별 스타일 -->
     {% block extra_css %}{% endblock %}
     
-    <!-- 사용자 테마 설정 스크립트 -->
-    <script>
-        (function() {
-            const theme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', theme);
-            document.body.setAttribute('data-theme', theme);
-        })();
-    </script>
 </head>
 <body>
     <!-- 스킵 네비게이션 -->
@@ -50,7 +47,7 @@
     {% include 'includes/navbar.html' %}
     
     <main id="main-content" class="container">
-        <!-- 알림 메시지 -->
+     !-- 알림 메시지 -->
         {% if messages %}
         <div class="messages" role="alert" aria-live="polite">
             {% for message in messages %}
@@ -67,10 +64,18 @@
     {% include 'includes/footer.html' %}
     
     <!-- JavaScript -->
-    <script src="{% static 'js/theme.js' %}" defer></script>
+    <script src="{% static 'js/theme.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer crossorigin="anonymous"></script>
     <script src="{% static 'js/main.js' %}" defer></script>
     <script src="{% static 'js/navbar.js' %}" defer></script>
+    <!-- Bootstrap -->
+    <script src="{% static 'vendors/bootstrap/js/bootstrap.bundle.min.js' %}" defer></script>
+    <!-- Sortable -->
+    <script src="{% static 'vendors/sortable/Sortable.min.js' %}" defer></script>
+    <!-- CKEditor -->
+    <script src="{% static 'vendors/ckeditor/ckeditor.js' %}" defer></script>
+    <!-- Swiper -->
+    <script src="{% static 'vendors/swiper/js/swiper-bundle.min.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
     
     <!-- 사용자 분석 스크립트 -->

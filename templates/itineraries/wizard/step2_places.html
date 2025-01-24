@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="wizard-container">
+    <div class="wizard-progress">
+        <!-- ...progress steps... -->
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="placeSearch" placeholder="장소 검색...">
+        <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <div class="selected-places">
+        <h3>선택된 장소</h3>
+        <div id="selectedPlacesList" class="draggable-list"></div>
+    </div>
+
+    <button id="nextStep" class="btn btn-primary">다음 단계</button>
+</div>
+
+<script>
+let selectedPlaces = [];
+
+document.getElementById('placeSearch').addEventListener('input', debounce(function(e) {
+    const query = e.target.value;
+    if (query.length > 1) {
+        searchPlaces(query);
+    }
+}, 300));
+
+async function searchPlaces(query) {
+    const response = await fetch(`{% url 'itineraries:place-search-api' %}?query=${query}`);
+    const places = await response.json();
+    displaySearchResults(places);
+}
+
+function displaySearchResults(places) {
+    const resultsDiv = document.getElementById('searchResults');
+    resultsDiv.innerHTML = places.map(place => `
+        <div class="place-item" onclick="addPlace(${JSON.stringify(place)})">
+            <h4>${place.name}</h4>
+            <p>${place.address}</p>
+        </div>
+    `).join('');
+}
+
+function addPlace(place) {
+    if (!selectedPlaces.find(p => p.id === place.id)) {
+        selectedPlaces.push(place);
+        updateSelectedPlacesList();
+    }
+}
+
+function updateSelectedPlacesList() {
+    const listDiv = document.getElementById('selectedPlacesList');
+    listDiv.innerHTML = selectedPlaces.map((place, index) => `
+        <div class="selected-place" draggable="true" data-index="${index}">
+            <h4>${place.name}</h4>
+            <button onclick="removePlace(${index})">&times;</button>
+        </div>
+    `).join('');
+}
+
+document.getElementById('nextStep').addEventListener('click', function() {
+    if (selectedPlaces.length > 0) {
+        fetch('{% url "itineraries:wizard" step=2 %}', {
+            method: 'POST',
+            body: JSON.stringify({ places: selectedPlaces }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.next_step) {
+                window.location.href = `{% url "itineraries:wizard" step=3 %}`;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
