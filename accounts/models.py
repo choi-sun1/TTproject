@@ -1,7 +1,16 @@
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings
+import os
 
+def profile_image_path(instance, filename):
+    # 파일 확장자 추출
+    ext = filename.split('.')[-1]
+    # 새 파일명 생성 (username.확장자)
+    new_filename = f"{instance.username}.{ext}"
+    # 저장 경로 반환
+    return os.path.join('profiles', new_filename)
 
 class RelatedModel(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
@@ -31,22 +40,41 @@ class CustomUserManager(BaseUserManager):
 
 # 유저모델 생성
 class User(AbstractUser):
-    email = models.EmailField('이메일', unique=True)
-    username = models.CharField('유저네임', max_length=50, unique=True) 
-    profile_image = models.ImageField('프로필 이미지', upload_to='profile_images/', blank=True, null=True)
-    nickname = models.CharField('닉네임', max_length=50, blank=True, null=True)
-    birth = models.DateField(verbose_name='생일', blank=True, null=True)
     GENDER_CHOICES = [
-        ('M', 'Male'),
-        ('F', 'Female'),
+        ('M', '남성'),
+        ('F', '여성'),
     ]
-    gender = models.CharField(verbose_name='성별', max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
-    introduce = models.TextField('자기소개', blank=True, null=True)
     
-    USERNAME_FIELD = 'email'    # 로그인 시 email 사용
-    REQUIRED_FIELDS = ['username']  # 필수 입력값       
+    email = models.EmailField('이메일', unique=True)
+    nickname = models.CharField('닉네임', max_length=50, blank=True)
+    profile_image = models.ImageField(
+        '프로필 이미지',
+        upload_to=profile_image_path,
+        null=True,
+        blank=True
+    )
+    birth_date = models.DateField('생년월일', null=True, blank=True)
+    gender = models.CharField('성별', max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
+    bio = models.TextField('자기소개', max_length=500, blank=True)
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='custom_user_set',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='custom_user_set',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+    
+    class Meta:
+        db_table = 'accounts_user'
+        verbose_name = '사용자'
+        verbose_name_plural = '사용자들'
 
     def __str__(self):
-        return self.email
-
-    objects = CustomUserManager()
+        return self.nickname or self.username

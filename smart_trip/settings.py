@@ -2,28 +2,22 @@ from pathlib import Path
 import os
 import json
 import sys
-from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# 키나 중요한 정보들은 따로 secrets.json 파일에 저장
+
+ROOT_DIR = os.path.dirname(BASE_DIR)
 SECRET_BASE_FILE = os.path.join(BASE_DIR, 'secrets.json')
 
-with open(SECRET_BASE_FILE) as f:
-    secrets = json.loads(f.read())
-
-def get_secret(setting, secrets=secrets):
-    try:
-        return secrets[setting]
-    except KeyError:
-        raise ImproperlyConfigured(f"Set the {setting} setting")
-
+secrets = json.loads(open(SECRET_BASE_FILE).read())
+for key, value in secrets.items():
+    setattr(sys.modules[__name__], key, value)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_secret("SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,61 +34,40 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     
     # DRF
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'rest_framework.authtoken',
     
     # my apps
     'accounts',
     'articles',
     'chatbot',
     
-    # allauth
-    'django.contrib.sites',
+    # 소셜로그인
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    # social login
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.kakao',
+    # 'allauth.socialaccount.providers.naver',
 ]
 
-BASE_URL = 'http://127.0.0.1:8000'
-
-SOCIALACCOUNT_PROVIDERS = get_secret("SOCIALACCOUNT_PROVIDERS")
-
+# 사이트 ID
 SITE_ID = 1
 
-# user필드 설정에 맞게 변경
-LOGIN_REDIRECT_URL = '/'  # 로그인 후 리다이렉트 될 경로
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'  # 로그아웃 후 리다이렉트 될 경로
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-# 이메일 인증 여부 (일단 필수가 아닌 선택으로 설정함)
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
-# JWT 설정
-REST_USE_JWT = True
-from datetime import timedelta
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS' : False,
-    'BLACKLIST_AFTER_ROTATION' : True,
-}
-
-# allauth 설정  
-AUTHENTICATION_BACKENDS = (
-    # 장고에서 사용자의 이름을 기준으로 로그인하도록 설정
-    'django.contrib.auth.backends.ModelBackend',
-    # alluth에서 제공하는 로그인 방식을 사용하도록 설정
-    'allauth.account.auth_backends.AuthenticationBackend',
-)
-
+# 소셜로그인 설정
+ACCCOUNT_EMAIL_VERIFICATION = 'none'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -105,7 +78,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    # allauth AccountMiddleware 추가
+    # Allauth Middleware
     'allauth.account.middleware.AccountMiddleware',
 ]
 
@@ -200,8 +173,21 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
+}
+
+# jwt 사용 설정
+REST_USE_JWT = True
+
+# JWT 설정
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    # 'ROTATE_REFRESH_TOKENS': False,
+    # 'BLACKLIST_AFTER_ROTATION': True,
 }
 
 
