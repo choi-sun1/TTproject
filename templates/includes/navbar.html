@@ -1,46 +1,46 @@
 <nav class="navbar">
-    <div class="container">
-        <div class="navbar-brand">
-            <a href="{% url 'home' %}" class="brand-logo">SmartTrip</a>
-        </div>
+    <div class="navbar-container">
+        <a href="{% url 'home' %}" class="navbar-logo">SmartTrip</a>
+        
         <div class="navbar-menu">
-            <a href="{% url 'articles:list' %}" class="nav-link">여행 이야기</a>
-            <a href="{% url 'itineraries:list' %}" class="nav-link">여행 일정</a>
-            <a href="{% url 'stays:list' %}" class="nav-link">숙소</a>
-            <a href="{% url 'chatbot:chat' %}" class="nav-link">AI 여행 플래너</a>
-            
+            <a href="{% url 'articles:list' %}">여행 이야기</a>
+            <a href="{% url 'itineraries:list' %}">여행 일정</a>
+            <a href="{% url 'stays:list' %}">숙소</a>
             {% if user.is_authenticated %}
-                <a href="{% url 'accounts:profile' %}" class="nav-link">내 프로필</a>
-                <a href="{% url 'accounts:logout' %}" class="nav-link">로그아웃</a>
-            {% else %}
-                <a href="{% url 'accounts:login' %}" class="nav-link">로그인</a>
-                <a href="{% url 'accounts:signup' %}" class="nav-link">회원가입</a>
+                <a href="{% url 'chatbot:chat' %}">AI 플래너</a>
             {% endif %}
         </div>
-        <div class="navbar-end">
-            <!-- 테마 토글 버튼 추가 -->
-            <button id="theme-toggle" class="theme-toggle-btn">
-                <i class="fas fa-sun"></i>
-                <i class="fas fa-moon"></i>
-            </button>
-            
+
+        <div class="navbar-auth">
             {% if user.is_authenticated %}
-                <div class="user-menu">
-                    <button class="profile-btn">
+                <div class="profile-dropdown">
+                    <button class="profile-button">
                         {% if user.profile_image %}
-                            <img src="{{ user.profile_image.url }}" alt="프로필">
+                            <div class="profile-image-container">
+                                <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="profile-image">
+                            </div>
                         {% else %}
-                            <i class="fas fa-user"></i>
+                            <i class="fas fa-user-circle"></i>
                         {% endif %}
+                        <span class="username">{{ user.nickname|default:user.username }}</span>
                     </button>
-                    <!-- ...existing dropdown menu code... -->
+                    <div class="dropdown-content">
+                        <a href="{% url 'accounts:profile' %}">프로필</a>
+                        <a href="{% url 'accounts:logout' %}" class="logout-link">로그아웃</a>
+                    </div>
                 </div>
             {% else %}
-                <div class="auth-buttons">
-                    <a href="{% url 'accounts:login' %}" class="btn btn-outline">로그인</a>
-                    <a href="{% url 'accounts:signup' %}" class="btn btn-primary">회원가입</a>
-                </div>
+                <a href="{% url 'accounts:login' %}" class="auth-button login">로그인</a>
+                <a href="{% url 'accounts:signup' %}" class="auth-button signup">회원가입</a>
             {% endif %}
         </div>
+
+        <button class="theme-toggle" aria-label="테마 변경">
+            <i class="fas fa-moon"></i>
+        </button>
+        
+        <button class="mobile-menu-button" aria-label="메뉴">
+            <i class="fas fa-bars"></i>
+        </button>
     </div>
 </nav>

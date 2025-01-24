@@ -93,3 +93,7 @@ def profile_edit(request):
         'user': request.user
     }
     return render(request, 'accounts/profile_edit.html', context)
+
+@login_required
+def settings_view(request):
+    return render(request, 'accounts/settings.html')

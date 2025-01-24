@@ -44,4 +44,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    const mobileMenuButton = document.querySelector('.mobile-menu-button');
+
+    mobileMenuButton.addEventListener('click', function() {
+        navbarMenu.classList.toggle('active');
+    });
+
+    // 화면 크기가 변경될 때 메뉴 상태 초기화
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            navbarMenu.classList.remove('active');
+        }
+    });
 });

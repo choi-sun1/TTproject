@@ -53,12 +53,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Frontend routes
-    path('', TemplateView.as_view(template_name='index.html'), name='home'),
-    path('accounts/', include('accounts.urls', namespace='accounts')),
-    path('articles/', include('articles.urls', namespace='articles')),
-    path('itineraries/', include('itineraries.urls', namespace='itineraries')),
-    path('chatbot/', include('chatbot.urls', namespace='chatbot')),
-    path('stays/', include('stays.urls', namespace='stays')),
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('accounts/', include('accounts.urls')),  # namespace 제거
+    path('articles/', include('articles.urls')),  # namespace 제거
+    path('itineraries/', include('itineraries.urls')),  # namespace 제거
+    path('chatbot/', include('chatbot.urls')),  # namespace 제거
+    path('stays/', include('stays.urls')),  # namespace 제거
     
     # API URLs
     path('api/v1/', include([

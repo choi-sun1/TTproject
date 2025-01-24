@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-app_name = 'articles'
+app_name = 'articles'  # 네임스페이스 설정
 
 urlpatterns = [
     # Frontend URLs

@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('profile/<str:nickname>/', views.UserProfileView.as_view(), name='user_profile'),
+    path('settings/', views.settings_view, name='settings'),
 
     # 비밀번호 재설정 URL 패턴 추가
     path('password_reset/', 

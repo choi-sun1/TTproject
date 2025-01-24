@@ -95,22 +95,6 @@ input::placeholder, textarea::placeholder {
     padding: 0 15px;
 }
 
-/* Navbar Styles */
-.navbar {
-    background-color: var(--primary-color);
-    padding: 1rem 0;
-}
-
-.navbar a {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-}
-
-.navbar-menu a {
-    color: var(--text-primary);
-}
-
 /* Footer Styles */
 .footer {
     background-color: var(--primary-color);
@@ -122,19 +106,6 @@ input::placeholder, textarea::placeholder {
 .card {
     background-color: var(--surface-bg);
     color: var(--text-primary);
-}
-
-.article-card {
-    background-color: var(--surface-bg);
-    color: var(--text-primary);
-}
-
-.article-title {
-    color: var(--text-primary);
-}
-
-.article-excerpt {
-    color: var(--text-secondary);
 }
 
 /* Responsive Design */
