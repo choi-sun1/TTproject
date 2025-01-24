@@ -8,68 +8,43 @@
 {% endblock %}
 
 {% block content %}
-<div class="article-detail">
-    <div class="article-header">
-        <h1>{{ article.title }}</h1>
+<article class="article-detail">
+    <header class="article-header">
+        <h1 class="article-title-large">{{ article.title }}</h1>
         <div class="article-meta">
-            <div class="author-info">
-                {% if article.author.profile_image %}
-                <img src="{{ article.author.profile_image.url }}" alt="{{ article.author.nickname }}" class="author-image">
-                {% endif %}
-                <span class="author-name">{{ article.author.nickname }}</span>
-            </div>
-            <div class="article-info">
-                <span>{{ article.created_at|date:"Y.m.d H:i" }}</span>
-                <span>조회 {{ article.views }}</span>
-                <span>좋아요 <span id="likes-count">{{ article.likes.count }}</span></span>
-            </div>
+            <span>
+                <i class="fas fa-user"></i> {{ article.author.username }}
+            </span>
+            <span>
+                <i class="fas fa-calendar"></i> {{ article.created_at|date:"Y.m.d" }}
+            </span>
+            <span>
+                <i class="fas fa-eye"></i> {{ article.views }}
+            </span>
         </div>
+    </header>
+
+    {% if article.image %}
+    <img src="{{ article.image.url }}" alt="{{ article.title }}" class="article-image-main">
+    {% endif %}
+
+    <div class="article-body">
+        {{ article.content|safe }}
     </div>
 
-    <div class="article-content">
-        {% if article.images.exists %}
-        <div class="article-images">
-            {% for image in article.images.all %}
-            <img src="{{ image.image.url }}" alt="게시글 이미지" class="article-image">
-            {% endfor %}
-        </div>
-        {% endif %}
-        
-        <div class="content-text">
-            {{ article.content_html|safe }}
-        </div>
-
-        {% if article.tags.exists %}
-        <div class="article-tags">
-            {% for tag in article.tags.all %}
-            <span class="tag">{{ tag.name }}</span>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="article-actions">
-        <button id="like-button" class="btn {% if user in article.likes.all %}liked{% endif %}"
-                data-article-id="{{ article.id }}">
-            <i class="fas fa-heart"></i> 좋아요
+    <div class="interaction-buttons">
+        <button class="btn-like" data-article-id="{{ article.id }}">
+            <i class="fas fa-heart"></i>
+            <span class="like-count">{{ article.likes.count }}</span>
         </button>
-        {% if user == article.author %}
-        <a href="{% url 'articles:edit' article.pk %}" class="btn btn-edit">수정</a>
-        <button class="btn btn-delete" id="delete-article">삭제</button>
-        {% endif %}
+        <button class="btn-bookmark" data-article-id="{{ article.id }}">
+            <i class="fas fa-bookmark"></i>
+            <span>저장</span>
+        </button>
     </div>
 
-    <div class="comments-section">
-        <h3>댓글 <span class="comments-count">{{ article.comments.count }}</span></h3>
-        
-        {% if user.is_authenticated %}
-        <form id="comment-form" class="comment-form">
-            {% csrf_token %}
-            <textarea name="content" placeholder="댓글을 작성해주세요" required></textarea>
-            <button type="submit" class="btn btn-primary">댓글 작성</button>
-        </form>
-        {% endif %}
-
+    <section class="comments-section">
+        <h3>댓글 {{ article.comments.count }}개</h3>
         <div class="comments-list">
             {% for comment in article.comments.all %}
             <div class="comment" data-comment-id="{{ comment.id }}">
@@ -92,8 +67,15 @@
             </div>
             {% endfor %}
         </div>
-    </div>
-</div>
+        {% if user.is_authenticated %}
+        <form id="comment-form" class="comment-form">
+            {% csrf_token %}
+            <textarea name="content" placeholder="댓글을 작성해주세요" required></textarea>
+            <button type="submit" class="btn btn-primary">댓글 작성</button>
+        </form>
+        {% endif %}
+    </section>
+</article>
 {% endblock %}
 
 {% block extra_js %}

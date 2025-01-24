@@ -1,15 +1,16 @@
 .articles-container {
-    background-color: var(--background-color);
+    background-color: transparent;  /* 변경: background-color 제거 */
     color: var(--text-primary);
     padding: 2rem 0;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
 body {
     background-color: var(--background-color);
     color: var(--text-primary);
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .articles-header {
@@ -32,23 +33,18 @@ body {
     background-color: var(--surface-bg);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
-    border-radius: 8px;
+    border-radius: 12px;
+    transition: transform 0.2s ease;
     overflow: hidden;
-    transition: transform 0.2s;
 }
 
 .article-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
 }
 
 .article-image {
-    height: 200px;
-    overflow: hidden;
-}
-
-.article-image img {
     width: 100%;
-    height: 100%;
+    height: 200px;
     object-fit: cover;
 }
 
@@ -370,43 +366,14 @@ textarea.form-control {
     border-color: var(--primary-color);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: #1a202c;
-    }
+/* Dark mode support 섹션 제거 */
+/* @media (prefers-color-scheme: dark) { ... } 전체 삭제 */
 
-    .article-form-container {
-        background: #2d3748;
-    }
-
-    .form-title {
-        color: #f7fafc;
-        border-bottom-color: #4a5568;
-    }
-
-    .form-control {
-        background: #2d3748;
-        border-color: #4a5568;
-        color: #f7fafc;
-    }
-
-    .form-text {
-        color: #a0aec0;
-    }
-
-    .form-group label {
-        color: #e2e8f0;
-    }
-
-    .btn-secondary {
-        background: #4a5568;
-        color: #f7fafc;
-    }
-
-    .btn-secondary:hover {
-        background: #2d3748;
-    }
+/* body 스타일 수정 */
+body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* 수정: 폼 요소들의 테마 대응 */
@@ -436,4 +403,130 @@ textarea::placeholder {
 .ck.ck-toolbar {
     background-color: var(--surface-bg);
     border-color: var(--border-color);
+}
+
+.article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.article-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    overflow: hidden;
+}
+
+.article-card:hover {
+    transform: translateY(-5px);
+}
+
+.article-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.article-content {
+    padding: 1.5rem;
+}
+
+.article-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.article-metadata {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.article-preview {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.article-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .article-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 카드 스타일 수정 */
+.article-card {
+    background-color: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.article-title {
+    color: var(--text-primary);
+}
+
+.article-metadata {
+    color: var(--text-secondary);
+}
+
+.article-preview {
+    color: var(--text-secondary);
+}
+
+/* 폼 요소 테마 대응 */
+.search-form input,
+.search-form select {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.search-form input::placeholder {
+    color: var(--placeholder-text);
+}
+
+/* 버튼 테마 대응 */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--btn-text);
+}
+
+.btn-secondary {
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+/* 페이지네이션 테마 대응 */
+.pagination .page-link {
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.pagination .active .page-link {
+    background-color: var(--primary-color);
+    color: var(--btn-text);
+    border-color: var(--primary-color);
 }

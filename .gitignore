@@ -38,7 +38,7 @@ mysql_data/
 *.log
 
 # Logs
-logs/*
+logs/*.log
 !logs/.gitkeep
 
 # SQLite
