@@ -13,11 +13,8 @@ class StaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Stay
-        fields = [
-            'id', 'name', 'description', 'address', 'latitude', 'longitude',
-            'price_per_night', 'capacity', 'stay_type', 'has_wifi', 'has_parking',
-            'has_breakfast', 'images', 'average_rating', 'reviews_count'
-        ]
+        fields = '__all__'
+        # address 필드가 모델에 없다면 제거하거나 모델에 추가해야 함
 
 class BookingSerializer(serializers.ModelSerializer):
     stay_name = serializers.CharField(source='stay.name', read_only=True)

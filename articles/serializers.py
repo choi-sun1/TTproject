@@ -92,3 +92,9 @@ class ArticleSerializer(ArticleDetailSerializer):
     ArticleDetailSerializer를 상속받아 사용
     """
     pass
+
+class ArticleLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = ['id', 'likes']
+        read_only_fields = ['likes']

@@ -498,7 +498,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Article
-from .serializers import ArticleSerializer, ArticleListSerializer, ArticleDetailSerializer
+from .serializers import ArticleSerializer, ArticleListSerializer, ArticleDetailSerializer, ArticleLikeSerializer
 from django.shortcuts import render
 
 # API Views
@@ -522,35 +522,48 @@ class ArticleDetailAPIView(generics.RetrieveAPIView):
 class ArticleUpdateAPIView(generics.UpdateAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
+    
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Article.objects.none()
         return Article.objects.filter(author=self.request.user)
 
 class ArticleDeleteAPIView(generics.DestroyAPIView):
     queryset = Article.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-
+    serializer_class = ArticleSerializer
+    
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Article.objects.none()
         return Article.objects.filter(author=self.request.user)
 
 class ArticleLikeAPIView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = Article.objects.all()
+    serializer_class = ArticleLikeSerializer
+    
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Article.objects.none()
+        return super().get_queryset()
 
-    def post(self, request, pk):
-        article = get_object_or_404(Article, pk=pk)
-        if request.user in article.likes.all():
-            article.likes.remove(request.user)
-            return Response({'liked': False})
-        article.likes.add(request.user)
-        return Response({'liked': True})
+    def post(self, request, *args, **kwargs):
+        article = self.get_object()
+        user = request.user
+        if article.likes.filter(id=user.id).exists():
+            article.likes.remove(user)
+            return Response({'liked': False}, status=status.HTTP_200_OK)
+        else:
+            article.likes.add(user)
+            return Response({'liked': True}, status=status.HTTP_200_OK)
 
 class CommentListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Comment.objects.filter(article_id=self.kwargs['article_id'])
+        if getattr(self, 'swagger_fake_view', False):
+            return self.queryset.none()
+        return self.queryset.filter(article_id=self.kwargs.get('article_pk'))
 
     def perform_create(self, serializer):
         article = get_object_or_404(Article, pk=self.kwargs['article_id'])
