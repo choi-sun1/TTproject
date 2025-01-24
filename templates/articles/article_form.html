@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if article %}게시글 수정{% else %}새 게시글 작성{% endif %} - SmartTrip
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/articles.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="article-form-container">
+    <h2 class="form-title">
+        {% if article %}게시글 수정{% else %}새 게시글 작성{% endif %}
+    </h2>
+
+    <form method="post" enctype="multipart/form-data" class="article-form" novalidate>
+        {% csrf_token %}
+        
+        <!-- 디버깅을 위한 폼 에러 출력 -->
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p>{{ field.label }}: {{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- 오류 메시지 표시 -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="id_title">제목 <span class="required">*</span></label>
+            <input type="text" name="title" id="id_title" class="form-control" 
+                   value="{{ form.title.value|default:'' }}" required>
+            {% if form.title.errors %}
+                <div class="error-message">{{ form.title.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_content">내용 <span class="required">*</span></label>
+            <textarea name="content" id="id_content" class="form-control" rows="10" required>{{ form.content.value|default:'' }}</textarea>
+            {% if form.content.errors %}
+                <div class="error-message">{{ form.content.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_images">이미지 (최대 5개)</label>
+            <input type="file" name="images" id="id_images" 
+                   class="form-control" multiple 
+                   accept="image/jpeg,image/png">
+            <small class="form-text text-muted">
+                JPG, PNG 파일만 허용됩니다. 각 파일의 최대 크기는 5MB입니다.
+            </small>
+            {% if form.images.errors %}
+                <div class="error-message">{{ form.images.errors.0 }}</div>
+            {% endif %}
+            {% if article and article.images.all %}
+                <div class="current-images">
+                    <p>현재 이미지:</p>
+                    {% for image in article.images.all %}
+                        <div class="image-preview">
+                            <img src="{{ image.image.url }}" alt="게시글 이미지">
+                            <button type="button" class="btn btn-danger btn-sm delete-image" 
+                                    data-image-id="{{ image.id }}">삭제</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_tags">태그</label>
+            <input type="text" name="tags" id="id_tags" class="form-control" 
+                   value="{{ form.tags.value|default:'' }}" 
+                   placeholder="태그를 쉼표로 구분하여 입력하세요 (예: 서울,맛집,여행)">
+            {% if form.tags.errors %}
+                <div class="error-message">{{ form.tags.errors.0 }}</div>
+            {% endif %}
+            <small class="form-text text-muted">쉼표로 구분하여 입력 (예: 서울,맛집,여행)</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if article %}수정하기{% else %}작성하기{% endif %}
+            </button>
+            <a href="{% url 'articles:list' %}" class="btn btn-secondary">취소</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.ckeditor.com/ckeditor5/34.0.0/classic/ckeditor.js"></script>
+<script src="{% static 'js/articles.js' %}"></script>
+<script>
+    // 이미지 미리보기 및 유효성 검사
+    document.getElementById('images').addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        
+        // 파일 개수 검사
+        if (files.length > 5) {
+            alert('이미지는 최대 5개까지만 업로드할 수 있습니다.');
+            e.target.value = '';
+            return;
+        }
+
+        // 파일 크기 및 형식 검사
+        const invalidFiles = files.filter(file => {
+            const validTypes = ['image/jpeg', 'image/png'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            return !validTypes.includes(file.type) || file.size > maxSize;
+        });
+
+        if (invalidFiles.length > 0) {
+            alert('잘못된 파일이 포함되어 있습니다.\n- JPG, PNG 파일만 가능\n- 파일당 최대 5MB');
+            e.target.value = '';
+            return;
+        }
+    });
+
+    // 기존 이미지 삭제 기능
+    document.querySelectorAll('.delete-image').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('이미지를 삭제하시겠습니까?')) {
+                const imageId = this.dataset.imageId;
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'delete_images';
+                input.value = imageId;
+                this.closest('form').appendChild(input);
+                this.closest('.image-preview').remove();
+            }
+        });
+    });
+</script>
+{% endblock %}

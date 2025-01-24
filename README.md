@@ -23,6 +23,11 @@ python manage.py makemigrations accounts
 
 python manage.py makemigrations articles
 
+python manage.py makemigrations stays
+
+python manage.py makemigrations chatbot
+
+
 ## 마그레이션 적용
 python manage.py migrate
 
@@ -39,7 +44,7 @@ python manage.py runserver
 
 로그인 페이지 : http://127.0.0.1:8000/accounts/login/
 
-프로필 페이지 : 
+프로필 페이지 : http://127.0.0.1:8000/accounts/profile/
 
 게시판 페이지 : 
 

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}여행 이야기 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/articles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="articles-container">
+    <div class="articles-header">
+        <h1>여행 이야기</h1>
+        {% if user.is_authenticated %}
+            <a href="{% url 'articles:create' %}" class="btn btn-primary">
+                <i class="fas fa-pen"></i> 글쓰기
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="article-filters">
+        <form method="get" class="search-form">
+            <input type="text" name="search" placeholder="검색..." value="{{ request.GET.search|default:'' }}" class="form-control">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="article-list">
+        {% if articles %}
+            {% for article in articles %}
+                <div class="article-card">
+                    {% if article.thumbnail %}
+                        <div class="article-image">
+                            <img src="{{ article.thumbnail.url }}" alt="{{ article.title }}">
+                        </div>
+                    {% endif %}
+                    <div class="article-content">
+                        <h2 class="article-title">
+                            <a href="{% url 'articles:detail' article.id %}">{{ article.title }}</a>
+                        </h2>
+                        <p class="article-excerpt">{{ article.content|truncatewords:30 }}</p>
+                        <div class="article-meta">
+                            <span class="author">
+                                <i class="fas fa-user"></i> {{ article.author.nickname }}
+                            </span>
+                            <span class="date">
+                                <i class="fas fa-calendar"></i> {{ article.created_at|date:"Y.m.d" }}
+                            </span>
+                            <span class="views">
+                                <i class="fas fa-eye"></i> {{ article.view_count }}
+                            </span>
+                            <span class="comments">
+                                <i class="fas fa-comments"></i> {{ article.comments.count }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            {% if is_paginated %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="page-link">&laquo; 처음</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">이전</a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="page-link active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">다음</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">마지막 &raquo;</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="no-articles">
+                <p>아직 작성된 게시글이 없습니다.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'articles:create' %}" class="btn btn-primary">첫 게시글 작성하기</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

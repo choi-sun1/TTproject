@@ -1,7 +1,20 @@
+body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
 .article-detail {
     max-width: 800px;
     margin: 2rem auto;
     padding: 0 1rem;
+    background-color: var(--surface-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    padding: 2rem;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .article-header {
@@ -11,13 +24,14 @@
 .article-header h1 {
     font-size: 2rem;
     margin-bottom: 1rem;
+    color: var(--text-primary);
 }
 
 .article-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .author-info {
@@ -48,6 +62,7 @@
 .content-text {
     line-height: 1.8;
     font-size: 1.1rem;
+    color: var(--text-primary);
 }
 
 .article-tags {
@@ -58,7 +73,7 @@
 }
 
 .tag {
-    background: var(--secondary-color);
+    background: var(--primary-color);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 16px;
@@ -87,7 +102,7 @@
 
 .comments-section {
     margin-top: 3rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-color);
     padding-top: 2rem;
 }
 
@@ -99,14 +114,29 @@
     width: 100%;
     min-height: 100px;
     padding: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border);
     border-radius: 4px;
     margin-bottom: 1rem;
+    background: var(--input-bg);
+    color: var(--text-color);
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.comment-form textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 .comment {
     padding: 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
 }
 
 .comment-header {
@@ -120,6 +150,8 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 .comment-author img {
@@ -138,7 +170,7 @@
 .btn-delete-comment {
     background: none;
     border: none;
-    color: #666;
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 0.9rem;
 }
@@ -146,4 +178,43 @@
 .btn-edit-comment:hover,
 .btn-delete-comment:hover {
     color: var(--primary-color);
+}
+
+.article-content {
+    background-color: var(--surface-bg);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.comment-content {
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.btn-like {
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-like.liked {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.btn-edit,
+.btn-delete {
+    border: 1px solid var(--border-color);
+    background: var(--surface-bg);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.btn-edit:hover,
+.btn-delete:hover {
+    background: var(--background-color);
 }

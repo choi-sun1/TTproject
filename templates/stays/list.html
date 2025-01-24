@@ -1,40 +1,57 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}  <!-- humanize 템플릿 태그 로드 -->
 
-{% block title %}숙소 목록 - SmartTrip{% endblock %}
+{% block title %}숙소 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/stays.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="stays-container">
+    <div class="stays-header">
+        <h1>숙소</h1>
+    </div>
+
     <div class="search-section">
-        <form id="search-form">
-            <input type="text" name="location" placeholder="지역명으로 검색">
-            <input type="date" name="check_in" placeholder="체크인">
-            <input type="date" name="check_out" placeholder="체크아웃">
-            <input type="number" name="guests" placeholder="인원 수">
+        <form id="search-form" method="get">
+            <input type="text" name="location" placeholder="지역 검색..." value="{{ request.GET.location|default:'' }}">
+            <input type="date" name="check_in" value="{{ request.GET.check_in|default:'' }}">
+            <input type="date" name="check_out" value="{{ request.GET.check_out|default:'' }}">
+            <select name="people">
+                <option value="">인원 수</option>
+                {% for i in "12345"|make_list %}
+                    <option value="{{ i }}" {% if request.GET.people == i %}selected{% endif %}>{{ i }}명</option>
+                {% endfor %}
+            </select>
             <button type="submit" class="btn btn-primary">검색</button>
         </form>
     </div>
 
-    <div id="map" class="map-container"></div>
-
-    <div class="stays-list" id="stays-container">
+    <div class="stays-list">
         {% for stay in stays %}
-        <div class="stay-card">
-            {% if stay.images.exists %}
-            <img src="{{ stay.images.first.image.url }}" alt="{{ stay.name }}">
-            {% endif %}
-            <div class="stay-info">
-                <h3>{{ stay.name }}</h3>
-                <p class="address">{{ stay.address }}</p>
-                <p class="price">₩{{ stay.price_per_night|intcomma }}/박</p>
-                <div class="stay-meta">
-                    <span>최대 {{ stay.capacity }}인</span>
-                    {% if stay.rating %}
-                    <span>평점 {{ stay.rating }}</span>
-                    {% endif %}
+            <div class="stay-card">
+                {% if stay.image %}
+                    <img src="{{ stay.image.url }}" alt="{{ stay.name }}">
+                {% endif %}
+                <div class="stay-info">
+                    <h3>{{ stay.name }}</h3>
+                    <p class="location">{{ stay.location }}</p>
+                    <p class="price">₩{{ stay.price|intcomma }}/박</p>
+                    <div class="stay-meta">
+                        <span class="rating">
+                            <i class="fas fa-star"></i> {{ stay.rating|default:"0.0" }}
+                        </span>
+                        <span class="reviews">({{ stay.reviews.count }})</span>
+                    </div>
+                    <a href="{% url 'stays:detail' stay.id %}" class="btn btn-outline-primary">자세히 보기</a>
                 </div>
             </div>
-        </div>
+        {% empty %}
+            <div class="no-stays">
+                <p>검색 결과가 없습니다.</p>
+            </div>
         {% endfor %}
     </div>
 </div>

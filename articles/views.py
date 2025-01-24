@@ -1,6 +1,12 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Article
+from django.contrib import messages  # messages 프레임워크 추가
+from .models import Article, ArticleImage, Tag  # Tag 모델 추가
+from django.db import transaction  # transaction 추가
+from .forms import ArticleForm  # ArticleForm import 추가
+
+logger = logging.getLogger(__name__)
 
 def article_list(request):
     articles = Article.objects.all().order_by('-created_at')
@@ -9,9 +15,38 @@ def article_list(request):
 @login_required
 def article_create(request):
     if request.method == 'POST':
-        # Create article logic
-        return redirect('articles:list')
-    return render(request, 'articles/create.html')
+        form = ArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    # 게시글 생성
+                    article = form.save(commit=False)
+                    article.author = request.user
+                    article.save()
+
+                    # 이미지 처리
+                    images = request.FILES.getlist('images')
+                    for image in images:
+                        ArticleImage.objects.create(article=article, image=image)
+
+                    # 태그 처리
+                    tags = form.cleaned_data.get('tags', '').split(',')
+                    for tag_name in tags:
+                        tag_name = tag_name.strip()
+                        if tag_name:
+                            tag, _ = Tag.objects.get_or_create(name=tag_name.lower())
+                            article.tags.add(tag)
+
+                    messages.success(request, '게시글이 성공적으로 등록되었습니다.')
+                    return redirect('articles:detail', pk=article.id)
+
+            except Exception as e:
+                print(f"Error creating article: {str(e)}")  # 디버깅용 로그
+                messages.error(request, f'게시글 작성 중 오류가 발생했습니다: {str(e)}')
+    else:
+        form = ArticleForm()
+    
+    return render(request, 'articles/article_form.html', {'form': form})
 
 def article_detail(request, pk):
     article = get_object_or_404(Article, pk=pk)
@@ -540,7 +575,10 @@ def article_list(request):
     return render(request, 'articles/article_list.html')
 
 def article_create(request):
-    return render(request, 'articles/article_form.html')
+    return render(request, 'articles/article_form.html', {
+        'article': None,  # 새 게시글 작성임을 나타내기 위해 None 전달
+        'form_data': {}   # 빈 폼 데이터
+    })
 
 def article_detail(request, pk):
     return render(request, 'articles/article_detail.html')

@@ -1,5 +1,6 @@
 .navbar {
-    background-color: #1a73e8;
+    background-color: var(--surface-bg);
+    border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 0.75rem 0;
     position: sticky;
@@ -21,12 +22,17 @@
 }
 
 .brand-logo {
-    color: white;
     font-size: 1.5rem;
     font-weight: bold;
     text-decoration: none;
     display: flex;
     align-items: center;
+    color: var(--primary-color) !important; /* 파란색으로 고정, !important로 우선순위 지정 */
+    transition: opacity 0.2s ease;
+}
+
+.brand-logo:hover {
+    opacity: 0.9;
 }
 
 .brand-logo img {
@@ -54,7 +60,7 @@
     white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
     padding: 0.5rem 1rem;
     border-radius: 4px;
-    color: white;
+    color: var(--text-color);
     text-decoration: none;
     transition: all 0.2s ease;
     font-weight: 500;
@@ -112,7 +118,7 @@
     position: absolute;
     top: 100%;
     right: 0;
-    background: white;
+    background: var(--surface-bg);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     border-radius: 8px;
     min-width: 200px;
@@ -122,6 +128,7 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
 }
 
 .dropdown:hover .dropdown-menu {
@@ -141,7 +148,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
-    color: var(--text-color);
+    color: var(--text-primary);
     text-decoration: none;
     border-radius: 6px;
     transition: all 0.2s ease;
@@ -154,7 +161,7 @@
 }
 
 .dropdown-item:hover {
-    background-color: #f1f3f4;
+    background-color: var(--background-color);
 }
 
 .profile-image {
@@ -214,4 +221,51 @@
         right: 0;
         width: 200px;
     }
+}
+
+/* 테마 토글 버튼 스타일 */
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    margin-right: 15px;
+    color: var(--text-color);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.theme-toggle-btn .fa-sun {
+    display: none;
+}
+
+.theme-toggle-btn .fa-moon {
+    display: inline-block;
+}
+
+[data-theme="dark"] .theme-toggle-btn .fa-sun {
+    display: inline-block;
+}
+
+[data-theme="dark"] .theme-toggle-btn .fa-moon {
+    display: none;
+}
+
+/* 다크 테마 색상 변수 */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --nav-bg: #ffffff;
+    --nav-border: #eaeaea;
+}
+
+[data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --nav-bg: #2d2d2d;
+    --nav-border: #3d3d3d;
 }

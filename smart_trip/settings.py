@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',  # humanize 앱 추가
     
     # Local apps
     'accounts.apps.AccountsConfig',
@@ -72,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'smart_trip.context_processors.theme_settings',  # 테마 설정 추가
             ],
         },
     },
@@ -190,7 +192,7 @@ CACHES = {
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 CORS_ALLOW_CREDENTIALS = True
 
-# 로깅 설정 개선
+# 로깅 설정 수정
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -199,11 +201,16 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
+        'simple': {
+            'format': '[{levelname}] {asctime} {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'simple',
         },
         'file': {
             'class': 'logging.handlers.RotatingFileHandler',
@@ -211,7 +218,6 @@ LOGGING = {
             'maxBytes': 1024 * 1024 * 5,  # 5MB
             'backupCount': 5,
             'formatter': 'verbose',
-            'delay': True,  # 파일이 없을 때 즉시 생성하지 않음
         },
     },
     'loggers': {
@@ -221,6 +227,11 @@ LOGGING = {
             'propagate': True,
         },
         'chatbot': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'articles': {  # articles 앱에 대한 로거 추가
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -279,3 +290,13 @@ GPT_SETTINGS = {
     'frequency_penalty': 0.0,
     'presence_penalty': 0.0
 }
+
+# 테마 관련 설정 추가
+THEME_SETTINGS = {
+    'DARK_MODE_COOKIE_NAME': 'darkMode',
+    'DARK_MODE_COOKIE_AGE': 365 * 24 * 60 * 60,  # 1년
+}
+
+# 파일 업로드 제한 설정 추가
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB

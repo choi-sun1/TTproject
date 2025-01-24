@@ -17,5 +17,30 @@
                 <a href="{% url 'accounts:signup' %}" class="nav-link">회원가입</a>
             {% endif %}
         </div>
+        <div class="navbar-end">
+            <!-- 테마 토글 버튼 추가 -->
+            <button id="theme-toggle" class="theme-toggle-btn">
+                <i class="fas fa-sun"></i>
+                <i class="fas fa-moon"></i>
+            </button>
+            
+            {% if user.is_authenticated %}
+                <div class="user-menu">
+                    <button class="profile-btn">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" alt="프로필">
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
+                    </button>
+                    <!-- ...existing dropdown menu code... -->
+                </div>
+            {% else %}
+                <div class="auth-buttons">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline">로그인</a>
+                    <a href="{% url 'accounts:signup' %}" class="btn btn-primary">회원가입</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </nav>

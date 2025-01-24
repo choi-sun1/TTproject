@@ -1,3 +1,9 @@
+body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
 .home-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -5,7 +11,9 @@
 }
 
 .hero-section {
-    background: linear-gradient(135deg, rgba(26,115,232,0.1) 0%, rgba(66,133,244,0.1) 100%);
+    background: linear-gradient(135deg, 
+        rgba(var(--primary-color-rgb), 0.1) 0%, 
+        rgba(var(--secondary-color-rgb), 0.1) 100%);
     padding: 5rem 0;
     border-radius: var(--radius-lg);
     text-align: center;
@@ -56,10 +64,10 @@
 }
 
 .feature-card {
-    background: var(--surface-color);
+    background: var(--surface-bg);
     border-radius: var(--radius-lg);
     padding: 2rem;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--card-shadow);
     transition: all 0.3s ease;
     border: 1px solid var(--border-color);
 }
@@ -73,6 +81,10 @@
 .feature-card h3 {
     color: var(--primary-color);
     margin-bottom: 1rem;
+}
+
+.feature-card p {
+    color: var(--text-secondary);
 }
 
 @media (max-width: 768px) {

@@ -31,6 +31,14 @@ function showNotification(message, type = 'info') {
     notification.className = `notification ${type}`;
     notification.textContent = message;
     
+    // 다크 모드에 맞는 스타일 적용
+    const theme = document.documentElement.getAttribute('data-theme');
+    if (theme === 'dark') {
+        notification.style.backgroundColor = 'var(--surface-bg)';
+        notification.style.color = 'var(--text-color)';
+        notification.style.border = '1px solid var(--border-color)';
+    }
+    
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
 }

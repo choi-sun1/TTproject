@@ -10,6 +10,9 @@ class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def clean(self):
+        self.name = self.name.strip().lower()  # 태그 정규화
+
     def __str__(self):
         return self.name
 
@@ -42,7 +45,7 @@ class Article(models.Model):
     )
     content_raw = models.TextField(_('원본 내용'), blank=True)
     content_html = models.TextField(_('HTML 내용'), blank=True)
-    tags = models.ManyToManyField(Tag, related_name='articles')
+    tags = models.ManyToManyField(Tag, related_name='articles', blank=True)
 
     def __str__(self):
         return self.title

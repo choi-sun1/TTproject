@@ -1,3 +1,9 @@
+body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
 .stays-container {
     max-width: 1200px;
     margin: 2rem auto;
@@ -5,10 +11,11 @@
 }
 
 .search-section {
-    background: white;
+    background: var(--surface-bg);
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
     margin-bottom: 2rem;
 }
 
@@ -32,10 +39,11 @@
 }
 
 .stay-card {
-    background: white;
+    background: var(--surface-bg);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
     transition: transform 0.2s;
 }
 
@@ -51,4 +59,13 @@
 
 .stay-info {
     padding: 1rem;
+    color: var(--text-color);
+}
+
+.stay-info h3 {
+    color: var(--text-primary);
+}
+
+.stay-info p {
+    color: var(--text-secondary);
 }

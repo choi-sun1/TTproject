@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message bot';
         messageDiv.innerHTML = `
-            <div class="message-content">
+            <div class="message-content" style="background-color: var(--surface-bg); color: var(--text-color);">
                 ${escapeHtml(message)}
             </div>
         `;

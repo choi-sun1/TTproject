@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import ClearableFileInput
 from .models import Article, ArticleImage
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -20,20 +21,32 @@ class MultipleFileField(forms.FileField):
 class ArticleForm(forms.ModelForm):
     title = forms.CharField(
         widget=forms.TextInput(attrs={
-            'class': 'title-input',
-            'placeholder': '제목을 입력하세요'
+            'class': 'form-control',
+            'placeholder': '제목을 입력하세요',
+            'id': 'id_title'
         })
     )
-    content = forms.CharField(required=False)
-    images = MultipleFileField(
+    content = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': '내용을 입력하세요',
+            'rows': '10',
+            'id': 'id_content'
+        })
+    )
+    images = MultipleFileField(  # ClearableFileInput 대신 MultipleFileField 사용
         required=False,
-        help_text='최대 5개의 이미지를 선택할 수 있습니다.'
+        widget=MultipleFileInput(attrs={
+            'class': 'form-control',
+            'id': 'id_images'
+        })
     )
     tags = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
-            'class': 'tag-input',
-            'placeholder': '태그를 입력하세요 (쉼표로 구분)'
+            'class': 'form-control',
+            'placeholder': '태그를 쉼표로 구분하여 입력하세요 (예: 서울,맛집,여행)',
+            'id': 'id_tags'
         })
     )
 
@@ -49,12 +62,27 @@ class ArticleForm(forms.ModelForm):
             raise forms.ValidationError("이미지는 최대 5개까지만 업로드할 수 있습니다.")
         return images
 
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # 제목과 내용이 비어있는지 확인
+        if not cleaned_data.get('title'):
+            raise forms.ValidationError('제목을 입력해주세요.')
+        if not cleaned_data.get('content'):
+            raise forms.ValidationError('내용을 입력해주세요.')
+            
+        return cleaned_data
+
     def save(self, commit=True):
-        article = super().save(commit=False)
-        article.content_raw = self.cleaned_data.get('content', '')
-        article.content_html = self.cleaned_data.get('content', '')
+        instance = super().save(commit=False)
         
         if commit:
-            article.save()
-        
-        return article
+            instance.save()
+            # 태그 저장
+            if self.cleaned_data.get('tags'):
+                tags = [tag.strip() for tag in self.cleaned_data['tags'].split(',') if tag.strip()]
+                for tag_name in tags:
+                    tag, _ = Tag.objects.get_or_create(name=tag_name.lower())
+                    instance.tags.add(tag)
+                    
+        return instance

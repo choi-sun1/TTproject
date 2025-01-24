@@ -1,4 +1,114 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // WYSIWYG 에디터 테마 설정
+    if (document.getElementById('content')) {
+        ClassicEditor
+            .create(document.getElementById('content'), {
+                // 에디터 테마 설정
+                toolbar: {
+                    shouldNotGroupWhenFull: true
+                },
+                ui: {
+                    viewportOffset: { top: 80 }
+                }
+            })
+            .then(editor => {
+                // 다크 모드 변경 감지 및 에디터 스타일 업데이트
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.attributeName === 'data-theme') {
+                            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                            const editorElement = editor.ui.view.element;
+                            if (isDark) {
+                                editorElement.style.backgroundColor = 'var(--surface-bg)';
+                                editorElement.style.color = 'var(--text-color)';
+                            } else {
+                                editorElement.style.backgroundColor = '#ffffff';
+                                editorElement.style.color = '#333333';
+                            }
+                        }
+                    });
+                });
+
+                observer.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['data-theme']
+                });
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }
+
+    // 폼 제출 전 유효성 검사
+    const articleForm = document.querySelector('.article-form');
+    if (articleForm) {
+        articleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('id_title').value.trim();
+            const content = document.getElementById('id_content').value.trim();
+            
+            if (!title) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+            
+            if (!content) {
+                alert('내용을 입력해주세요.');
+                return;
+            }
+
+            // 이미지 유효성 검사
+            const images = document.getElementById('id_images').files;
+            if (images.length > 5) {
+                alert('이미지는 최대 5개까지만 업로드할 수 있습니다.');
+                return;
+            }
+
+            // 모든 검증을 통과하면 폼 제출
+            this.submit();
+        });
+    }
+
+    // 이미지 미리보기
+    const imageInput = document.getElementById('id_images');
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'image-previews';
+    
+    if (imageInput) {
+        imageInput.after(previewContainer);
+        
+        imageInput.addEventListener('change', function(e) {
+            previewContainer.innerHTML = '';
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    const preview = document.createElement('div');
+                    preview.className = 'image-preview';
+                    
+                    reader.onload = function(e) {
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview">
+                            <button type="button" class="remove-image">×</button>
+                        `;
+                        previewContainer.appendChild(preview);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+        
+        // 미리보기 이미지 삭제
+        previewContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-image')) {
+                e.target.closest('.image-preview').remove();
+            }
+        });
+    }
+
     // 좋아요 기능
     document.querySelectorAll('.like-button').forEach(button => {
         button.addEventListener('click', async function(e) {
@@ -101,30 +211,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!container) return;
 
         container.innerHTML = articles.length ? articles.map(article => `
-            <article class="article-card">
+            <article class="article-card" style="background-color: var(--surface-bg); color: var(--text-color);">
                 ${article.image ? `
                     <div class="article-image">
                         <img src="${article.image}" alt="${article.title}">
                     </div>
                 ` : ''}
                 <div class="article-content">
-                    <h3><a href="/articles/${article.id}/">${article.title}</a></h3>
-                    <div class="article-meta">
+                    <h3><a href="/articles/${article.id}/" style="color: var(--text-primary);">${article.title}</a></h3>
+                    <div class="article-meta" style="color: var(--text-secondary);">
                         <span class="author">${article.author_nickname}</span>
                         <span class="date">${new Date(article.created_at).toLocaleDateString()}</span>
                         <span class="views">조회 ${article.views}</span>
                         <span class="likes">좋아요 ${article.likes_count}</span>
                     </div>
-                    <p class="article-excerpt">${article.content.substring(0, 100)}...</p>
+                    <p class="article-excerpt" style="color: var(--text-secondary);">${article.content.substring(0, 100)}...</p>
                     ${article.tags.length ? `
                         <div class="article-tags">
                             ${article.tags.map(tag => `
-                                <span class="tag">${tag.name}</span>
+                                <span class="tag" style="background-color: var(--primary-color);">${tag.name}</span>
                             `).join('')}
                         </div>
                     ` : ''}
                 </div>
             </article>
-        `).join('') : '<div class="no-articles"><p>검색 결과가 없습니다.</p></div>';
+        `).join('') : '<div class="no-articles"><p style="color: var(--text-secondary);">검색 결과가 없습니다.</p></div>';
     }
 });

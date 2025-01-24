@@ -1,3 +1,9 @@
+body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
 .itineraries-container {
     max-width: 1200px;
     margin: 2rem auto;
@@ -21,10 +27,11 @@
 }
 
 .itinerary-card {
-    background: white;
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--card-shadow);
     transition: transform 0.2s;
 }
 
@@ -35,7 +42,7 @@
 .itinerary-header {
     display: flex;
     justify-content: space-between;
-    color: var(--secondary-color);
+    color: var(--primary-color);
     margin-bottom: 0.5rem;
 }
 
@@ -51,7 +58,7 @@
     display: flex;
     gap: 1rem;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--text-secondary);
     margin: 0.5rem 0;
 }
 
@@ -63,10 +70,12 @@
 }
 
 .place {
-    background: var(--background-color);
+    background: var(--bg-color);
+    color: var(--text-color);
     padding: 0.25rem 0.75rem;
     border-radius: 16px;
     font-size: 0.9rem;
+    border: 1px solid var(--border-color);
 }
 
 .more {
@@ -76,8 +85,10 @@
 
 .form-select, .form-input {
     padding: 0.5rem;
-    border: 1px solid #ddd;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 4px;
+    color: var(--text-color);
 }
 
 .form-select {
@@ -87,6 +98,11 @@
 .form-input {
     flex: 1;
     max-width: 300px;
+}
+
+.form-select:focus, .form-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 @media (max-width: 768px) {
