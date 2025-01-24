@@ -46,13 +46,15 @@ python manage.py runserver
 
 프로필 페이지 : http://127.0.0.1:8000/accounts/profile/
 
-게시판 페이지 : 
+게시판 페이지 : http://127.0.0.1:8000/articles/list/
 
-챗봇 페이지 : 
+챗봇 페이지 : http://127.0.0.1:8000/chatbot/chat/
 
-여핼일정 만들기 페이지 :
+여핼일정 만들기 페이지 : http://127.0.0.1:8000/itineraries/
 
+숙소 예약 페이지 : http://127.0.0.1:8000/stays/
 
+어드민 페이지 : http://127.0.0.1:8000/admin/
 
 API 문서: http://localhost:8000/swagger/
 
