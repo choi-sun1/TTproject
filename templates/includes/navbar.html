@@ -24,14 +24,14 @@
             {% if user.is_authenticated %}
                 <div class="profile-dropdown">
                     <button class="profile-button">
-                        {% if user.profile_image %}
+                        {% if user.profile.avatar %}
                             <div class="profile-image-container">
-                                <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="profile-image">
+                                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="profile-image">
                             </div>
                         {% else %}
                             <i class="fas fa-user-circle"></i>
                         {% endif %}
-                        <span class="username">{{ user.nickname|default:user.username }}</span>
+                        <span class="username">{{ user.profile.nickname|default:user.username }}</span>
                     </button>
                     <div class="dropdown-content">
                         <a href="{% url 'accounts:profile' %}">프로필</a>

@@ -1,28 +1,25 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Profile
+from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
-class UserSerializer(serializers.ModelSerializer):
-    """
-    사용자 정보를 직렬화하는 시리얼라이저
-    
-    Attributes:
-        email: 사용자 이메일
-        nickname: 사용자 닉네임
-        profile_image: 프로필 이미지
-        birth_date: 생년월일
-        gender: 성별
-    """
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'nickname')
-
 class ProfileSerializer(serializers.ModelSerializer):
+    """사용자 프로필 정보를 직렬화하는 시리얼라이저"""
     class Meta:
         model = Profile
-        fields = ('bio', 'profile_image', 'location')
+        fields = ['id', 'user', 'nickname', 'bio', 'avatar']
+        read_only_fields = ['id', 'user']
+
+class UserSerializer(serializers.ModelSerializer):
+    """사용자 정보를 직렬화하는 시리얼라이저"""
+    profile = ProfileSerializer(read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'profile')
+        read_only_fields = ['id']
 
 class UserDetailSerializer(UserSerializer):
     profile = ProfileSerializer(read_only=True)
@@ -41,7 +38,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        if data['password'] != data.pop('password2'):
+        if data['password'] != data.pop('password2'):  # 여기 수정: 괄호 하나 제거
             raise serializers.ValidationError("비밀번호가 일치하지 않습니다.")
         validate_password(data['password'])
         return data

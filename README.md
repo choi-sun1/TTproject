@@ -47,38 +47,10 @@ DATABASE_URL=sqlite:///db.sqlite3
 
 제주도 위주로 구성
 
-## wget설치 (환경변수 설정필요요)
-https://eternallybored.org/misc/wget/
-
-## 라이브러리 설치
-### Bootstrap
-wget https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css -O static/vendors/bootstrap/css/bootstrap.min.css
-
-wget https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js -O static/vendors/bootstrap/js/bootstrap.bundle.min.js
-### Font Awesome
-#### Font Awesome Pro 라이선스가 필요하므로 Free 버전 사용
-npm install @fortawesome/fontawesome-free
-
-cp -r node_modules/@fortawesome/fontawesome-free/* static/vendors/fontawesome/
-
-### Swiper
-wget https://unpkg.com/swiper@9.3.0/swiper-bundle.min.css -O static/vendors/swiper/css/swiper-bundle.min.css
-
-wget https://unpkg.com/swiper@9.3.0/swiper-bundle.min.js -O static/vendors/swiper/js/swiper-bundle.min.js
-
-### CKEditor
-wget https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js -O static/vendors/ckeditor/ckeditor.js
-
-### Sortable
-wget https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js -O static/vendors/sortable/Sortable.min.js
-
 
 # 데이터 베이스 초기화
 ## 마그레이션 생성
 python manage.py makemigrations
-
-## 정적 파일수집
-python manage.py collectstatic
 
 ## 특정 앱의 마그레이션 생성
 python manage.py makemigrations itineraries
@@ -91,7 +63,6 @@ python manage.py makemigrations stays
 
 python manage.py makemigrations chatbot
 
-
 ## 마그레이션 적용
 python manage.py migrate
 
@@ -100,6 +71,10 @@ python manage.py createsuperuser
 
 ## 서버 실행
 python manage.py runserver
+
+## 정적 파일수집 ("static" 정적파일 수집 서버 배포시 사용)
+python manage.py collectstatic
+
 
 ## 현재 구현 기능
 메인페이지 : http://127.0.0.1:8000/

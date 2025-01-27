@@ -59,9 +59,13 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    nickname = models.CharField(max_length=50, blank=True)
     bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
-    
+    avatar = models.ImageField(upload_to='profiles/', null=True, blank=True)  # profile_image를 avatar로 수정
+
     def __str__(self):
         return f"{self.user.username}'s profile"
+
+    class Meta:
+        verbose_name = '프로필'
+        verbose_name_plural = '프로필 목록'
