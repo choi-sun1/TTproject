@@ -43,3 +43,5 @@ logs/*.log
 
 # SQLite
 *.sqlite3
+
+config.py
