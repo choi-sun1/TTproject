@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 from django.urls import reverse
+from django.utils import timezone  # 추가
 
 class Itinerary(models.Model):
     author = models.ForeignKey(
@@ -57,29 +58,33 @@ class ItineraryDay(models.Model):
         return f"{self.itinerary.title} - {self.day_number}일차"
 
 class Place(models.Model):
-    name = models.CharField(_('장소명'), max_length=200)
-    address = models.CharField(_('주소'), max_length=255)
-    latitude = models.DecimalField(_('위도'), max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(_('경도'), max_digits=9, decimal_places=6)
-    description = models.TextField(_('설명'), blank=True)
-    place_type = models.CharField(
-        _('장소 유형'),
+    name = models.CharField(_('이름'), max_length=100)
+    address = models.CharField(_('주소'), max_length=200)
+    description = models.TextField(_('설명'))
+    latitude = models.FloatField(_('위도'))
+    longitude = models.FloatField(_('경도'))
+    category = models.CharField(
+        _('카테고리'),
         max_length=50,
         choices=[
-            ('RESTAURANT', '음식점'),
-            ('CAFE', '카페'),
-            ('ATTRACTION', '관광지'),
-            ('SHOPPING', '쇼핑몰'),
-            ('ACCOMMODATION', '숙박'),
-            ('TRANSPORTATION', '교통'),
-            ('OTHER', '기타'),
+            ('관광', '관광'),
+            ('자연', '자연'),
+            ('문화', '문화'),
+            ('쇼핑', '쇼핑'),
+            ('맛집', '맛집'),
         ],
-        default='OTHER'
+        default='관광'  # 기본값 추가
+    )
+    rating = models.FloatField(_('평점'), default=0)
+    created_at = models.DateTimeField(
+        _('생성일'),
+        default=timezone.now  # 기본값 추가
     )
 
     class Meta:
         verbose_name = _('장소')
         verbose_name_plural = _('장소들')
+        ordering = ['-rating']
 
     def __str__(self):
         return self.name

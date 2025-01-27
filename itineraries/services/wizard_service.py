@@ -10,25 +10,56 @@ from ..models import (
 
 class ItineraryWizardService:
     def create_itinerary(self, user, wizard_data):
-        # 기본 일정 생성
-        itinerary = Itinerary.objects.create(
-            user=user,
-            destination=wizard_data['destination'],
-            start_date=datetime.strptime(wizard_data['start_date'], '%Y-%m-%d').date(),
-            end_date=datetime.strptime(wizard_data['end_date'], '%Y-%m-%d').date()
-        )
-
-        # 선택된 장소들 추가
-        for place_data in wizard_data['places']:
-            Place.objects.create(
-                itinerary=itinerary,
-                name=place_data['name'],
-                address=place_data['address'],
-                latitude=place_data['lat'],
-                longitude=place_data['lng']
+        """마법사 데이터로부터 여행 일정 생성"""
+        try:
+            # 기본 일정 생성
+            itinerary = Itinerary.objects.create(
+                author=user,  # user -> author로 수정
+                title=wizard_data.get('title', '새 여행'),
+                start_date=wizard_data.get('start_date'),
+                end_date=wizard_data.get('end_date'),
+                description=f"여행지: {wizard_data.get('destination')}",  # destination을 description에 포함
+                is_public=wizard_data.get('is_public', True)
             )
 
-        return itinerary
+            # 일정표 데이터가 있으면 처리
+            schedule_data = wizard_data.get('schedule', {})
+            for day_number, places in schedule_data.items():
+                day = ItineraryDay.objects.create(
+                    itinerary=itinerary,
+                    day_number=int(day_number)
+                )
+
+                # 각 장소 정보 저장
+                for idx, place in enumerate(places, 1):
+                    ItineraryPlace.objects.create(
+                        day=day,
+                        order=idx,
+                        name=place['name'],
+                        address=place.get('address', ''),
+                        latitude=place.get('latitude'),
+                        longitude=place.get('longitude'),
+                        start_time=place.get('start_time'),
+                        end_time=place.get('end_time'),
+                        note=place.get('note', '')
+                    )
+
+            return itinerary
+
+        except Exception as e:
+            print(f"일정 생성 오류: {str(e)}")  # 디버깅용
+            raise
+
+    @staticmethod
+    def validate_wizard_data(data):
+        """마법사 데이터 유효성 검사"""
+        required_fields = ['title', 'start_date', 'end_date']
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        
+        if missing_fields:
+            raise ValueError(f"필수 필드가 누락되었습니다: {', '.join(missing_fields)}")
+
+        return True
 
 class WizardService:
     @staticmethod

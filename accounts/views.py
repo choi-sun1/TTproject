@@ -75,7 +75,15 @@ class UserProfileView(DetailView):
 
 @login_required
 def profile_view(request):
-    return render(request, 'accounts/profile.html')
+    try:
+        profile = request.user.profile
+    except Profile.DoesNotExist:
+        profile = Profile.objects.create(user=request.user)
+    
+    context = {
+        'profile': profile,
+    }
+    return render(request, 'accounts/profile.html', context)
 
 @login_required
 def profile_edit(request):

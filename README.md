@@ -38,8 +38,13 @@ DATABASE_URL=sqlite:///db.sqlite3
 
 ## 테스트용 데이터 생성
 숙소(admin페이지에서 수정가능) : python manage.py create_jeju_stays
+
 일정 생성(admin페이지에서 수정가능) : python manage.py create_jeju_places
+
+일정생성  python manage.py loaddata itineraries/fixtures/places.json
+
 리뷰데이터 생성 : python manage.py create_stay_reviews
+
 제주도 위주로 구성
 
 ## wget설치 (환경변수 설정필요요)
@@ -71,6 +76,9 @@ wget https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js -O static/ve
 # 데이터 베이스 초기화
 ## 마그레이션 생성
 python manage.py makemigrations
+
+## 정적 파일수집
+python manage.py collectstatic
 
 ## 특정 앱의 마그레이션 생성
 python manage.py makemigrations itineraries

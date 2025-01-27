@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
-from articles.models import Article
-from .models import User
+from .models import Profile
 
 User = get_user_model()
 
@@ -19,8 +17,18 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ('id', 'email', 'nickname', 'profile_image', 'birth_date', 'gender')
-        read_only_fields = ('email',)
+        fields = ('id', 'username', 'email', 'nickname')
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('bio', 'profile_image', 'location')
+
+class UserDetailSerializer(UserSerializer):
+    profile = ProfileSerializer(read_only=True)
+    
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ('profile',)
 
 class RegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
@@ -110,21 +118,3 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['profile_image', 'nickname', 'gender', 'bio']
-
-class UserDetailSerializer(UserProfileSerializer):
-    """사용자 상세 정보 시리얼라이저"""
-    articles = serializers.SerializerMethodField()
-    itineraries = serializers.SerializerMethodField()
-
-    class Meta(UserProfileSerializer.Meta):
-        fields = UserProfileSerializer.Meta.fields + ('articles', 'itineraries')
-
-    def get_articles(self, obj):
-        from articles.serializers import ArticleListSerializer
-        articles = obj.articles.all()[:5]  # 최근 5개
-        return ArticleListSerializer(articles, many=True).data
-
-    def get_itineraries(self, obj):
-        from itineraries.serializers import ItinerarySerializer
-        itineraries = obj.itineraries.all()[:5]  # 최근 5개
-        return ItinerarySerializer(itineraries, many=True).data

@@ -28,26 +28,25 @@
     <link rel="preload" href="{% static 'js/theme.js' %}" as="script">
     
     <!-- 스타일시트 로딩 순서 수정 -->
-    <!-- 1. 기본 스타일 -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <!-- 2. 컴포넌트 스타일 -->
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <!-- 3. 레이아웃 스타일 -->
-    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
-    <!-- 4. 외부 라이브러리 -->
+    <!-- 1. 외부 라이브러리 (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- 5. 페이지별 스타일 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"/>
+
+    <!-- 2. 커스텀 CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+    <!-- 3. 페이지별 스타일 -->
     {% block extra_css %}{% endblock %}
     
 </head>
 <body>
-    <!-- 스킵 네비게이션 -->
-    <a href="#main-content" class="skip-link">본문 바로가기</a>
-    
     {% include 'includes/navbar.html' %}
     
     <main id="main-content" class="container">
-     !-- 알림 메시지 -->
+    <!-- 알림 메시지 -->
         {% if messages %}
         <div class="messages" role="alert" aria-live="polite">
             {% for message in messages %}
@@ -65,17 +64,15 @@
     
     <!-- JavaScript -->
     <script src="{% static 'js/theme.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer crossorigin="anonymous"></script>
     <script src="{% static 'js/main.js' %}" defer></script>
     <script src="{% static 'js/navbar.js' %}" defer></script>
-    <!-- Bootstrap -->
-    <script src="{% static 'vendors/bootstrap/js/bootstrap.bundle.min.js' %}" defer></script>
-    <!-- Sortable -->
-    <script src="{% static 'vendors/sortable/Sortable.min.js' %}" defer></script>
-    <!-- CKEditor -->
-    <script src="{% static 'vendors/ckeditor/ckeditor.js' %}" defer></script>
-    <!-- Swiper -->
-    <script src="{% static 'vendors/swiper/js/swiper-bundle.min.js' %}" defer></script>
+    
+    <!-- CDN Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    
     {% block extra_js %}{% endblock %}
     
     <!-- 사용자 분석 스크립트 -->

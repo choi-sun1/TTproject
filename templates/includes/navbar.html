@@ -1,17 +1,23 @@
+{% load static %}
+
 <nav class="navbar">
-    <div class="navbar-container">
-        <a href="{% url 'home' %}" class="navbar-logo">SmartTrip</a>
+    <div class="container">
+        <a href="{% url 'home' %}" class="brand-logo">
+            <!-- 로고 이미지 대신 텍스트만 사용 -->
+            <span class="logo-text">SmartTrip</span>
+        </a>
         
         <div class="navbar-menu">
-            <a href="{% url 'articles:list' %}">여행 이야기</a>
-            <a href="{% url 'itineraries:list' %}">여행 일정</a>
-            <a href="{% url 'itineraries:wizard' %}" class="highlight-menu">
-                <i class="fas fa-magic"></i> 일정 만들기
+            <a href="{% url 'itineraries:list' %}" class="nav-link">여행 일정 보기</a>
+            <a href="{% url 'chatbot:chat' %}" class="nav-link">AI 채팅</a>
+            <a href="{% url 'itineraries:wizard' %}" class="nav-link highlight-menu">
+                <i class="fas fa-plus"></i> 여행 일정 만들기
             </a>
-            <a href="{% url 'stays:list' %}">숙소</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'chatbot:chat' %}">AI 플래너</a>
-            {% endif %}
+            <!-- 테마 토글 버튼 추가 -->
+            <button id="theme-toggle" class="theme-toggle" aria-label="테마 전환">
+                <i class="fas fa-sun light-icon"></i>
+                <i class="fas fa-moon dark-icon"></i>
+            </button>
         </div>
 
         <div class="navbar-auth">
@@ -37,15 +43,5 @@
                 <a href="{% url 'accounts:signup' %}" class="auth-button signup">회원가입</a>
             {% endif %}
         </div>
-
-        <!-- 테마 토글 버튼 - 하나만 남기고 나머지 제거 -->
-        <button class="theme-toggle-btn" aria-label="테마 전환">
-            <i class="fas fa-sun"></i>
-            <i class="fas fa-moon"></i>
-        </button>
-        
-        <button class="mobile-menu-button" aria-label="메뉴">
-            <i class="fas fa-bars"></i>
-        </button>
     </div>
 </nav>

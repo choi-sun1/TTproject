@@ -38,42 +38,15 @@
                 <p>인공지능이 당신의 취향을 분석하여 최적의 여행 코스를 추천해드립니다.</p>
             </div>
             <div class="feature-card">
-                <i class="fas fa-hotel"></i>
-                <h3>숙소 추천</h3>
-                <p>여행 일정에 맞는 최적의 숙소를 찾아드립니다.</p>
+                <i class="fas fa-magic"></i>
+                <h3>일정 최적화</h3>
+                <p>최적의 동선과 시간 분배로 효율적인 여행을 계획해드립니다.</p>
             </div>
             <div class="feature-card">
-                <i class="fas fa-comments"></i>
-                <h3>여행 커뮤니티</h3>
-                <p>다른 여행자들과 경험을 공유하고 정보를 얻어보세요.</p>
+                <i class="fas fa-robot"></i>
+                <h3>AI 챗봇 상담</h3>
+                <p>24시간 여행 관련 질문에 답변해드립니다.</p>
             </div>
-        </div>
-    </section>
-
-    <!-- Recent Articles Section -->
-    <section class="recent-articles">
-        <h2 class="section-title">최신 여행 이야기</h2>
-        <div class="articles-grid">
-            {% for article in recent_articles %}
-            <article class="article-card">
-                {% if article.image %}
-                <div class="article-image">
-                    <img src="{{ article.image.url }}" alt="{{ article.title }}">
-                </div>
-                {% endif %}
-                <div class="article-content">
-                    <h3><a href="{% url 'articles:detail' article.pk %}">{{ article.title }}</a></h3>
-                    <p class="article-excerpt">{{ article.content|truncatewords:30 }}</p>
-                    <div class="article-meta">
-                        <span class="author">{{ article.author.nickname }}</span>
-                        <span class="date">{{ article.created_at|date:"Y.m.d" }}</span>
-                    </div>
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-        <div class="view-more">
-            <a href="{% url 'articles:list' %}" class="btn btn-outline">더 많은 여행 이야기 보기</a>
         </div>
     </section>
 </main>

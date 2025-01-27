@@ -1,46 +1,112 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}장소 선택 - AI 일정 만들기{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="wizard-container">
     <div class="wizard-progress">
-        <!-- ...progress steps... -->
+        <div class="progress-step complete">1. 기본정보</div>
+        <div class="progress-step active">2. 장소선택</div>
+        <div class="progress-step">3. 일정배치</div>
+        <div class="progress-step">4. 상세설정</div>
     </div>
 
     <div class="search-container">
-        <input type="text" id="placeSearch" placeholder="장소 검색...">
+        <h3>여행지 검색</h3>
+        {% csrf_token %}  <!-- CSRF 토큰 추가 -->
+        <div class="search-box">
+            <input type="text" id="placeSearch" placeholder="방문할 장소를 검색하세요...">
+            <i class="fas fa-search"></i>
+        </div>
         <div id="searchResults" class="search-results"></div>
     </div>
 
     <div class="selected-places">
-        <h3>선택된 장소</h3>
+        <h3>선택된 장소 <span id="placeCount">(0)</span></h3>
         <div id="selectedPlacesList" class="draggable-list"></div>
     </div>
 
-    <button id="nextStep" class="btn btn-primary">다음 단계</button>
+    <div class="form-actions">
+        <a href="{% url 'itineraries:wizard_step1' %}" class="btn btn-outline">이전</a>
+        <button id="nextStep" class="btn-start" disabled>다음 단계 <i class="fas fa-arrow-right"></i></button>
+    </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 let selectedPlaces = [];
 
+function getCsrfToken() {
+    const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    return token;
+}
+
 document.getElementById('placeSearch').addEventListener('input', debounce(function(e) {
-    const query = e.target.value;
+    const query = e.target.value.trim();
     if (query.length > 1) {
         searchPlaces(query);
     }
 }, 300));
 
 async function searchPlaces(query) {
-    const response = await fetch(`{% url 'itineraries:place-search-api' %}?query=${query}`);
-    const places = await response.json();
-    displaySearchResults(places);
+    try {
+        const response = await fetch(
+            `{% url 'itineraries:place-search-api' %}?query=${encodeURIComponent(query)}`,
+            {
+                headers: {
+                    'X-CSRFToken': getCsrfToken(),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }
+        );
+        
+        console.log('Search Response:', response);  // 디버깅용
+        const contentType = response.headers.get('content-type');
+        console.log('Content Type:', contentType);  // 디버깅용
+        
+        const data = await response.json();
+        console.log('Places Data:', data);  // 디버깅용
+        
+        if (response.ok) {
+            if (Array.isArray(data)) {
+                displaySearchResults(data);
+            } else if (data.error) {
+                throw new Error(data.error);
+            } else {
+                throw new Error('잘못된 응답 형식입니다.');
+            }
+        } else {
+            throw new Error(data.error || '검색 중 오류가 발생했습니다.');
+        }
+    } catch (error) {
+        console.error('Search Error:', error);  // 자세한 에러 로깅
+        alert(error.message);
+    }
 }
 
 function displaySearchResults(places) {
     const resultsDiv = document.getElementById('searchResults');
+    if (!Array.isArray(places) || places.length === 0) {
+        resultsDiv.innerHTML = '<p class="no-results">검색 결과가 없습니다.</p>';
+        return;
+    }
+    
     resultsDiv.innerHTML = places.map(place => `
-        <div class="place-item" onclick="addPlace(${JSON.stringify(place)})">
-            <h4>${place.name}</h4>
-            <p>${place.address}</p>
+        <div class="place-item" onclick="addPlace(${JSON.stringify(place).replace(/"/g, '&quot;')})">
+            <div class="place-info">
+                <h4>${place.name}</h4>
+                <p>${place.address}</p>
+            </div>
+            <button class="add-btn" title="장소 추가">
+                <i class="fas fa-plus"></i>
+            </button>
         </div>
     `).join('');
 }
@@ -49,36 +115,73 @@ function addPlace(place) {
     if (!selectedPlaces.find(p => p.id === place.id)) {
         selectedPlaces.push(place);
         updateSelectedPlacesList();
+        document.getElementById('nextStep').disabled = selectedPlaces.length === 0;
     }
+}
+
+function removePlace(index) {
+    selectedPlaces.splice(index, 1);
+    updateSelectedPlacesList();
+    document.getElementById('nextStep').disabled = selectedPlaces.length === 0;
 }
 
 function updateSelectedPlacesList() {
     const listDiv = document.getElementById('selectedPlacesList');
+    document.getElementById('placeCount').textContent = `(${selectedPlaces.length})`;
+    
     listDiv.innerHTML = selectedPlaces.map((place, index) => `
         <div class="selected-place" draggable="true" data-index="${index}">
-            <h4>${place.name}</h4>
-            <button onclick="removePlace(${index})">&times;</button>
+            <div class="place-info">
+                <h4>${place.name}</h4>
+                <p>${place.address}</p>
+            </div>
+            <button onclick="removePlace(${index})" class="remove-btn">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     `).join('');
 }
 
-document.getElementById('nextStep').addEventListener('click', function() {
-    if (selectedPlaces.length > 0) {
-        fetch('{% url "itineraries:wizard" step=2 %}', {
+document.getElementById('nextStep').addEventListener('click', async function() {
+    if (selectedPlaces.length === 0) return;
+
+    try {
+        // 세션 스토리지에 선택된 장소들 저장
+        const wizardData = JSON.parse(sessionStorage.getItem('wizard_data') || '{}');
+        wizardData.places = selectedPlaces;
+        sessionStorage.setItem('wizard_data', JSON.stringify(wizardData));
+
+        const response = await fetch('{% url "itineraries:wizard_step2" %}', {
             method: 'POST',
-            body: JSON.stringify({ places: selectedPlaces }),
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.next_step) {
-                window.location.href = `{% url "itineraries:wizard" step=3 %}`;
-            }
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ places: selectedPlaces })
         });
+
+        if (!response.ok) throw new Error('저장 중 오류가 발생했습니다.');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            window.location.href = '{% url "itineraries:wizard_step3" %}';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert(error.message);
     }
 });
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 </script>
 {% endblock %}

@@ -1,134 +1,53 @@
-/* Global Styles */
+/* Global Variables */
 :root {
-    /* 공통 변수 */
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-
-    /* 라이트 모드 기본 색상 */
     --primary-color: #1a73e8;
     --primary-color-rgb: 26, 115, 232;
-    --secondary-color: #4285f4;
-    --secondary-dark: #1557b0;
-    
-    /* 라이트 모드 구체적인 색상 */
-    --background-color: #f8f9fa;  /* 밝은 배경색 명확히 지정 */
+    --secondary-color: #5f6368;
+    --background-color: #f8f9fa;
     --surface-bg: #ffffff;
-    --card-bg: #ffffff;
-    --input-bg: #ffffff;
     --text-primary: #202124;
     --text-secondary: #5f6368;
-    --border-color: #e1e4e8;
-    --nav-bg: #ffffff;
-    --nav-border: #eaeaea;
-    --input-border: #ced4da;
-    --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    --btn-text: #ffffff;
-    --input-text: #333333;
-    --placeholder-text: #6c757d;
-    --link-color: #1a73e8;
-    
-    /* 라이트 모드 그림자 */
+    --border-color: #dadce0;
+    --danger-color: #dc3545;
+    --success-color: #28a745;
+
+    /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
     --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
     --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
 
-    /* Light theme */
-    --background-color: #ffffff;
-    --surface-bg: #ffffff;
-    --text-primary: #333333;
-    --text-secondary: #666666;
-    --border-color: #e0e0e0;
-    --primary-color: #1a73e8;
-    --primary-color-rgb: 26, 115, 232;
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
 }
 
+/* Dark Theme */
 [data-theme="dark"] {
-    /* 다크 모드 기본 색상 */
     --primary-color: #4285f4;
-    --secondary-color: #5f9ef5;
-    --secondary-dark: #3367d6;
-    
-    /* 다크 모드 구체적인 색상 */
-    --background-color: #0f172a;  /* 어두운 배경색 명확히 지정 */
-    --surface-bg: #1e293b;       /* 카드 배경 */
-    --card-bg: #1e293b;
-    --input-bg: #2d3748;         /* 입력 필드 배경 */
-    --text-primary: #e2e8f0;     /* 주 텍스트 */
-    --text-secondary: #94a3b8;   /* 보조 텍스트 */
-    --border-color: #2d3748;     /* 테두리 */
-    --nav-bg: #1a2234;          /* 네비게이션 배경 */
-    --nav-border: #2d3748;
-    --input-border: #4a5568;
-    --card-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    --btn-text: #ffffff;
-    --input-text: #e2e8f0;
-    --placeholder-text: #94a3b8;
-    --link-color: #60a5fa;
-    
-    /* 다크 모드 그림자 */
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.3);
-
-    /* Dark theme */
+    --primary-color-rgb: 66, 133, 244;
+    --secondary-color: #adc2eb;
     --background-color: #121212;
     --surface-bg: #1e1e1e;
     --text-primary: #e0e0e0;
     --text-secondary: #a0a0a0;
     --border-color: #333333;
-    --primary-color: #64b5f6;
-    --primary-color-rgb: 100, 181, 246;
+    --nav-bg: #1a2234;
+    --card-bg: #2d2d2d;
+    --input-bg: #2d2d2d;
+    --input-text: #e0e0e0;
+    --input-border: #404040;
 }
 
-/* 전역 body 스타일 - 모든 페이지에 적용될 기본 스타일 */
+/* Base Styles */
 body {
-    font-family: 'Google Sans', 'Noto Sans KR', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.6;
     margin: 0;
     padding: 0;
     background-color: var(--background-color);
     color: var(--text-primary);
-    padding-top: 60px;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-input, textarea, select {
-    color: var(--input-text);
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-}
-
-input::placeholder, textarea::placeholder {
-    color: var(--placeholder-text);
-}
-
-.btn {
-    color: var(--btn-text);
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
-}
-
-/* Footer Styles */
-.footer {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 2rem 0;
-    margin-top: 3rem;
-}
-
-.card {
-    background-color: var(--surface-bg);
-    color: var(--text-primary);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        padding: 0 10px;
-    }
-}
+/* ...existing code... */

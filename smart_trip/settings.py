@@ -28,24 +28,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.humanize',  # humanize 앱 추가
     
     # Local apps
     'accounts.apps.AccountsConfig',
-    'articles.apps.ArticlesConfig',
     'itineraries.apps.ItinerariesConfig',
     'chatbot.apps.ChatbotConfig',
-    'stays.apps.StaysConfig',  # stays 앱 추가
     
     # Third party apps
     'rest_framework',
-    'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
     'debug_toolbar',
     'django_extensions',
     'django_filters',
-    'taggit',
 ]
 
 MIDDLEWARE = [
@@ -131,15 +126,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+# 정적 파일 설정
+STATIC_URL = 'static/'  # URL 접두사 (/static/css/style.css 같은 URL에서 사용)
+STATICFILES_DIRS = [    # 개발 중 정적 파일 위치
+    BASE_DIR / 'static'
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # collectstatic 결과물 위치
 
-# 개발 모드에서 캐시 비활성화
+# 개발 모드에서만 디버그 툴바와 소스맵 활성화
 if DEBUG:
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    import mimetypes
+    mimetypes.add_type("application/javascript", ".js", True)
+    mimetypes.add_type("text/css", ".css", True)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -238,11 +236,6 @@ LOGGING = {
             'propagate': True,
         },
         'chatbot': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'articles': {  # articles 앱에 대한 로거 추가
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -351,3 +344,13 @@ LOGGING = {
 
 # Google Maps API Key
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
+
+# 개발 환경에서만 디버그 툴바와 소스맵 활성화
+if DEBUG:
+    INTERNAL_IPS = ['127.0.0.1']
+    
+    # 소스맵 경고 무시 설정
+    import mimetypes
+    mimetypes.add_type("application/javascript", ".js", True)
+    mimetypes.add_type("application/javascript", ".js.map", True)
+    mimetypes.add_type("text/css", ".css.map", True)

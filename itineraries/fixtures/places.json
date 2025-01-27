@@ -1,0 +1,142 @@
+[
+    {
+        "model": "itineraries.place",
+        "pk": 1,
+        "fields": {
+            "name": "성산일출봉",
+            "address": "제주특별자치도 서귀포시 성산읍 성산리",
+            "description": "유네스코 세계자연유산으로 등재된 제주의 대표적인 관광지",
+            "latitude": 33.458333,
+            "longitude": 126.942778,
+            "category": "관광",
+            "rating": 4.5,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 2,
+        "fields": {
+            "name": "만장굴",
+            "address": "제주특별자치도 제주시 구좌읍 만장굴길 182",
+            "description": "세계적으로 희귀한 용암동굴",
+            "latitude": 33.528611,
+            "longitude": 126.771389,
+            "category": "관광",
+            "rating": 4.3,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 3,
+        "fields": {
+            "name": "우도",
+            "address": "제주특별자치도 제주시 우도면",
+            "description": "제주 동부 해안에 위치한 아름다운 섬",
+            "latitude": 33.501111,
+            "longitude": 126.951944,
+            "category": "관광",
+            "rating": 4.6,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 4,
+        "fields": {
+            "name": "천지연폭포",
+            "address": "제주특별자치도 서귀포시 천지동 667-7",
+            "description": "서귀포의 대표적인 폭포",
+            "latitude": 33.244722,
+            "longitude": 126.554444,
+            "category": "자연",
+            "rating": 4.4,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 5,
+        "fields": {
+            "name": "한림공원",
+            "address": "제주특별자치도 제주시 한림읍 한림로 300",
+            "description": "다양한 식물과 정원이 있는 테마공원",
+            "latitude": 33.389722,
+            "longitude": 126.239722,
+            "category": "자연",
+            "rating": 4.2,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 6,
+        "fields": {
+            "name": "제주민속촌",
+            "address": "제주특별자치도 서귀포시 표선면 민속해안로 631-34",
+            "description": "제주의 전통문화를 체험할 수 있는 곳",
+            "latitude": 33.321389,
+            "longitude": 126.842222,
+            "category": "문화",
+            "rating": 4.3,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 7,
+        "fields": {
+            "name": "동문시장",
+            "address": "제주특별자치도 제주시 일도1동 1438",
+            "description": "제주의 대표적인 전통시장",
+            "latitude": 33.511944,
+            "longitude": 126.525833,
+            "category": "쇼핑",
+            "rating": 4.4,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 8,
+        "fields": {
+            "name": "제주올레시장",
+            "address": "제주특별자치도 서귀포시 중정로62번길 18",
+            "description": "서귀포의 대표적인 재래시장",
+            "latitude": 33.248611,
+            "longitude": 126.564444,
+            "category": "쇼핑",
+            "rating": 4.2,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 9,
+        "fields": {
+            "name": "협재해수욕장",
+            "address": "제주특별자치도 제주시 한림읍 협재리",
+            "description": "에메랄드빛 바다가 아름다운 해변",
+            "latitude": 33.394166,
+            "longitude": 126.239722,
+            "category": "자연",
+            "rating": 4.5,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "itineraries.place",
+        "pk": 10,
+        "fields": {
+            "name": "카페거리",
+            "address": "제주특별자치도 제주시 애월읍",
+            "description": "아름다운 ocean view를 볼 수 있는 카페거리",
+            "latitude": 33.462777,
+            "longitude": 126.311111,
+            "category": "맛집",
+            "rating": 4.4,
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    }
+]

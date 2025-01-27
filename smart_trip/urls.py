@@ -22,17 +22,12 @@ schema_view = get_schema_view(
            - 프로필 관리
            - JWT 인증
         
-        2. 게시글
-           - 여행 게시글 CRUD
-           - 댓글
-           - 좋아요
-        
-        3. 여행 일정
+        2. 여행 일정
            - 일정 CRUD
            - 장소 검색 및 추가
            - 일정 공유
         
-        4. AI 챗봇
+        3. AI 챗봇
            - 여행 일정 추천
            - 대화형 인터페이스
         
@@ -54,18 +49,15 @@ urlpatterns = [
     
     # Frontend routes
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('accounts/', include('accounts.urls')),  # namespace 제거
-    path('articles/', include('articles.urls')),  # namespace 제거
-    path('itineraries/', include('itineraries.urls')),  # namespace 제거
-    path('chatbot/', include('chatbot.urls')),  # namespace 제거
-    path('stays/', include('stays.urls')),  # namespace 제거
+    path('accounts/', include('accounts.urls')),
+    path('itineraries/', include('itineraries.urls')),
+    path('chatbot/', include('chatbot.urls')),
     
     # API URLs
     path('api/v1/', include([
         path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
         path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
         path('accounts/', include('accounts.api.urls', namespace='accounts_api')),
-        path('articles/', include('articles.urls', namespace='articles_api')),
         path('itineraries/', include('itineraries.urls', namespace='itineraries_api')),
         path('chatbot/', include('chatbot.urls', namespace='chatbot_api')),
         path('test/', views.test_apps, name='test_apps'),

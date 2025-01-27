@@ -1,7 +1,7 @@
 .navbar {
     background-color: var(--surface-bg);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-sm);
     padding: 0.75rem 0;
     position: sticky;
     top: 0;
@@ -572,6 +572,50 @@
     background-color: var(--primary-color);
     color: white !important;
     transform: translateY(-2px);
+}
+
+/* ...existing code... */
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.logo-text:hover {
+    opacity: 0.9;
+}
+
+/* ...existing code... */
+
+.theme-toggle {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[data-theme="light"] .theme-toggle .dark-icon {
+    display: inline-block;
+}
+
+[data-theme="light"] .theme-toggle .light-icon {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .dark-icon {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .light-icon {
+    display: inline-block;
 }
 
 /* ...existing code... */

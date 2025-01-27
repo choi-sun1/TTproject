@@ -1,33 +1,101 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI 여행 일정 만들기 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+{% endblock %}
 
 {% block content %}
-<div class="wizard-start-container">
-    <h1>새로운 여행 일정 만들기</h1>
-    <p class="wizard-description">
-        단계별로 쉽게 여행 일정을 만들어보세요.
-        AI가 최적의 일정을 추천해드립니다.
-    </p>
-
-    <div class="wizard-features">
-        <div class="feature-item">
-            <i class="fas fa-calendar-alt"></i>
-            <h3>기간 설정</h3>
-            <p>여행 기간을 설정하세요</p>
+<div class="wizard-container">
+    <div class="wizard-header" data-aos="fade-down">
+        <div class="header-content">
+            <h1>AI로 만드는 스마트한 여행</h1>
+            <p class="wizard-description">
+                복잡한 일정 짜기는 이제 그만! AI가 당신의 취향과 여행 스타일을 분석하여<br>
+                최적의 일정을 추천해드립니다.
+            </p>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="number">10,000+</span>
+                    <span class="label">생성된 일정</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number">98%</span>
+                    <span class="label">만족도</span>
+                </div>
+            </div>
         </div>
-        <div class="feature-item">
-            <i class="fas fa-map-marker-alt"></i>
-            <h3>장소 선택</h3>
-            <p>방문할 장소를 선택하세요</p>
-        </div>
-        <div class="feature-item">
-            <i class="fas fa-magic"></i>
-            <h3>자동 최적화</h3>
-            <p>AI가 최적의 동선을 추천해드립니다</p>
+        <div class="header-image">
+            <img src="{% static 'images/wizard-hero.png' %}" alt="AI 여행 플래너">
         </div>
     </div>
 
-    <a href="{% url 'itineraries:wizard-step' step=1 %}" class="btn btn-primary btn-lg">
-        시작하기 <i class="fas fa-arrow-right"></i>
-    </a>
+    <div class="wizard-features">
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            <h3>AI 맞춤 추천</h3>
+            <p>당신의 여행 스타일을 분석하여 최적의 장소를 추천합니다</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+            <i class="fas fa-route"></i>
+            <h3>스마트 동선</h3>
+            <p>교통수단과 이동시간을 고려한 효율적인 동선 설계</p>
+        </div>
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+            <i class="fas fa-clock"></i>
+            <h3>시간 최적화</h3>
+            <p>방문 시간과 체류 시간을 자동으로 최적화</p>
+        </div>
+    </div>
+
+    <div class="sample-trips" data-aos="fade-up">
+        <h2>인기 여행 일정 샘플</h2>
+        <div class="sample-grid">
+            <!-- 샘플 일정 카드들 -->
+        </div>
+    </div>
+
+    <div class="wizard-actions" data-aos="fade-up">
+        <a href="{% url 'itineraries:wizard_step1' %}" class="btn-start">
+            무료로 시작하기 <i class="fas fa-arrow-right"></i>
+        </a>
+        <button class="btn-examples" onclick="showExamples()">
+            샘플 둘러보기 <i class="fas fa-images"></i>
+        </button>
+    </div>
 </div>
+
+<!-- 예시 모달 -->
+<div id="examplesModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>일정 예시</h2>
+        <div class="example-slider">
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <!-- 예시 이미지 슬라이드들 -->
+                    <div class="swiper-slide">
+                        <img src="{% static 'images/examples/itinerary-1.jpg' %}" alt="일정 예시 1">
+                        <h3>도쿄 3박 4일</h3>
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="{% static 'images/examples/itinerary-2.jpg' %}" alt="일정 예시 2">
+                        <h3>제주도 2박 3일</h3>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script src="{% static 'js/wizard/init.js' %}"></script>
 {% endblock %}

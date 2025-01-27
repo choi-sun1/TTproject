@@ -29,6 +29,8 @@ from .services.wizard_service import WizardService
 from django.views import View
 from django.http import JsonResponse
 import json
+from django.views.generic.edit import UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 # 템플릿 뷰
 class ItineraryListView(ListView):
@@ -66,6 +68,29 @@ class ItineraryDetailView(DetailView):
     model = Itinerary
     template_name = 'itineraries/itinerary_detail.html'
     context_object_name = 'itinerary'
+
+class ItineraryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Itinerary
+    template_name = 'itineraries/itinerary_form.html'
+    fields = ['title', 'description', 'is_public']
+    
+    def test_func(self):
+        """작성자만 수정 가능하도록 검사"""
+        itinerary = self.get_object()
+        return self.request.user == itinerary.author
+    
+    def get_success_url(self):
+        return reverse_lazy('itineraries:detail', kwargs={'pk': self.object.pk})
+
+class ItineraryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Itinerary
+    template_name = 'itineraries/itinerary_confirm_delete.html'
+    success_url = reverse_lazy('itineraries:list')
+    
+    def test_func(self):
+        """작성자만 삭제 가능하도록 검사"""
+        itinerary = self.get_object()
+        return self.request.user == itinerary.author
 
 @login_required
 def itinerary_like(request, pk):
@@ -256,7 +281,7 @@ class ItineraryViewSet(viewsets.ModelViewSet):
         optimizer = RouteOptimizer()
         optimized_route = optimizer.optimize_route(places)
         
-        if optimized_route:
+        if (optimized_route):
             # 최적화된 순서로 장소 업데이트
             for index, place in enumerate(optimized_route):
                 ItineraryPlace.objects.filter(
@@ -404,18 +429,32 @@ class ItineraryWizardView(LoginRequiredMixin, View):
 
 class PlaceSearchAPIView(APIView):
     def get(self, request):
-        query = request.GET.get('query', '')
-        location = request.GET.get('location', '')
-        
-        # 장소 검색 로직
-        places = Place.objects.filter(name__icontains=query)
-        
-        if location:
-            lat, lng = location.split(',')
-            # 위치 기반 필터링 로직 추가
+        try:
+            query = request.GET.get('query', '')
+            print(f"검색 쿼리: {query}")  # 디버깅용
             
-        serializer = PlaceSerializer(places, many=True)
-        return Response(serializer.data)
+            if len(query) < 2:
+                return JsonResponse([], safe=False)
+            
+            # 수정: 괄호 오류 수정
+            places = Place.objects.filter(
+                Q(name__icontains=query) |
+                Q(address__icontains=query) |
+                Q(description__icontains=query)  # 괄호 오류 수정
+            )
+            
+            print(f"검색된 장소 수: {places.count()}")  # 디버깅용
+            
+            # 시리얼라이저 사용
+            serializer = PlaceSerializer(places, many=True)
+            return JsonResponse(serializer.data, safe=False)
+            
+        except Exception as e:
+            print(f"검색 오류: {str(e)}")  # 디버깅용
+            return JsonResponse(
+                {'error': str(e)}, 
+                status=500
+            )
 
 class WizardSaveView(APIView):
     permission_classes = [IsAuthenticated]
@@ -487,69 +526,173 @@ class WizardOptimizeView(APIView):
 
     def post(self, request):
         try:
-            schedule = request.session.get('schedule', {})
             day_number = request.data.get('day_number')
+            places = request.data.get('places', [])
             
-            if not schedule or not day_number:
-                raise ValueError("최적화할 일정 데이터가 없습니다.")
+            if not places or len(places) < 2:
+                return Response({
+                    'success': False,
+                    'error': '최적화할 장소가 충분하지 않습니다.'
+                }, status=400)
             
-            places = schedule[str(day_number)]
+            # 좌표 데이터 검증
+            invalid_places = [p for p in places if 'latitude' not in p or 'longitude' not in p]
+            if invalid_places:
+                return Response({
+                    'success': False,
+                    'error': '일부 장소의 위치 정보가 누락되었습니다.'
+                }, status=400)
+            
             optimizer = RouteOptimizer()
             optimized_places = optimizer.optimize_route(places)
             
-            schedule[str(day_number)] = optimized_places
-            request.session['schedule'] = schedule
+            print(f"최적화 결과: {optimized_places}")  # 디버깅용
             
             return Response({
                 'success': True,
                 'optimized_places': optimized_places
             })
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            print(f"최적화 오류: {str(e)}")  # 디버깅용
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=400)
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .services.wizard_service import ItineraryWizardService
+from django.views.decorators.http import require_http_methods
 
 @login_required
 def wizard_start(request):
     return render(request, 'itineraries/wizard/start.html')
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def wizard_step1(request):
     if request.method == 'POST':
-        # 기본 정보 저장
-        request.session['wizard_data'] = {
-            'destination': request.POST.get('destination'),
-            'start_date': request.POST.get('start_date'),
-            'end_date': request.POST.get('end_date')
-        }
-        return redirect('itineraries:wizard_step2')
+        try:
+            data = json.loads(request.body)
+            
+            # 필수 필드 검증
+            required_fields = ['title', 'destination', 'start_date', 'end_date']
+            for field in required_fields:
+                if not data.get(field):
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'{field} 필드는 필수입니다.'
+                    }, status=400)
+            
+            # 세션에 데이터 저장
+            request.session['wizard_data'] = {
+                'title': data['title'],
+                'destination': data['destination'],
+                'start_date': data['start_date'],
+                'end_date': data['end_date'],
+                'styles': data.get('styles', [])
+            }
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': '기본 정보가 저장되었습니다.'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': '잘못된 데이터 형식입니다.'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+
+    # GET 요청 처리
     return render(request, 'itineraries/wizard/step1_basic.html')
 
 @login_required
 def wizard_step2(request):
     if request.method == 'POST':
-        # 장소 선택 정보 저장
-        request.session['wizard_data']['places'] = request.POST.getlist('places')
-        return redirect('itineraries:wizard_step3')
+        try:
+            data = json.loads(request.body)
+            places = data.get('places', [])
+            
+            # 세션에 데이터 저장
+            wizard_data = request.session.get('wizard_data', {})
+            wizard_data['places'] = places
+            request.session['wizard_data'] = wizard_data
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': '장소가 저장되었습니다.'
+            })
+        except Exception as e:
+            print(f"저장 오류: {str(e)}")  # 디버깅용
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+    
     return render(request, 'itineraries/wizard/step2_places.html')
 
 @login_required
 def wizard_step3(request):
     if request.method == 'POST':
-        # 일정 시간 배치 정보 저장
-        request.session['wizard_data']['schedule'] = request.POST.get('schedule')
-        return redirect('itineraries:wizard_step4')
+        try:
+            data = json.loads(request.body)
+            schedule = data.get('schedule', {})
+            
+            # 세션에 저장
+            request.session['wizard_data']['schedule'] = schedule
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': '일정이 저장되었습니다.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+            
     return render(request, 'itineraries/wizard/step3_schedule.html')
 
 @login_required
 def wizard_step4(request):
     if request.method == 'POST':
-        # 최종 일정 생성
-        wizard_service = ItineraryWizardService()
-        wizard_data = request.session.get('wizard_data', {})
-        itinerary = wizard_service.create_itinerary(request.user, wizard_data)
-        del request.session['wizard_data']
-        return redirect('itineraries:detail', pk=itinerary.pk)
-    return render(request, 'itineraries/wizard/step4_details.html')
+        try:
+            data = json.loads(request.body)
+            
+            # wizard_data 가져오기 및 업데이트
+            wizard_data = request.session.get('wizard_data', {})
+            wizard_data.update({
+                'is_public': data.get('is_public', True),
+                'budgets': data.get('budgets', {}),
+                'checklist': data.get('checklist', [])
+            })
+            
+            # 일정 생성
+            wizard_service = ItineraryWizardService()
+            itinerary = wizard_service.create_itinerary(request.user, wizard_data)
+            
+            # 세션 데이터 삭제
+            if 'wizard_data' in request.session:
+                del request.session['wizard_data']
+            
+            return JsonResponse({
+                'success': True,
+                'redirect_url': reverse('itineraries:detail', kwargs={'pk': itinerary.pk})
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    
+    context = {
+        'budget_categories': ['교통', '숙박', '식비', '관광', '쇼핑', '기타']
+    }
+    return render(request, 'itineraries/wizard/step4_details.html', context)

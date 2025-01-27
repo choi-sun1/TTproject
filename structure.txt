@@ -33,27 +33,6 @@ SmartTrip/
 │   ├── exceptions.py         # 커스텀 예외 처리
 │   ├── constants.py          # 상수 정의
 │   └── migrations/           # 데이터베이스 마이그레이션
-├── articles/                 # 게시글 관리 앱
-│   ├── __init__.py          # 빈 파일
-│   ├── admin.py             # Article, Comment, Tag 등 어드민 설정
-│   ├── apps.py              # 앱 설정
-│   ├── forms.py             # ArticleForm, MultipleFileField 등 폼 정의
-│   ├── models.py            # Article, Comment, Tag, ArticleImage 등 모델
-│   ├── serializers.py       # ArticleSerializer, CommentSerializer 등
-│   ├── urls.py              # URL 패턴 (API + 템플릿 뷰)
-│   ├── views.py             # 뷰 로직 (API + 템플릿 뷰)
-│   ├── validators.py        # 게시글 관련 유효성 검사기
-│   ├── signals.py           # 게시글 관련 시그널 핸들러
-│   ├── utils.py            # 유틸리티 함수 (이미지 처리 등)
-│   ├── constants.py        # 상수 정의
-│   ├── exceptions.py       # 커스텀 예외 클래스
-│   ├── filters.py          # 게시글 필터링 로직
-│   ├── permissions.py      # 커스텀 권한 클래스
-│   ├── api/                # API 관련 모듈
-│   │   ├── __init__.py    # 빈 파일
-│   │   ├── urls.py        # API 라우팅 설정
-│   │   └── views.py       # ArticleListCreateAPIView, CommentListCreateAPIView 등
-│   └── migrations/         # 데이터베이스 마이그레이션
 ├── itineraries/             # 여행 일정 관리 앱
 │   ├── __init__.py         # 빈 파일
 │   ├── admin.py            # 일정, 장소, 댓글 등 어드민 설정
@@ -76,23 +55,6 @@ SmartTrip/
 │   │   ├── ai_recommendation.py  # GPT 기반 일정 추천
 │   │   └── wizard_service.py     # 일정 생성 마법사 로직
 │   └── migrations/         # 데이터베이스 마이그레이션
-├── stays/                   # 숙박 시설 관리 앱
-│   ├── __init__.py         # 빈 파일
-│   ├── admin.py            # Stay, StayImage, Booking, Review 어드민 설정
-│   ├── apps.py             # 앱 설정
-│   ├── models.py           # Stay, Review, Booking, StayImage 모델
-│   ├── serializers.py      # StaySerializer, BookingSerializer, ReviewSerializer 등
-│   ├── urls.py             # URL 패턴 (웹 + API)
-│   ├── views.py            # StayListView, BookingView 등 뷰 로직
-│   ├── utils.py            # Google Places API 호텔 데이터 가져오기
-│   ├── api/                # API 관련 모듈
-│   │   ├── __init__.py    # 빈 파일
-│   │   ├── urls.py        # API URL 패턴
-│   │   └── views.py       # StayViewSet, BookingAPIView 등
-│   ├── services/          # 서비스 계층
-│   │   ├── __init__.py   # 빈 파일
-│   │   └── google_maps.py # Google Maps 위치 기반 서비스
-│   └── migrations/        # 데이터베이스 마이그레이션
 ├── chatbot/                # 챗봇 기능 앱
 │   ├── __init__.py
 │   ├── admin.py
@@ -122,11 +84,6 @@ SmartTrip/
 │   │   ├── profile_edit.html      # 프로필 수정
 │   │   ├── password_reset.html    # 비밀번호 재설정 요청
 │   │   └── password_reset_email.html  # 비밀번호 재설정 이메일
-│   ├── articles/         # 게시글 관련 템플릿
-│   │   ├── list.html              # 게시글 목록 (검색, 필터링 기능)
-│   │   ├── detail.html            # 게시글 상세 보기
-│   │   ├── article_list.html      # 게시글 목록 (대체 버전)
-│   │   └── article_form.html      # 게시글 작성/수정 폼
 │   ├── itineraries/      # 여행 일정 관련 템플릿
 │   │   ├── list.html     # 일정 목록
 │   │   ├── detail.html   # 일정 상세
@@ -139,9 +96,6 @@ SmartTrip/
 │   │       ├── step2_places.html   # 방문 장소 선택
 │   │       ├── step3_schedule.html # 일정 시간 배치
 │   │       └── step4_details.html  # 상세 정보 설정
-│   ├── stays/           # 숙박 시설 관련 템플릿
-│   │   ├── list.html    # 숙소 목록 페이지
-│   │   └── detail.html  # 숙소 상세 페이지
 │   └── chatbot/          # 챗봇 관련 템플릿
 │       └── chat.html     # 챗봇 인터페이스
 ├── static/               # 정적 파일 저장소
@@ -150,54 +104,34 @@ SmartTrip/
 │   │   ├── components.css       # 공통 컴포넌트 스타일 (알림, 버튼, 카드 등)
 │   │   ├── navbar.css           # 네비게이션 바 스타일 (반응형, 테마)
 │   │   ├── auth.css            # 인증 관련 스타일 (로그인, 회원가입, 프로필)
-│   │   ├── articles.css        # 게시글 목록 및 CRUD 스타일
-│   │   ├── article-detail.css  # 게시글 상세 페이지 스타일
 │   │   ├── profiles.css        # 사용자 프로필 관련 스타일
 │   │   ├── home.css           # 메인 페이지 스타일
 │   │   ├── itineraries.css    # 여행 일정 목록 스타일
 │   │   ├── itinerary-detail.css # 일정 상세 페이지 스타일
 │   │   ├── wizard.css         # 일정 생성 마법사 공통 스타일
 │   │   ├── wizard-steps.css   # 일정 마법사 단계별 스타일
-│   │   ├── stays.css          # 숙소 목록 스타일
-│   │   ├── stay-detail.css    # 숙소 상세 페이지 스타일
 │   │   └── chatbot.css        # 챗봇 인터페이스 스타일
 │   ├── js/              # JavaScript 파일들
 │   │   ├── main.js             # 공통 유틸리티 함수 (API 요청, 알림, 이미지 미리보기)
 │   │   ├── theme.js            # 테마 관리 (다크모드)
 │   │   ├── navbar.js           # 네비게이션 바 기능 (메뉴, 드롭다운, 스크롤)
-│   │   ├── articles.js         # 게시글 목록 및 CRUD 기능
-│   │   ├── article-detail.js   # 게시글 상세 보기 기능
 │   │   ├── itineraries.js      # 여행 일정 목록 및 필터링
 │   │   ├── itinerary-detail.js # 일정 상세 페이지 기능
 │   │   ├── itinerary-form.js   # 일정 생성/수정 폼 기능
 │   │   ├── place-search.js     # 장소 검색 및 선택 컴포넌트
 │   │   ├── schedule-builder.js  # 일정 시간표 구성 기능
 │   │   ├── route-optimizer.js  # 최적 경로 계산 (TSP 알고리즘)
-│   │   ├── stays.js           # 숙소 목록 및 지도 기능
-│   │   ├── stay-detail.js     # 숙소 상세 및 주변 정보
 │   │   ├── chatbot.js         # 챗봇 인터페이스 및 대화 기능
 │   │   └── wizard/            # 일정 마법사 관련 스크립트
 │   │       ├── init.js        # 마법사 초기화 및 공통 기능
 │   │       ├── places.js      # 장소 검색/선택 단계
 │   │       ├── schedule.js    # 일정 시간 배치 단계
 │   │       └── details.js     # 상세 정보 입력 단계
-│   ├── images/          # 이미지 파일들
-│   │   ├── logo/              # 로고 이미지
-│   │   ├── icons/             # 아이콘 세트
-│   │   ├── defaults/          # 기본 이미지 (프로필 등)
-│   │   └── backgrounds/       # 배경 이미지
-│   └── vendors/         # 외부 라이브러리
-│       ├── bootstrap/          # Bootstrap v5.3.0
-│       │   ├── css/
-│       │   └── js/
-│       ├── fontawesome/        # Font Awesome Pro v6.4.0
-│       │   ├── css/
-│       │   └── webfonts/
-│       ├── swiper/            # Swiper v9.3.0 (이미지 슬라이더)
-│       │   ├── css/
-│       │   └── js/
-│       ├── ckeditor/          # CKEditor v5.0.0 (텍스트 에디터)
-│       └── sortable/          # Sortable.js v1.15.0 (드래그 앤 드롭)
+│   └── images/          # 이미지 파일들
+│       ├── logo/              # 로고 이미지
+│       ├── icons/             # 아이콘 세트
+│       ├── defaults/          # 기본 이미지 (프로필 등)
+│       └── backgrounds/       # 배경 이미지
 ├── media/               # 사용자 업로드 파일
 │   ├── article_images/  # 게시글 이미지
 │   ├── profiles/       # 프로필 이미지
