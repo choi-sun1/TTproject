@@ -1,6 +1,7 @@
 from pathlib import Path
 import environ
 import os
+from . import config
 
 # environ 설정
 env = environ.Env(
@@ -14,7 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # 환경 변수에서 설정 가져오기
-SECRET_KEY = env('SECRET_KEY')
+OPENAI_API_KEY = config.OPENAI_API_KEY
+GOOGLE_MAPS_API_KEY = config.GOOGLE_MAPS_API_KEY
+SECRET_KEY = config.DJANGO_SECRET_KEY
 DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
