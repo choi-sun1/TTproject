@@ -98,7 +98,7 @@ class ItineraryDetailView(DetailView):
         # get_object()를 통해 객체를 가져옴
         self.object = self.get_object()
         # 조회수 증가
-        self.object.views = self.object.views + 1
+        self.object.views += 1
         self.object.save()
         
         context = self.get_context_data(object=self.object)
@@ -207,7 +207,7 @@ class ItineraryDetailAPIView(APIView):
             )
         
         # 조회수 증가
-        self.object.views = self.object.views + 1
+        self.object.views += 1
         self.object.save()
         
         serializer = ItinerarySerializer(itinerary)
