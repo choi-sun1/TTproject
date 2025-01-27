@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}샘플 여행 일정 - SmartTrip{% endblock %}
+
+{% block content %}
+<div class="sample-itineraries">
+    <div class="samples-header">
+        <h1>추천 여행 일정</h1>
+        <p class="subtitle">SmartTrip이 추천하는 인기 여행 코스를 둘러보세요!</p>
+    </div>
+
+    <div class="sample-categories">
+        <button class="category-btn active" data-category="all">전체</button>
+        <button class="category-btn" data-category="seoul">서울</button>
+        <button class="category-btn" data-category="jeju">제주도</button>
+        <button class="category-btn" data-category="busan">부산</button>
+    </div>
+
+    <div class="samples-grid">
+        {% for sample in samples %}
+        <div class="sample-card" data-region="{{ sample.region }}">
+            <div class="sample-image">
+                {% if sample.thumbnail %}
+                    <img src="{{ sample.thumbnail.url }}" alt="{{ sample.title }}">
+                {% else %}
+                    <img src="{% static 'images/default-itinerary.jpg' %}" alt="{{ sample.title }}">
+                {% endif %}
+                <span class="duration-badge">{{ sample.total_days }}일 코스</span>
+            </div>
+            <div class="sample-content">
+                <h3>{{ sample.title }}</h3>
+                <p class="description">{{ sample.description|truncatechars:100 }}</p>
+                <div class="sample-meta">
+                    <span class="views"><i class="fas fa-eye"></i> {{ sample.views }}</span>
+                    <span class="likes"><i class="fas fa-heart"></i> {{ sample.likes.count }}</span>
+                </div>
+                <a href="{% url 'itineraries:detail' sample.id %}" class="btn btn-primary">자세히 보기</a>
+                {% if user.is_authenticated %}
+                <button class="btn btn-outline clone-itinerary" data-id="{{ sample.id }}">
+                    <i class="fas fa-copy"></i> 일정 복사하기
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-samples">
+            <p>아직 등록된 샘플 일정이 없습니다.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 카테고리 필터링
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const sampleCards = document.querySelectorAll('.sample-card');
+
+    categoryBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const category = btn.dataset.category;
+            
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            sampleCards.forEach(card => {
+                if (category === 'all' || card.dataset.region === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // 일정 복사 기능
+    const cloneBtns = document.querySelectorAll('.clone-itinerary');
+    cloneBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`/api/itineraries/${btn.dataset.id}/clone/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = `/itineraries/${data.id}/edit/`;
+                }
+            } catch (error) {
+                console.error('Clone failed:', error);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

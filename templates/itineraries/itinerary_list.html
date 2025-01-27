@@ -11,11 +11,16 @@
 <div class="itineraries-container">
     <div class="itineraries-header">
         <h1>여행 일정</h1>
-        {% if user.is_authenticated %}
-            <a href="{% url 'itineraries:wizard' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> 새 여행 일정 만들기
+        <div class="header-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'itineraries:wizard' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 새 여행 일정 만들기
+                </a>
+            {% endif %}
+            <a href="{% url 'itineraries:samples' %}" class="btn btn-outline-primary">
+                <i class="fas fa-map-marked-alt"></i> 샘플 둘러보기
             </a>
-        {% endif %}
+        </div>
     </div>
 
     <div class="itineraries-filters">

@@ -67,3 +67,268 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
 }
+
+/* 모달 스타일 현대화 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(var(--overlay-color), 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--surface-bg);
+    color: var(--text-primary);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+}
+
+/* 모달 스크롤바 스타일 */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+/* 모달 내 이미지 최적화 */
+.modal-content img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* 프로필 이미지 최적화 */
+.modal-content .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 갤러리 이미지 최적화 */
+.modal-content .gallery-image {
+    max-height: 500px;
+    width: 100%;
+    object-fit: contain;
+}
+
+/* 썸네일 이미지 최적화 */
+.modal-content .thumbnail {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+
+/* 이미지 슬라이더 현대화 */
+.modal-content .image-slider {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+    margin: -24px -24px 24px -24px;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+    background: var(--surface-bg-alt);
+}
+
+.modal-content .swiper-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-bg-alt);
+}
+
+.modal-content .modal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.modal-content .modal-image:hover {
+    transform: scale(1.02);
+}
+
+/* 네비게이션 버튼 개선 */
+.modal-content .swiper-button-next,
+.modal-content .swiper-button-prev {
+    color: var(--text-on-accent);
+    background: var(--primary-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.modal-content .image-slider:hover .swiper-button-next,
+.modal-content .image-slider:hover .swiper-button-prev {
+    opacity: 1;
+}
+
+.modal-content .swiper-button-next:hover,
+.modal-content .swiper-button-prev:hover {
+    background: var(--primary-color-dark);
+    transform: scale(1.1);
+}
+
+.modal-content .swiper-button-next:after,
+.modal-content .swiper-button-prev:after {
+    font-size: 18px;
+}
+
+/* 페이지네이션 개선 */
+.modal-content .swiper-pagination {
+    bottom: 16px;
+}
+
+.modal-content .swiper-pagination-bullet {
+    width: 8px;
+    height: 8px;
+    background: var(--text-on-accent);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.modal-content .swiper-pagination-bullet-active {
+    opacity: 1;
+    width: 24px;
+    border-radius: 4px;
+}
+
+/* 모달 헤더 */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+/* 모달 닫기 버튼 */
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface-bg-alt);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.modal-close:hover {
+    background: var(--surface-bg-hover);
+    transform: rotate(90deg);
+}
+
+/* 로딩 상태 개선 */
+.modal-image.loading {
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-start) 0%,
+        var(--skeleton-end) 50%,
+        var(--skeleton-start) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* 다크 모드 대응 */
+[data-theme="dark"] .modal-content {
+    background: var(--surface-bg-dark);
+    border: 1px solid var(--border-color-dark);
+}
+
+[data-theme="dark"] .modal-close {
+    background: var(--surface-bg-alt-dark);
+    color: var(--text-primary-dark);
+}
+
+[data-theme="dark"] .modal-close:hover {
+    background: var(--surface-bg-hover-dark);
+}
+
+/* CSS 변수 추가 (base.css나 root에 추가) */
+:root {
+    --overlay-color: 0, 0, 0;
+    --surface-bg-alt: #f5f5f5;
+    --surface-bg-hover: #eeeeee;
+    --surface-bg-dark: #1a1a1a;
+    --surface-bg-alt-dark: #2d2d2d;
+    --surface-bg-hover-dark: #333333;
+    --skeleton-start: #f0f0f0;
+    --skeleton-end: #e0e0e0;
+    --scrollbar-thumb: #c1c1c1;
+    --scrollbar-track: #f1f1f1;
+    
+    /* 다크 모드 */
+    --skeleton-start-dark: #2d2d2d;
+    --skeleton-end-dark: #3d3d3d;
+    --scrollbar-thumb-dark: #4a4a4a;
+    --scrollbar-track-dark: #1a1a1a;
+}
+
+[data-theme="dark"] {
+    --overlay-color: 0, 0, 0;
+    --skeleton-start: var(--skeleton-start-dark);
+    --skeleton-end: var(--skeleton-end-dark);
+    --scrollbar-thumb: var(--scrollbar-thumb-dark);
+    --scrollbar-track: var(--scrollbar-track-dark);
+}

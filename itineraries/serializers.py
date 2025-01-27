@@ -6,8 +6,7 @@ class PlaceSerializer(serializers.ModelSerializer):
         model = Place
         fields = [
             'id', 'name', 'address', 'description',
-            'latitude', 'longitude', 'category', 'rating',
-            'created_at'
+            'latitude', 'longitude', 'category', 'rating'
         ]
 
 class ItineraryPlaceSerializer(serializers.ModelSerializer):

@@ -10,6 +10,7 @@ from .serializers import (
 )
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy  # reverse 추가
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -31,6 +32,8 @@ from django.http import JsonResponse
 import json
 from django.views.generic.edit import UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 
 # 템플릿 뷰
 class ItineraryListView(ListView):
@@ -64,10 +67,47 @@ class ItineraryListView(ListView):
         context['sort'] = self.request.GET.get('sort', '-created_at')
         return context
 
+class SampleItineraryListView(ListView):
+    model = Itinerary
+    template_name = 'itineraries/sample_list.html'
+    context_object_name = 'samples'
+    
+    def get_queryset(self):
+        return Itinerary.objects.filter(
+            is_sample=True,
+            is_public=True
+        ).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['regions'] = Itinerary.objects.filter(
+            is_sample=True
+        ).values_list('region', flat=True).distinct()
+        return context
+
+import json
+
 class ItineraryDetailView(DetailView):
     model = Itinerary
     template_name = 'itineraries/itinerary_detail.html'
     context_object_name = 'itinerary'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 일정의 모든 장소 데이터를 JSON으로 변환
+        places_data = []
+        for day in self.object.itinerary_days.all():
+            for place in day.places.all():
+                places_data.append({
+                    'id': place.id,
+                    'name': place.place.name,
+                    'lat': float(place.place.latitude),
+                    'lng': float(place.place.longitude),
+                    'day': day.day_number,
+                    'order': place.order
+                })
+        context['places_json'] = json.dumps(places_data)
+        return context
 
 class ItineraryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Itinerary
@@ -436,16 +476,15 @@ class PlaceSearchAPIView(APIView):
             if len(query) < 2:
                 return JsonResponse([], safe=False)
             
-            # 수정: 괄호 오류 수정
+            # Q 객체 필터 수정
             places = Place.objects.filter(
                 Q(name__icontains=query) |
                 Q(address__icontains=query) |
-                Q(description__icontains=query)  # 괄호 오류 수정
+                Q(description__icontains=query)
             )
             
             print(f"검색된 장소 수: {places.count()}")  # 디버깅용
             
-            # 시리얼라이저 사용
             serializer = PlaceSerializer(places, many=True)
             return JsonResponse(serializer.data, safe=False)
             
@@ -696,3 +735,54 @@ def wizard_step4(request):
         'budget_categories': ['교통', '숙박', '식비', '관광', '쇼핑', '기타']
     }
     return render(request, 'itineraries/wizard/step4_details.html', context)
+
+class CommentCreateView(View):
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk):
+        try:
+            data = json.loads(request.body)
+            content = data.get('content')
+            
+            if not content:
+                return JsonResponse({
+                    'error': '댓글 내용을 입력해주세요.'
+                }, status=400)
+            
+            comment = ItineraryComment.objects.create(
+                itinerary_id=pk,
+                author=request.user,
+                content=content
+            )
+            
+            return JsonResponse({
+                'id': comment.id,
+                'content': comment.content,
+                'author': {
+                    'nickname': comment.author.nickname,
+                    'profile_image': comment.author.profile_image.url if comment.author.profile_image else None
+                },
+                'created_at': comment.created_at.strftime('%Y.%m.%d %H:%M')
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'error': '잘못된 요청 형식입니다.'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+
+class CommentDeleteView(View):
+    @method_decorator(login_required)
+    @method_decorator(require_POST)
+    def post(self, request, pk, comment_pk):
+        try:
+            comment = get_object_or_404(ItineraryComment, pk=comment_pk, author=request.user)
+            comment.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)

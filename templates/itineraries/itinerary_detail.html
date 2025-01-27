@@ -7,6 +7,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/itinerary-detail.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
 {% endblock %}
 
 {% block content %}
@@ -226,7 +227,7 @@
         <h2>댓글 <span class="comments-count">{{ itinerary.comments.count }}</span></h2>
         
         {% if user.is_authenticated %}
-        <form id="comment-form" class="comment-form">
+        <form id="comment-form" class="comment-form" data-itinerary-id="{{ itinerary.pk }}" method="post">
             {% csrf_token %}
             <textarea name="content" placeholder="댓글을 작성해주세요" required></textarea>
             <button type="submit" class="btn btn-primary">댓글 작성</button>
@@ -267,6 +268,22 @@
 <!-- 장소 추가/수정 모달 -->
 <div id="place-modal" class="modal">
     <div class="modal-content">
+        <!-- 이미지 슬라이더 추가 -->
+        <div class="swiper image-slider">
+            <div class="swiper-wrapper">
+                {% for image in place.images.all %}
+                <div class="swiper-slide">
+                    <img src="{{ image.url }}" alt="Place image" class="modal-image">
+                </div>
+                {% endfor %}
+            </div>
+            <!-- 네비게이션 버튼 -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <!-- 페이지네이션 -->
+            <div class="swiper-pagination"></div>
+        </div>
+        <!-- ...existing modal content... -->
         <h3>장소 정보</h3>
         <form id="place-form">
             {% csrf_token %}
@@ -334,6 +351,8 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+<!-- Google Maps API 스크립트 -->
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
 <script src="{% static 'js/itinerary-detail.js' %}"></script>
 {% endblock %}

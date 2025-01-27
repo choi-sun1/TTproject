@@ -26,11 +26,15 @@ class Itinerary(models.Model):
         verbose_name=_('좋아요'),
         blank=True
     )
+    is_sample = models.BooleanField('샘플 여부', default=False)
 
     class Meta:
         verbose_name = _('여행 일정')
         verbose_name_plural = _('여행 일정들')
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_sample']),
+        ]
 
     def __str__(self):
         return self.title

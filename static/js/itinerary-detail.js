@@ -1,68 +1,85 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 지도 초기화
-    const mapContainer = document.getElementById('map');
-    const markers = [];
-    const paths = [];
-    let map;
-
-    if (mapContainer) {
-        map = new kakao.maps.Map(mapContainer, {
-            center: new kakao.maps.LatLng(37.5665, 126.9780),
-            level: 3
-        });
-
-        // 모든 장소 마커 생성
-        const places = document.querySelectorAll('.place-item');
-        if (places.length > 0) {
-            const bounds = new kakao.maps.LatLngBounds();
-            
-            places.forEach((place, index) => {
-                const lat = parseFloat(place.dataset.lat);
-                const lng = parseFloat(place.dataset.lng);
-                const latlng = new kakao.maps.LatLng(lat, lng);
-                
-                // 마커 생성
-                const marker = new kakao.maps.Marker({
-                    position: latlng,
-                    map: map
-                });
-
-                // 마커에 번호 표시
-                const content = `<div class="marker-label">${index + 1}</div>`;
-                const customOverlay = new kakao.maps.CustomOverlay({
-                    position: latlng,
-                    content: content
-                });
-                
-                markers.push(marker);
-                customOverlay.setMap(map);
-                bounds.extend(latlng);
-
-                // 이전 위치가 있으면 경로 그리기
-                if (index > 0) {
-                    const prevLat = parseFloat(places[index - 1].dataset.lat);
-                    const prevLng = parseFloat(places[index - 1].dataset.lng);
-                    const path = [
-                        new kakao.maps.LatLng(prevLat, prevLng),
-                        latlng
-                    ];
-
-                    const polyline = new kakao.maps.Polyline({
-                        path: path,
-                        strokeWeight: 3,
-                        strokeColor: '#5C7AEA',
-                        strokeOpacity: 0.7,
-                        strokeStyle: 'solid'
-                    });
-                    
-                    polyline.setMap(map);
-                    paths.push(polyline);
-                }
+    // Google Maps 초기화
+    window.initMap = function() {
+        const mapContainer = document.getElementById('map');
+        const markers = [];
+        const paths = [];
+        
+        if (mapContainer) {
+            const map = new google.maps.Map(mapContainer, {
+                center: { lat: 37.5665, lng: 126.9780 },
+                zoom: 12,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: []
+                    }
+                ]
             });
 
-            map.setBounds(bounds);
+            // 모든 장소 마커 생성
+            const places = document.querySelectorAll('.place-item');
+            if (places.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
+                
+                places.forEach((place, index) => {
+                    const lat = parseFloat(place.dataset.lat);
+                    const lng = parseFloat(place.dataset.lng);
+                    const latlng = new google.maps.LatLng(lat, lng);
+                    
+                    // 마커 생성
+                    const marker = new google.maps.Marker({
+                        position: latlng,
+                        map: map
+                    });
+
+                    // 마커에 번호 표시
+                    const content = `<div class="marker-label">${index + 1}</div>`;
+                    const customOverlay = new google.maps.OverlayView();
+                    customOverlay.onAdd = function() {
+                        const div = document.createElement('div');
+                        div.innerHTML = content;
+                        this.getPanes().overlayLayer.appendChild(div);
+                    };
+                    customOverlay.draw = function() {
+                        const projection = this.getProjection();
+                        const position = projection.fromLatLngToDivPixel(latlng);
+                        const div = this.getPanes().overlayLayer.firstChild;
+                        div.style.left = position.x + 'px';
+                        div.style.top = position.y + 'px';
+                    };
+                    customOverlay.setMap(map);
+                    
+                    markers.push(marker);
+                    bounds.extend(latlng);
+
+                    // 이전 위치가 있으면 경로 그리기
+                    if (index > 0) {
+                        const prevLat = parseFloat(places[index - 1].dataset.lat);
+                        const prevLng = parseFloat(places[index - 1].dataset.lng);
+                        const path = [
+                            new google.maps.LatLng(prevLat, prevLng),
+                            latlng
+                        ];
+
+                        const polyline = new google.maps.Polyline({
+                            path: path,
+                            strokeWeight: 3,
+                            strokeColor: '#5C7AEA',
+                            strokeOpacity: 0.7,
+                            strokeStyle: 'solid'
+                        });
+                        
+                        polyline.setMap(map);
+                        paths.push(polyline);
+                    }
+                });
+
+                map.fitBounds(bounds);
+            }
         }
-    }
+    };
 
     // 좋아요 기능
     const likeButton = document.getElementById('like-button');
@@ -136,18 +153,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 장소간 예상 이동 시간 표시
     function showRouteInfo(origin, destination) {
-        const directionsService = new google.maps.DirectionsService();
-        const request = {
-            origin: origin,
-            destination: destination,
-            travelMode: 'TRANSIT'  // 대중교통 기준
-        };
+        const places = new google.maps.places.PlacesService(map);
         
-        directionsService.route(request, function(result, status) {
-            if (status === 'OK') {
-                const duration = result.routes[0].legs[0].duration.text;
-                const distance = result.routes[0].legs[0].distance.text;
+        // 경로 탐색 서비스
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer();
+        directionsRenderer.setMap(map);
+        
+        directionsService.route({
+            origin: new google.maps.LatLng(origin.lat, origin.lng),
+            destination: new google.maps.LatLng(destination.lat, destination.lng),
+            travelMode: google.maps.TravelMode.DRIVING
+        }, function(result, status) {
+            if (status === google.maps.DirectionsStatus.OK) {
+                directionsRenderer.setDirections(result);
+                const route = result.routes[0].legs[0];
                 // UI에 표시
+                const duration = route.duration.text; // 소요 시간
+                const distance = route.distance.text; // 거리
             }
         });
     }
@@ -164,33 +187,66 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // 모달이 열릴 때 슬라이더 초기화
+    const modal = document.querySelector('.modal');
+    modal.addEventListener('shown.bs.modal', function () {
+        initImageSlider();
+    });
+
+    // 이미지 로딩 상태 처리
+    document.querySelectorAll('.modal-image').forEach(img => {
+        img.classList.add('loading');
+        img.onload = function() {
+            this.classList.remove('loading');
+        }
+    });
 });
 
+// 댓글 기능 초기화
 function initializeComments() {
     const commentForm = document.getElementById('comment-form');
-    const commentsList = document.querySelector('.comments-list');
-
+    
     commentForm?.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const itineraryId = document.querySelector('#like-button').dataset.itineraryId;
-        const content = this.querySelector('textarea').value;
+        
+        const itineraryId = this.dataset.itineraryId;
+        const content = this.querySelector('textarea[name="content"]').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
         try {
-            const response = await apiRequest(
-                `/api/v1/itineraries/${itineraryId}/comments/`,
-                'POST',
-                { content }
-            );
-            
-            addNewComment(response);
+            const response = await fetch(`/itineraries/${itineraryId}/comments/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ content })
+            });
+
+            if (!response.ok) {
+                throw new Error('댓글 작성에 실패했습니다.');
+            }
+
+            const data = await response.json();
+            addNewComment(data);
             this.reset();
-            showNotification('댓글이 작성되었습니다.');
+            
+            const commentsCount = document.querySelector('.comments-count');
+            if (commentsCount) {
+                commentsCount.textContent = parseInt(commentsCount.textContent) + 1;
+            }
+
+            showNotification('댓글이 작성되었습니다.', 'success');
+            
         } catch (error) {
+            console.error('댓글 작성 실패:', error);
             showNotification('댓글 작성에 실패했습니다.', 'error');
         }
     });
 
     // 댓글 삭제 이벤트 위임
+    const commentsList = document.querySelector('.comments-list');
     commentsList?.addEventListener('click', async function(e) {
         if (e.target.classList.contains('btn-delete-comment')) {
             const comment = e.target.closest('.comment');
@@ -349,4 +405,45 @@ async function apiRequest(url, method = 'GET', data = null) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
     return method === 'DELETE' ? null : await response.json();
+}
+
+// 이미지 슬라이더 초기화
+function initImageSlider() {
+    new Swiper('.image-slider', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        lazy: {
+            loadPrevNext: true,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        keyboard: {
+            enabled: true,
+        },
+        effect: 'fade',
+        fadeEffect: {
+            crossFade: true
+        },
+    });
+}
+
+// 알림 표시 함수
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // 3초 후 자동으로 사라짐
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }

@@ -11,6 +11,8 @@ urlpatterns = [
     path('<int:pk>/edit/', views.ItineraryUpdateView.as_view(), name='edit'),  # 추가
     path('<int:pk>/delete/', views.ItineraryDeleteView.as_view(), name='delete'),  # 추가
     path('<int:pk>/like/', views.itinerary_like, name='like'),
+    path('<int:pk>/comments/', views.CommentCreateView.as_view(), name='comment_create'),
+    path('<int:pk>/comments/<int:comment_pk>/', views.CommentDeleteView.as_view(), name='comment_delete'),
     
     # 일정 생성 마법사 URL
     path('wizard/', views.wizard_start, name='wizard'),
@@ -25,4 +27,7 @@ urlpatterns = [
     path('api/wizard/schedule/', views.WizardScheduleView.as_view(), name='wizard-schedule'),
     path('api/wizard/optimize/', views.WizardOptimizeView.as_view(), name='wizard-optimize'),
     path('api/wizard/save/', views.WizardSaveView.as_view(), name='wizard-save'),
+
+    # 샘플 둘러보기 URL
+    path('samples/', views.SampleItineraryListView.as_view(), name='samples'),
 ]
