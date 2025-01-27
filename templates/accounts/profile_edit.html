@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}프로필 수정 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container profile-edit-container">
+        <h2 class="auth-title">프로필 수정</h2>
+        
+        <form method="post" class="auth-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group profile-image-group">
+                <label>프로필 이미지</label>
+                <div class="current-image">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="현재 프로필 이미지" id="profile-preview">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="기본 프로필" id="profile-preview">
+                    {% endif %}
+                </div>
+                <input type="file" name="profile_image" id="id_profile_image" accept="image/*">
+                <small class="form-text">JPG, PNG 파일 (최대 5MB)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_nickname">닉네임</label>
+                <input type="text" name="nickname" id="id_nickname" value="{{ user.nickname }}" class="form-control" required>
+                <small class="form-text">다른 사용자들에게 보여질 이름입니다. (2~10자)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_bio">자기소개</label>
+                <textarea name="bio" id="id_bio" class="form-control" rows="4">{{ user.bio }}</textarea>
+                <small class="form-text">자신을 소개해주세요. (최대 200자)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_birth_date">생년월일</label>
+                <input type="date" name="birth_date" id="id_birth_date" value="{% if user.birth_date %}{{ user.birth_date|date:'Y-m-d' }}{% endif %}" class="form-control">
+                <small class="form-text">선택사항: 생년월일을 입력해주세요.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_gender">성별</label>
+                <select name="gender" id="id_gender" class="form-control">
+                    <option value="" {% if not user.gender %}selected{% endif %}>선택안함</option>
+                    <option value="M" {% if user.gender == 'M' %}selected{% endif %}>남성</option>
+                    <option value="F" {% if user.gender == 'F' %}selected{% endif %}>여성</option>
+                    <option value="O" {% if user.gender == 'O' %}selected{% endif %}>기타</option>
+                </select>
+                <small class="form-text">선택사항: 성별을 선택해주세요.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">변경사항 저장</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('id_profile_image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

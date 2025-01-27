@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}상세 설정 - AI 일정 만들기{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+<link rel="stylesheet" href="{% static 'css/wizard/step4.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <div class="wizard-progress">
+        <div class="progress-step complete">1. 기본정보</div>
+        <div class="progress-step complete">2. 장소선택</div>
+        <div class="progress-step complete">3. 일정배치</div>
+        <div class="progress-step active">4. 상세설정</div>
+    </div>
+
+    <div class="details-container">
+        <form id="detailsForm">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3><i class="fas fa-wallet"></i> 예산 설정</h3>
+                <div class="budget-inputs">
+                    {% for category in budget_categories %}
+                    <div class="budget-item">
+                        <label>{{ category }}</label>
+                        <div class="input-group">
+                            <input type="number" 
+                                   name="budget_{{ category|lower }}" 
+                                   placeholder="0"
+                                   min="0"
+                                   class="budget-input">
+                            <span>원</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="budget-summary">
+                    <p>총 예산: <span class="budget-total">0원</span></p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-tasks"></i> 체크리스트</h3>
+                <div class="checklist-container" id="checklistContainer">
+                    <!-- 체크리스트 아이템들이 여기에 동적으로 추가됩니다 -->
+                </div>
+                <button type="button" id="addChecklistItem" class="btn btn-outline-primary"></button>
+                    <i class="fas fa-plus"></i> 항목 추가
+                </button>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-globe"></i> 공개 설정</h3>
+                <div class="visibility-toggle">
+                    <label class="switch">
+                        <input type="checkbox" name="is_public" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <div>
+                        <span>공개</span>
+                        <p class="help-text">공개로 설정하면 다른 사용자가 내 일정을 볼 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'itineraries:wizard_step3' %}" class="btn btn-outline-secondary">이전</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> 일정 만들기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('detailsForm');
+    const checklistContainer = document.getElementById('checklistContainer');
+    
+    // 기본 체크리스트 아이템 추가
+    const defaultItems = [
+        '여권/신분증',
+        '숙소 예약 확인',
+        '필수 약품'
+    ];
+    
+    defaultItems.forEach(item => addChecklistItem(item));
+    
+    // 체크리스트 아이템 추가 버튼
+    document.getElementById('addChecklistItem').addEventListener('click', () => {
+        addChecklistItem();
+    });
+    
+    // 예산 입력 시 총액 계산
+    document.querySelectorAll('.budget-input').forEach(input => {
+        input.addEventListener('input', calculateTotalBudget);
+    });
+    
+    // 폼 제출
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            budgets: {},
+            checklist: [],
+            is_public: form.querySelector('[name="is_public"]').checked
+        };
+        
+        // 예산 데이터 수집
+        document.querySelectorAll('.budget-input').forEach(input => {
+            const category = input.name.replace('budget_', '');
+            const amount = parseInt(input.value) || 0;
+            if (amount > 0) {
+                formData.budgets[category] = amount;
+            }
+        });
+        
+        // 체크리스트 데이터 수집
+        document.querySelectorAll('.checklist-item input[type="text"]').forEach(input => {
+            if (input.value.trim()) {
+                formData.checklist.push(input.value.trim());
+            }
+        });
+        
+        try {
+            const response = await fetch('{% url "itineraries:wizard_step4" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                throw new Error(data.error || '저장에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message);
+        }
+    });
+    
+    function addChecklistItem(value = '') {
+        const item = document.createElement('div');
+        item.className = 'checklist-item';
+        item.innerHTML = `
+            <i class="fas fa-grip-vertical"></i>
+            <input type="text" placeholder="체크리스트 항목 입력" value="${value}">
+            <button type="button" class="remove-btn" onclick="this.closest('.checklist-item').remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        checklistContainer.appendChild(item);
+    }
+    
+    function calculateTotalBudget() {
+        let total = 0;
+        document.querySelectorAll('.budget-input').forEach(input => {
+            total += parseInt(input.value) || 0;
+        });
+        document.querySelector('.budget-total').textContent = 
+            total.toLocaleString() + '원';
+    }
+});
+</script>
+{% endblock %}

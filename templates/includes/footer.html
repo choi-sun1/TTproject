@@ -1,0 +1,27 @@
+{% load static %}
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <!-- 로고 이미지 대신 텍스트만 사용 -->
+                <span class="logo-text">SmartTrip</span>
+                <p>AI로 만드는 스마트한 여행</p>
+            </div>
+            <div class="footer-links">
+                <h3>서비스</h3>
+                <ul>
+                    <li><a href="{% url 'itineraries:list' %}">여행 일정</a></li>
+                    <li><a href="{% url 'chatbot:chat' %}">AI 챗봇</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3>문의</h3>
+                <p>Email: support@smarttrip.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; {% now "Y" %} SmartTrip. All rights reserved.</p>
+        </div>
+    </div>
+</footer>

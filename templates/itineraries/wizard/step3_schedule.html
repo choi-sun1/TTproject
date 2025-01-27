@@ -1,0 +1,531 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}일정 배치 - AI 일정 만들기{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    {% csrf_token %}  <!-- CSRF 토큰 추가 -->
+    <div class="wizard-progress">
+        <div class="progress-step complete">1. 기본정보</div>
+        <div class="progress-step complete">2. 장소선택</div>
+        <div class="progress-step active">3. 일정배치</div>
+        <div class="progress-step">4. 상세설정</div>
+    </div>
+
+    <div class="schedule-container">
+        <div class="days-navigation" id="daysNavigation">
+            <!-- 일차 탭은 JavaScript로 동적 생성됩니다 -->
+        </div>
+
+        <div class="schedule-grid">
+            <div class="schedule-panel">
+                <div class="unassigned-places">
+                    <h3>선택된 장소 <span id="remainingPlaces"></span></h3>
+                    <div id="unassignedPlacesList" class="place-list">
+                        <!-- 미배정 장소들이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+
+                <div class="daily-schedule">
+                    <h3>일정 - <span id="currentDayTitle">1일차</span></h3>
+                    <div id="scheduleTimeline" class="timeline">
+                        <!-- 시간대별 일정이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="schedule-sidebar">
+                <div class="optimization-panel">
+                    <h4>일정 최적화</h4>
+                    <button id="optimizeRoute" class="btn btn-secondary">
+                        <i class="fas fa-magic"></i> 동선 최적화
+                    </button>
+                    <div class="optimization-info">
+                        <p>예상 이동 시간: <span id="travelTime">-</span></p>
+                        <p>총 방문 장소: <span id="totalPlaces">-</span></p>
+                    </div>
+                </div>
+
+                <div class="time-adjustment">
+                    <h4>방문 시간 조정</h4>
+                    <div class="time-controls">
+                        <select id="visitDuration" class="form-control">
+                            <option value="30">30분</option>
+                            <option value="60" selected>1시간</option>
+                            <option value="90">1시간 30분</option>
+                            <option value="120">2시간</option>
+                            <option value="180">3시간</option>
+                        </select>
+                        <button id="applyDuration" class="btn btn-outline-primary">
+                            적용
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="schedule-actions">
+            <a href="{% url 'itineraries:wizard_step2' %}" class="btn btn-outline">이전</a>
+            <button id="nextStep" class="btn-start">다음 단계 <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- 시간 설정 모달 -->
+<div id="timeSettingModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>방문 시간 설정</h3>
+        <form id="timeSettingForm">
+            <div class="form-group">
+                <label>시작 시간</label>
+                <input type="time" id="startTime" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>종료 시간</label>
+                <input type="time" id="endTime" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>메모</label>
+                <textarea id="placeNote" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">저장</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+// jQuery 먼저 로드
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+// 그 다음 jQuery UI
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+// Sortable.js
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+<script src="{% static 'js/wizard/schedule.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // wizard_data를 세션 스토리지에서 가져오기
+    let wizardData = {};
+    try {
+        wizardData = JSON.parse(sessionStorage.getItem('wizard_data') || '{}');
+        console.log('Loaded wizard data:', wizardData);
+    } catch (e) {
+        console.error('Error loading wizard data:', e);
+        alert('일정 데이터를 불러오는데 실패했습니다.');
+        return;
+    }
+
+    // 선택된 장소 데이터 확인
+    const selectedPlaces = wizardData.places || [];
+    if (!selectedPlaces.length) {
+        alert('선택된 장소가 없습니다. 이전 단계로 돌아갑니다.');
+        window.location.href = '{% url "itineraries:wizard_step2" %}';
+        return;
+    }
+
+    const startDate = new Date(wizardData.start_date);
+    const endDate = new Date(wizardData.end_date);
+    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+    let currentDay = 1;
+    let scheduleData = {};
+
+    // 일차별 탭 생성
+    createDayTabs(totalDays);
+    
+    // 선택된 장소 표시
+    displayUnassignedPlaces();
+
+    // 드래그 앤 드롭 초기화
+    initializeDragAndDrop();
+
+    // 일차 탭 클릭 이벤트
+    document.getElementById('daysNavigation').addEventListener('click', function(e) {
+        if (e.target.classList.contains('day-tab')) {
+            const dayNum = parseInt(e.target.dataset.day);
+            switchDay(dayNum);
+        }
+    });
+
+    // 일정 최적화 버튼 클릭 이벤트
+    document.getElementById('optimizeRoute').addEventListener('click', async function() {
+        const dayPlaces = scheduleData[currentDay] || [];
+        console.log('Current day places:', dayPlaces); // 디버깅용
+        
+        if (dayPlaces.length < 2) {
+            alert('최적화할 장소가 충분하지 않습니다. 먼저 장소를 2개 이상 배치해주세요.');
+            return;
+        }
+
+        try {
+            // 위도/경도 데이터가 있는지 확인
+            const placesWithCoords = dayPlaces.filter(place => 
+                place.latitude !== undefined && place.longitude !== undefined
+            );
+
+            if (placesWithCoords.length !== dayPlaces.length) {
+                alert('일부 장소의 위치 정보가 누락되었습니다.');
+                return;
+            }
+
+            const response = await fetch('{% url "itineraries:wizard-optimize" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    day_number: currentDay,
+                    places: placesWithCoords
+                })
+            });
+
+            const data = await response.json();
+            console.log('Optimization response:', data); // 디버깅용
+            
+            if (!response.ok) {
+                throw new Error(data.error || '최적화 중 오류가 발생했습니다.');
+            }
+            
+            if (data.success) {
+                scheduleData[currentDay] = data.optimized_places;
+                updateScheduleDisplay();
+                calculateStats();
+                alert('일정이 최적화되었습니다.');
+            }
+        } catch (error) {
+            console.error('Optimization Error:', error);
+            alert(error.message);
+        }
+    });
+
+    // 다음 단계 버튼 클릭 이벤트
+    document.getElementById('nextStep').addEventListener('click', async function() {
+        if (!validateSchedule()) {
+            alert('모든 장소를 일정에 배치해주세요.');
+            return;
+        }
+
+        try {
+            const response = await fetch('{% url "itineraries:wizard_step3" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    schedule: scheduleData
+                })
+            });
+
+            if (!response.ok) throw new Error('저장 중 오류가 발생했습니다.');
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                window.location.href = '{% url "itineraries:wizard_step4" %}';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message);
+        }
+    });
+
+    // 헬퍼 함수들
+    function createDayTabs(days) {
+        const container = document.getElementById('daysNavigation');
+        for (let i = 1; i <= days; i++) {
+            const tab = document.createElement('button');
+            tab.className = i === 1 ? 'day-tab active' : 'day-tab';
+            tab.dataset.day = i;
+            tab.textContent = `${i}일차`;
+            container.appendChild(tab);
+        }
+    }
+
+    // 장소가 이미 배정되었는지 확인하는 함수 추가
+    function isPlaceAssigned(placeId) {
+        // 모든 일차의 일정을 확인
+        return Object.values(scheduleData)
+            .flat()
+            .some(place => place.id.toString() === placeId.toString());
+    }
+
+    function displayUnassignedPlaces() {
+        const container = document.getElementById('unassignedPlacesList');
+        container.innerHTML = '';
+        
+        selectedPlaces.forEach(place => {
+            if (!isPlaceAssigned(place.id)) {
+                const div = createPlaceElement(place);
+                container.appendChild(div);
+            }
+        });
+        
+        updateRemainingCount();
+    }
+
+    function createPlaceElement(place) {
+        const div = document.createElement('div');
+        div.className = 'place-item';
+        div.dataset.placeId = place.id;
+        div.dataset.latitude = place.latitude || '';
+        div.dataset.longitude = place.longitude || '';
+        
+        div.innerHTML = `
+            <div class="place-info">
+                <h4>${place.name}</h4>
+                <p>${place.address || ''}</p>
+            </div>
+            <div class="place-actions">
+                <button type="button" class="btn-time" onclick="showTimeDialog(this)" title="시간 설정">
+                    <i class="fas fa-clock"></i>
+                </button>
+            </div>
+        `;
+        
+        return div;
+    }
+
+    function initializeDragAndDrop() {
+        const unassignedList = document.getElementById('unassignedPlacesList');
+        const timeline = document.getElementById('scheduleTimeline');
+
+        // 미배정 장소 목록 Sortable 초기화
+        new Sortable(unassignedList, {
+            group: {
+                name: 'places',
+                pull: true,
+                put: true
+            },
+            animation: 150,
+            sort: false,
+            onStart: function(evt) {
+                console.log('Drag started from unassigned:', evt.item);
+            },
+            onEnd: function(evt) {
+                console.log('Drag ended in unassigned:', evt.item);
+                if (evt.to.id === 'scheduleTimeline') {
+                    updateScheduleData();
+                }
+            }
+        });
+
+        // 일정 타임라인 Sortable 초기화
+        new Sortable(timeline, {
+            group: {
+                name: 'places',
+                pull: true,
+                put: true
+            },
+            animation: 150,
+            sort: true,
+            onAdd: function(evt) {
+                console.log('Added to timeline:', evt.item);
+                const placeId = evt.item.dataset.placeId;
+                const place = selectedPlaces.find(p => p.id.toString() === placeId);
+                
+                if (place) {
+                    evt.item.dataset.startTime = '09:00';
+                    evt.item.dataset.endTime = '10:00';
+                    updateScheduleData();
+                }
+            },
+            onUpdate: function(evt) {
+                console.log('Updated timeline order');
+                updateScheduleData();
+            }
+        });
+    }
+
+    function switchDay(dayNum) {
+        currentDay = dayNum;
+        
+        // 탭 활성화 상태 변경
+        document.querySelectorAll('.day-tab').forEach(tab => {
+            tab.classList.toggle('active', parseInt(tab.dataset.day) === dayNum);
+        });
+        
+        // 일차 타이틀 업데이트
+        document.getElementById('currentDayTitle').textContent = `${dayNum}일차`;
+        
+        // 일정 표시 업데이트
+        updateScheduleDisplay();
+    }
+
+    function updateScheduleData() {
+        const timeline = document.getElementById('scheduleTimeline');
+        console.log('Timeline element:', timeline); // 디버깅용
+
+        // timeline의 자식 요소들을 배열로 변환하여 처리
+        const places = Array.from(timeline.children).map(el => {
+            const placeId = el.dataset.placeId;
+            console.log('Place ID:', placeId); // 디버깅용
+            
+            // selectedPlaces에서 해당 장소 찾기
+            const originalPlace = selectedPlaces.find(p => p.id.toString() === placeId);
+            console.log('Found original place:', originalPlace); // 디버깅용
+            
+            if (!originalPlace) {
+                console.warn(`Place with ID ${placeId} not found in selectedPlaces`);
+                return null;
+            }
+
+            return {
+                ...originalPlace,
+                start_time: el.dataset.startTime || '09:00',
+                end_time: el.dataset.endTime || '10:00',
+                note: el.dataset.note || ''
+            };
+        }).filter(Boolean); // null 값 제거
+        
+        console.log('Updated places for current day:', places); // 디버깅용
+        scheduleData[currentDay] = places;
+        console.log('전체 일정 데이터:', scheduleData); // 디버깅용
+
+        // 미배정 장소 목록과 통계 업데이트
+        displayUnassignedPlaces();
+        updateRemainingCount();
+        calculateStats();
+    }
+
+    function updateScheduleDisplay() {
+        const timeline = document.getElementById('scheduleTimeline');
+        timeline.innerHTML = '';
+        
+        const dayPlaces = scheduleData[currentDay] || [];
+        dayPlaces.forEach(place => {
+            const div = createScheduleItem(place);
+            timeline.appendChild(div);
+        });
+    }
+
+    function createScheduleItem(place) {
+        const div = document.createElement('div');
+        div.className = 'timeline-item';
+        div.dataset.placeId = place.id;
+        div.dataset.startTime = place.start_time || '09:00';
+        div.dataset.endTime = place.end_time || '10:00';
+        div.dataset.note = place.note || '';
+        div.draggable = true;  // 드래그 가능하도록 설정
+        
+        div.innerHTML = `
+            <div class="time-info">
+                ${place.start_time ? `${place.start_time} - ${place.end_time}` : '09:00 - 10:00'}
+            </div>
+            <div class="place-info">
+                <h4>${place.name}</h4>
+                ${place.note ? `<p class="note">${place.note}</p>` : ''}
+            </div>
+            <div class="place-actions">
+                <button class="btn-time" onclick="showTimeDialog(this)">
+                    <i class="fas fa-clock"></i>
+                </button>
+            </div>
+        `;
+        
+        return div;
+    }
+
+    function updateRemainingCount() {
+        // 배정된 모든 장소의 ID 수집
+        const assigned = new Set(
+            Object.values(scheduleData)
+                .flat()
+                .map(p => p.id.toString())
+        );
+        
+        // 미배정된 장소 계산
+        const remaining = selectedPlaces.filter(p => !assigned.has(p.id.toString()));
+        
+        console.log('배정된 장소:', assigned); // 디버깅용
+        console.log('미배정 장소:', remaining); // 디버깅용
+        
+        document.getElementById('remainingPlaces').textContent = 
+            `(${remaining.length}/${selectedPlaces.length})`;
+    }
+
+    function calculateStats() {
+        const dayPlaces = scheduleData[currentDay] || [];
+        document.getElementById('totalPlaces').textContent = dayPlaces.length;
+        
+        // TODO: 이동 시간 계산 로직 구현
+        const estimatedTime = dayPlaces.length > 1 ? '약 2시간' : '-';
+        document.getElementById('travelTime').textContent = estimatedTime;
+    }
+
+    function validateSchedule() {
+        const totalPlaces = selectedPlaces.length;
+        const assignedPlaces = new Set(
+            Object.values(scheduleData)
+                .flat()
+                .map(p => p.id.toString())
+        );
+
+        console.log('Total places:', totalPlaces); // 디버깅용
+        console.log('Assigned places:', assignedPlaces); // 디버깅용
+
+        if (assignedPlaces.size < totalPlaces) {
+            alert(`전체 ${totalPlaces}개의 장소 중 ${assignedPlaces.size}개만 배치되었습니다. 모든 장소를 일정에 배치해주세요.`);
+            return false;
+        }
+        return true;
+    }
+
+    function getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    // 시간 설정 모달 관련 코드
+    const timeModal = document.getElementById('timeSettingModal');
+    const closeBtn = timeModal.querySelector('.close');
+    let currentEditingPlace = null;
+
+    window.showTimeDialog = function(btn) {
+        const item = btn.closest('.timeline-item');
+        currentEditingPlace = item;
+        
+        document.getElementById('startTime').value = item.dataset.startTime || '09:00';
+        document.getElementById('endTime').value = item.dataset.endTime || '10:00';
+        document.getElementById('placeNote').value = item.dataset.note || '';
+        
+        timeModal.style.display = 'block';
+    };
+
+    closeBtn.onclick = function() {
+        timeModal.style.display = 'none';
+    };
+
+    window.onclick = function(event) {
+        if (event.target === timeModal) {
+            timeModal.style.display = 'none';
+        }
+    };
+
+    document.getElementById('timeSettingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (currentEditingPlace) {
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const note = document.getElementById('placeNote').value;
+            
+            currentEditingPlace.dataset.startTime = startTime;
+            currentEditingPlace.dataset.endTime = endTime;
+            currentEditingPlace.dataset.note = note;
+            
+            currentEditingPlace.querySelector('.time-info').textContent = `${startTime} - ${endTime}`;
+            currentEditingPlace.querySelector('.note').textContent = note;
+            
+            timeModal.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

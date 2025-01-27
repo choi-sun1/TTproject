@@ -1,0 +1,21 @@
+<form method="post" class="place-form">
+    {% csrf_token %}
+    <!-- ...existing fields... -->
+    <div class="time-inputs">
+        <div class="form-group">
+            <label for="start_time">시작 시간</label>
+            <input type="time" name="start_time" id="start_time" 
+                   value="{{ place.start_time|time:'H:i'|default:'' }}">
+        </div>
+        <div class="form-group">
+            <label for="end_time">종료 시간</label>
+            <input type="time" name="end_time" id="end_time" 
+                   value="{{ place.end_time|time:'H:i'|default:'' }}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="duration">예상 소요 시간</label>
+        <span id="duration_display"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">저장</button>
+</form>

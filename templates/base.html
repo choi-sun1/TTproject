@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="SmartTrip - AI 기반 여행 플래너와 숙소 예약 서비스">
+    <meta name="keywords" content="여행, 숙소, AI 여행 플래너, 여행 일정, 호텔 예약">
+    <meta name="author" content="SmartTrip">
+    <meta name="theme-color" content="#1a73e8">
+    
+    <!-- Open Graph 태그 -->
+    <meta property="og:title" content="{% block og_title %}SmartTrip{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}AI 기반 여행 플래너와 숙소 예약 서비스{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'images/og-image.jpg' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    
+    <!-- 파비콘 -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+    
+    <title>{% block title %}SmartTrip{% endblock %} - AI 여행 플래너</title>
+    
+    <!-- 프리로드 중요 리소스 -->
+    <link rel="preload" href="{% static 'css/style.css' %}" as="style">
+    <link rel="preload" href="{% static 'css/components.css' %}" as="style">
+    <link rel="preload" href="{% static 'js/theme.js' %}" as="script">
+    
+    <!-- 스타일시트 로딩 순서 수정 -->
+    <!-- 1. 외부 라이브러리 (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"/>
+
+    <!-- 2. 커스텀 CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+    <!-- 3. 페이지별 스타일 -->
+    {% block extra_css %}{% endblock %}
+    
+</head>
+<body>
+    {% include 'includes/navbar.html' %}
+    
+    <main id="main-content" class="container">
+    <!-- 알림 메시지 -->
+        {% if messages %}
+        <div class="messages" role="alert" aria-live="polite">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% include 'includes/footer.html' %}
+    
+    <!-- JavaScript -->
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/main.js' %}" defer></script>
+    <script src="{% static 'js/navbar.js' %}" defer></script>
+    
+    <!-- CDN Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- 사용자 분석 스크립트 -->
+    {% if not debug %}
+    <!-- Google Analytics 또는 다른 분석 도구 코드 -->
+    {% endif %}
+</body>
+</html>

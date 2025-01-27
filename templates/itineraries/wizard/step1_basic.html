@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}기본 정보 입력 - AI 일정 만들기{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <div class="wizard-progress">
+        <div class="progress-step active">1. 기본정보</div>
+        <div class="progress-step">2. 장소선택</div>
+        <div class="progress-step">3. 일정배치</div>
+        <div class="progress-step">4. 상세설정</div>
+    </div>
+
+    <form id="basicForm" class="wizard-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">여행 제목</label>
+            <input type="text" id="title" name="title" class="form-control" required
+                   placeholder="예: 제주도 3박 4일 가족 여행">
+        </div>
+
+        <div class="form-group">
+            <label for="destination">여행지</label>
+            <input type="text" id="destination" name="destination" class="form-control" required
+                   placeholder="예: 제주도">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="start_date">시작일</label>
+                <input type="date" id="start_date" name="start_date" class="form-control" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="end_date">종료일</label>
+                <input type="date" id="end_date" name="end_date" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>여행 스타일</label>
+            <div class="style-options">
+                <label class="style-option">
+                    <input type="checkbox" name="styles[]" value="문화">
+                    <span>문화/역사</span>
+                </label>
+                <label class="style-option">
+                    <input type="checkbox" name="styles[]" value="자연">
+                    <span>자연/풍경</span>
+                </label>
+                <label class="style-option">
+                    <input type="checkbox" name="styles[]" value="맛집">
+                    <span>맛집탐방</span>
+                </label>
+                <label class="style-option">
+                    <input type="checkbox" name="styles[]" value="쇼핑">
+                    <span>쇼핑</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'itineraries:wizard' %}" class="btn btn-outline">이전</a>
+            <button type="submit" class="btn-start">다음 단계 <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF 토큰 가져오기
+function getCsrfToken() {
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrfInput) {
+        console.error('CSRF 토큰을 찾을 수 없습니다');
+        return '';
+    }
+    return csrfInput.value;
+}
+
+document.getElementById('basicForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // 폼 데이터 수집
+    const formData = {
+        title: document.getElementById('title').value,
+        destination: document.getElementById('destination').value,
+        start_date: document.getElementById('start_date').value,
+        end_date: document.getElementById('end_date').value,
+        styles: Array.from(document.querySelectorAll('input[name="styles[]"]:checked')).map(cb => cb.value)
+    };
+
+    // 폼 검증
+    if (!formData.title || !formData.destination || !formData.start_date || !formData.end_date) {
+        alert('모든 필수 항목을 입력해주세요.');
+        return;
+    }
+
+    // 로딩 표시
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
+
+    try {
+        const response = await fetch('{% url "itineraries:wizard_step1" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            // 세션 스토리지에 데이터 저장
+            sessionStorage.setItem('wizard_data', JSON.stringify(formData));
+            // 다음 단계로 이동
+            window.location.href = '{% url "itineraries:wizard_step2" %}';
+        } else {
+            alert(data.message || '저장에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('처리 중 오류가 발생했습니다.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '다음 단계 <i class="fas fa-arrow-right"></i>';
+    }
+});
+
+// 날짜 입력 유효성 검사
+document.getElementById('start_date').addEventListener('change', validateDates);
+document.getElementById('end_date').addEventListener('change', validateDates);
+
+function validateDates() {
+    const startDate = new Date(document.getElementById('start_date').value);
+    const endDate = new Date(document.getElementById('end_date').value);
+    
+    if (endDate < startDate) {
+        alert('종료일은 시작일보다 이후여야 합니다.');
+        document.getElementById('end_date').value = '';
+    }
+}
+</script>
+{% endblock %}

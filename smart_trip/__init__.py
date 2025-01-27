@@ -1,2 +1,1 @@
-import pymysql
-pymysql.install_as_MySQLdb()
+# SQLite를 사용하므로 별도의 데이터베이스 설정이 필요 없습니다.

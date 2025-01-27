@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}여행 일정 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/itineraries.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="itineraries-container">
+    <div class="itineraries-header">
+        <h1>여행 일정</h1>
+        <div class="header-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'itineraries:wizard' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 새 여행 일정 만들기
+                </a>
+            {% endif %}
+            <a href="{% url 'itineraries:samples' %}" class="btn btn-outline-primary">
+                <i class="fas fa-map-marked-alt"></i> 샘플 둘러보기
+            </a>
+        </div>
+    </div>
+
+    <div class="itineraries-filters">
+        <select class="form-select" id="sort-select">
+            <option value="recent">최신순</option>
+            <option value="popular">인기순</option>
+            <option value="views">조회순</option>
+        </select>
+        <input type="text" class="form-control search-input" placeholder="여행지 검색...">
+    </div>
+
+    <div class="itineraries-grid">
+        {% if itineraries %}
+            {% for itinerary in itineraries %}
+                <div class="itinerary-card">
+                    <div class="itinerary-header">
+                        <span class="dates">{{ itinerary.start_date|date:"Y.m.d" }} - {{ itinerary.end_date|date:"Y.m.d" }}</span>
+                        <span class="duration">{{ itinerary.duration }}일</span>
+                    </div>
+                    <h3>{{ itinerary.title }}</h3>
+                    <div class="itinerary-meta">
+                        <span><i class="fas fa-user"></i> {{ itinerary.author.nickname }}</span>
+                        <span><i class="fas fa-heart"></i> {{ itinerary.likes.count }}</span>
+                        <span><i class="fas fa-eye"></i> {{ itinerary.views }}</span>
+                    </div>
+                    <div class="itinerary-places">
+                        {% for place in itinerary.get_main_places|slice:":3" %}
+                            <span class="place">{{ place.name }}</span>
+                        {% endfor %}
+                        {% if itinerary.get_main_places.count > 3 %}
+                            <span class="more">+{{ itinerary.get_main_places.count|add:"-3" }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'itineraries:detail' itinerary.id %}" class="btn btn-outline-primary mt-3">자세히 보기</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-itineraries">
+                <p>아직 등록된 여행 일정이 없습니다.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'itineraries:create' %}" class="btn btn-primary">첫 여행 일정 만들기</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" class="page-link">&laquo; 처음</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-link">이전</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="page-link active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="page-link">다음</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">마지막 &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/itineraries.js' %}"></script>
+{% endblock %}

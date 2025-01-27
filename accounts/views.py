@@ -1,116 +1,121 @@
-from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.shortcuts import get_object_or_404, redirect
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.views import APIView
-from .models import User, RelatedModel
-from .serializers import SignupSerializer, UserProfileSerializer, UserUpdateSerializer
-from django.core.cache import cache
-from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.http import JsonResponse
-from articles.models import Article
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.views.generic import CreateView, View, DetailView
+from django.urls import reverse_lazy
+from django.contrib import messages
+from .forms import SignupForm, LoginForm, UserChangeForm  # UserChangeForm import 추가
+from django.contrib.auth import get_user_model
+from .models import Profile  # Profile 모델 import 추가
+from .forms import ProfileForm  # 프로필 폼 import (있다고 가정)
 
+User = get_user_model()
 
-class SignupView(APIView):
-    '''회원가입'''
-    authentication_classes = [] # 인증 설정 무시
-    permission_classes = []     # 권한 없이 누구나 접근 가능
-    
+class SignupView(CreateView):
+    model = User
+    form_class = SignupForm
+    template_name = 'accounts/signup.html'
+    success_url = reverse_lazy('home')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = form.save()
+        login(self.request, user)  # 회원가입 후 자동 로그인
+        messages.success(self.request, '회원가입이 완료되었습니다.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, '입력한 정보를 다시 확인해주세요.')
+        return super().form_invalid(form)
+
+class LoginView(View):
+    template_name = 'accounts/login.html'
+    form_class = LoginForm
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('home')
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
     def post(self, request):
-        serializer = SignupSerializer(data=request.data) # 시리얼라이저 인스턴스 생성
-        # 시리얼라이저 유효성 검사
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'message': '회원가입이 완료되었습니다.'
-            }, status=status.HTTP_201_CREATED)
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, email=email, password=password)
+            if user is not None:
+                login(request, user)
+                next_url = request.GET.get('next', 'home')
+                return redirect(next_url)
+            else:
+                form.add_error(None, '이메일 또는 비밀번호가 잘못되었습니다.')
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class LoginView(APIView):
-    '''로그인'''
-    authentication_classes = [] # 인증 설정 무시
-    permission_classes = []     # 권한 없이 누구나 접근 가능
-    
-    def post(self, request):
-        # 요청 데이터에서 이메일과 비밀번호 가져오기
-        email = request.data.get('email')
-        password = request.data.get('password')
-        # 사용자  인증
-        user = authenticate(request, email=email, password=password)
-        # 사용자가 존재하면 JWT 토큰 생성
-        if user is not None:
-            refresh = RefreshToken.for_user(user)
-            return JsonResponse({
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
-                'message': '로그인 성공'
-            }, status=200)
+        return render(request, self.template_name, {'form': form})
+
+class LogoutView(View):
+    def get(self, request):
+        logout(request)
+        return redirect('home')
+
+class UserProfileView(DetailView):
+    model = User
+    template_name = 'accounts/profile.html'
+    context_object_name = 'profile_user'
+    slug_field = 'nickname'
+    slug_url_kwarg = 'nickname'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.get_object()
+        context.update({
+            'articles_count': user.articles.count(),
+            'itineraries_count': user.itineraries.count(),
+            'is_owner': self.request.user == user
+        })
+        return context
+
+@login_required
+def profile_view(request):
+    try:
+        # 프로필이 없는 경우 생성
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        
+        if request.method == 'POST':
+            form = ProfileForm(request.POST, request.FILES, instance=profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, '프로필이 업데이트되었습니다.')
+                return redirect('accounts:profile')
         else:
-            return JsonResponse({'error': '로그인 실패: 이메일 또는 비밀번호가 잘못되었습니다. 다시 시도해 주세요.'}, status=400)
-
-
-class LogoutView(APIView):
-    '''로그아웃'''
-    authentication_classes = [] 
-    permission_classes = [] 
-    
-    def post(self, request):
-        # 요청 데이터에서 refresh 토큰 가져오기
-        try:
-            refresh_token = request.data.get('refresh')
-            token = RefreshToken(refresh_token)
-            token.blacklist() # 토큰 블랙리스트 추가
-            return Response({'message': '로그아웃 성공'}, status=200)
-        except KeyError:
-            return Response({'error': 'refresh 토큰이 제공되지 않았습니다.'}, status=400)
-        except TokenError:
-            return Response({'error': '유효하지 않은 토큰입니다.'}, status=400)
+            form = ProfileForm(instance=profile)
         
-
-class UserProfileView(APIView):
-    '''유저 프로필 조회'''
-    authentication_classes = [JWTAuthentication] # JWT 토큰 인증    
+        return render(request, 'accounts/profile.html', {
+            'profile': profile,
+            'form': form
+        })
     
-    def get(self, request, username):
-        user = get_object_or_404(User, username=username)
-        serializer = UserProfileSerializer(user, context={'request':request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        messages.error(request, f'프로필을 불러오는 중 오류가 발생했습니다: {str(e)}')
+        return redirect('home')
+
+@login_required
+def profile_edit(request):
+    if request.method == 'POST':
+        form = UserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, '프로필이 성공적으로 수정되었습니다.')
+            return redirect('accounts:profile')
+    else:
+        form = UserChangeForm(instance=request.user)
     
-    '''유저 프로필 수정'''
-    def put(self, request, username):
-        user = get_object_or_404(User, username=username)
-        serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+    context = {
+        'form': form,
+        'user': request.user
+    }
+    return render(request, 'accounts/profile_edit.html', context)
 
-        if serializer.is_valid():
-            # 수정할 데이터가 없으면 에러 발생
-            if not any(field in serializer.validated_data for field in serializer.fields):
-                return Response({
-                    'message': '이 정보는 수정할 수 없습니다.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-        
-            serializer.save()
-            return Response({
-                'message': '회원정보가 성공적으로 수정되었습니다.',
-                'user': serializer.data
-            }, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UserDeleteView(APIView):
-    '''회원탈퇴'''
-    authentication_classes = [JWTAuthentication] # JWT 인증 클래스 사용
-
-    def delete(self, request, username):
-        # user와 관련된 다른 모델의 데이터를 삭제하거나 업데이트
-        user = get_object_or_404(User, username=username)
-        related_data = RelatedModel.objects.filter(user=request.user)
-        related_data.delete()
-        
-        user = request.user
-        user.delete()
-        return Response({'message': '회원탈퇴가 완료되었습니다.'}, status=status.HTTP_200_OK)
-    
+@login_required
+def settings_view(request):
+    return render(request, 'accounts/settings.html')

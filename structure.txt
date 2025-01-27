@@ -1,0 +1,140 @@
+SmartTrip/
+├── .gitignore                  # Git 제외 파일 설정
+├── manage.py                   # Django 프로젝트 관리 스크립트
+├── requirements.txt            # 프로젝트 의존성 목록
+├── venv/                       # 가상환경 디렉토리
+├── smart_trip/                # 메인 프로젝트 디렉토리
+│   ├── __init__.py            # SQLite 설정
+│   ├── asgi.py                # ASGI 애플리케이션 설정
+│   ├── wsgi.py                # WSGI 애플리케이션 설정
+│   ├── celery.py              # Celery 워커 설정
+│   ├── settings.py            # Django 프로젝트 설정
+│   ├── urls.py                # 메인 URL 라우팅
+│   ├── views.py               # 기본 뷰 정의 (테스트용)
+│   └── context_processors.py  # 테마 설정 관련 컨텍스트 프로세서
+├── accounts/                  # 사용자 계정 관리 앱
+│   ├── __init__.py           # 빈 파일
+│   ├── admin.py              # 사용자 어드민 패널 설정
+│   ├── apps.py               # 앱 설정
+│   ├── forms.py              # 로그인, 회원가입, 프로필 수정 폼
+│   ├── models.py             # 사용자 모델 및 관련 모델 정의
+│   ├── serializers.py        # 사용자 데이터 직렬화
+│   ├── urls.py               # 사용자 관련 URL 패턴
+│   ├── views.py              # 로그인, 회원가입, 프로필 페이지 뷰
+│   ├── api/                  # API 관련 모듈
+│   │   ├── __init__.py      # 빈 파일
+│   │   ├── urls.py          # API 라우팅 (토큰, 회원가입, 로그인 등)
+│   │   └── views.py         # RegisterAPIView, LoginAPIView, ProfileAPIView 등
+│   ├── validators.py         # 커스텀 유효성 검사기
+│   ├── tokens.py             # 비밀번호 재설정 토큰 관리
+│   ├── signals.py            # 사용자 모델 시그널 핸들러
+│   ├── decorators.py         # 인증 관련 데코레이터
+│   ├── managers.py           # 사용자 모델 매니저
+│   ├── exceptions.py         # 커스텀 예외 처리
+│   ├── constants.py          # 상수 정의
+│   └── migrations/           # 데이터베이스 마이그레이션
+├── itineraries/             # 여행 일정 관리 앱
+│   ├── __init__.py         # 빈 파일
+│   ├── admin.py            # 일정, 장소, 댓글 등 어드민 설정
+│   ├── apps.py             # 앱 설정 ('여행 일정')
+│   ├── forms.py            # 일정 생성/수정 폼
+│   ├── models.py           # Itinerary, Place, Day 등 모델
+│   ├── serializers.py      # ItinerarySerializer, PlaceSerializer 등
+│   ├── urls.py             # 일정 관련 URL 패턴
+│   ├── views.py            # 일정 CRUD, 마법사 뷰
+│   ├── api/                # API 관련 모듈
+│   │   ├── __init__.py    # 빈 파일
+│   │   ├── urls.py        # 일정 API 엔드포인트 라우팅
+│   │   └── views.py       # ItineraryAPIView, ItineraryDetailAPIView 구현
+│   ├── services/           # 서비스 계층
+│   │   ├── __init__.py    # 빈 파일
+│   │   ├── optimizer.py    # 일정 최적화 알고리즘 (TSP)
+│   │   ├── weather.py      # OpenWeatherMap API 연동
+│   │   ├── transport.py    # Google Maps API 교통정보 연동
+│   │   ├── analytics.py    # 일정 통계/분석 서비스
+│   │   ├── ai_recommendation.py  # GPT 기반 일정 추천
+│   │   └── wizard_service.py     # 일정 생성 마법사 로직
+│   └── migrations/         # 데이터베이스 마이그레이션
+├── chatbot/                # 챗봇 기능 앱
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py          # Chatbot, Message 등 모델
+│   ├── serializers.py     # 챗봇 관련 시리얼라이저
+│   ├── urls.py            # 웹 URL 패턴
+│   ├── views.py           # 웹 뷰 로직
+│   ├── utils.py           # 유틸리티 함수
+│   ├── api/               # API 관련 모듈
+│   │   ├── __init__.py
+│   │   ├── urls.py       # API URL 패턴
+│   │   └── views.py      # API 뷰 로직
+│   └── services/          # 서비스 계층
+│       ├── __init__.py
+│       └── gpt.py        # GPT 서비스 구현
+├── templates/             # 프로젝트 전체 템플릿
+│   ├── base.html         # 기본 레이아웃 및 메타데이터 정의
+│   ├── home.html         # 메인 페이지 (AI 여행 플래너 소개)
+│   ├── includes/         # 재사용 가능한 템플릿 조각
+│   │   ├── navbar.html   # 네비게이션 바
+│   │   └── footer.html   # 푸터
+│   ├── accounts/         # 계정 관련 템플릿
+│   │   ├── login.html             # 로그인 폼
+│   │   ├── signup.html            # 회원가입 폼
+│   │   ├── profile.html           # 사용자 프로필 조회
+│   │   ├── profile_edit.html      # 프로필 수정
+│   │   ├── password_reset.html    # 비밀번호 재설정 요청
+│   │   └── password_reset_email.html  # 비밀번호 재설정 이메일
+│   ├── itineraries/      # 여행 일정 관련 템플릿
+│   │   ├── list.html     # 일정 목록
+│   │   ├── detail.html   # 일정 상세
+│   │   ├── itinerary_list.html    # 일정 목록 페이지
+│   │   ├── itinerary_detail.html  # 일정 상세 페이지
+│   │   ├── place_form.html        # 장소 추가/수정 폼
+│   │   └── wizard/       # 일정 생성 마법사
+│   │       ├── start.html          # 시작 페이지
+│   │       ├── step1_basic.html    # 기본 정보 입력
+│   │       ├── step2_places.html   # 방문 장소 선택
+│   │       ├── step3_schedule.html # 일정 시간 배치
+│   │       └── step4_details.html  # 상세 정보 설정
+│   └── chatbot/          # 챗봇 관련 템플릿
+│       └── chat.html     # 챗봇 인터페이스
+├── static/               # 정적 파일 저장소
+│   ├── css/             # CSS 파일들
+│   │   ├── style.css            # 전역 스타일 (테마, 색상 변수 등)
+│   │   ├── components.css       # 공통 컴포넌트 스타일 (알림, 버튼, 카드 등)
+│   │   ├── navbar.css           # 네비게이션 바 스타일 (반응형, 테마)
+│   │   ├── auth.css            # 인증 관련 스타일 (로그인, 회원가입, 프로필)
+│   │   ├── profiles.css        # 사용자 프로필 관련 스타일
+│   │   ├── home.css           # 메인 페이지 스타일
+│   │   ├── itineraries.css    # 여행 일정 목록 스타일
+│   │   ├── itinerary-detail.css # 일정 상세 페이지 스타일
+│   │   ├── wizard.css         # 일정 생성 마법사 공통 스타일
+│   │   ├── wizard-steps.css   # 일정 마법사 단계별 스타일
+│   │   └── chatbot.css        # 챗봇 인터페이스 스타일
+│   ├── js/              # JavaScript 파일들
+│   │   ├── main.js             # 공통 유틸리티 함수 (API 요청, 알림, 이미지 미리보기)
+│   │   ├── theme.js            # 테마 관리 (다크모드)
+│   │   ├── navbar.js           # 네비게이션 바 기능 (메뉴, 드롭다운, 스크롤)
+│   │   ├── itineraries.js      # 여행 일정 목록 및 필터링
+│   │   ├── itinerary-detail.js # 일정 상세 페이지 기능
+│   │   ├── itinerary-form.js   # 일정 생성/수정 폼 기능
+│   │   ├── place-search.js     # 장소 검색 및 선택 컴포넌트
+│   │   ├── schedule-builder.js  # 일정 시간표 구성 기능
+│   │   ├── route-optimizer.js  # 최적 경로 계산 (TSP 알고리즘)
+│   │   ├── chatbot.js         # 챗봇 인터페이스 및 대화 기능
+│   │   └── wizard/            # 일정 마법사 관련 스크립트
+│   │       ├── init.js        # 마법사 초기화 및 공통 기능
+│   │       ├── places.js      # 장소 검색/선택 단계
+│   │       ├── schedule.js    # 일정 시간 배치 단계
+│   │       └── details.js     # 상세 정보 입력 단계
+│   └── images/          # 이미지 파일들
+│       ├── logo/              # 로고 이미지
+│       ├── icons/             # 아이콘 세트
+│       ├── defaults/          # 기본 이미지 (프로필 등)
+│       └── backgrounds/       # 배경 이미지
+├── media/               # 사용자 업로드 파일
+│   ├── article_images/  # 게시글 이미지
+│   ├── profiles/       # 프로필 이미지
+│   └── images/         # 기타 이미지
+└── logs/               # 로그 파일 디렉토리
+    └── .gitkeep       # 빈 디렉토리 유지용 파일

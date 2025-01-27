@@ -1,0 +1,621 @@
+.navbar {
+    background-color: var(--surface-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.navbar-brand {
+    flex-shrink: 0;
+}
+
+.brand-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    color: var(--primary-color) !important; /* 파란색으로 고정, !important로 우선순위 지정 */
+    transition: opacity 0.2s ease;
+}
+
+.brand-logo:hover {
+    opacity: 0.9;
+}
+
+.brand-logo img {
+    height: 32px;
+    margin-right: 0.5rem;
+}
+
+.navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: nowrap;  /* 줄바꿈 방지 */
+    overflow-x: auto;   /* 가로 스크롤 허용 */
+    padding: 0.5rem;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+    margin-left: 2rem;
+}
+
+.navbar-menu::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+}
+
+.nav-link {
+    white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.75rem;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--primary-color);
+}
+
+.user-menu {
+    position: relative;
+    margin-left: auto;  /* 오른쪽 정렬 */
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: inherit;
+}
+
+.dropdown-toggle i {
+    font-size: 0.8em;
+    transition: transform 0.2s;
+}
+
+.dropdown:hover .dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-bg);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    min-width: 200px;
+    padding: 0.5rem;
+    margin-top: 0.75rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown.active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.dropdown-item:hover {
+    background-color: var(--background-color);
+}
+
+.profile-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 0.5rem 0;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        position: sticky;
+    }
+
+    .navbar-menu {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.5rem;
+        margin-left: 1rem;
+    }
+
+    .nav-link {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .nav-link:hover {
+        color: #ffffff;
+    }
+
+    .user-menu {
+        position: static;
+        width: auto;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        width: 200px;
+    }
+}
+
+/* 테마 토글 버튼 스타일 */
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    margin-right: 15px;
+    color: var(--text-color);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.theme-toggle-btn .fa-sun {
+    display: none;
+}
+
+.theme-toggle-btn .fa-moon {
+    display: inline-block;
+}
+
+[data-theme="dark"] .theme-toggle-btn .fa-sun {
+    display: inline-block;
+}
+
+[data-theme="dark"] .theme-toggle-btn .fa-moon {
+    display: none;
+}
+
+/* 프로필 이미지 컨테이너 스타일 */
+.profile-image-container {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--primary-color);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    transition: background-color 0.3s ease;
+}
+
+.profile-button:hover .profile-image-container {
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.profile-button:hover .profile-image {
+    transform: scale(1.1);
+}
+
+/* 드롭다운 메뉴 스타일 */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    min-width: 160px;
+    background-color: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.profile-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--background-color);
+}
+
+.logout-link {
+    border-top: 1px solid var(--border-color);
+    color: var(--danger-color) !important;
+}
+
+/* 인증 버튼 스타일 */
+.auth-button {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.login {
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.signup {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.login:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.signup:hover {
+    background-color: var(--secondary-dark);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .profile-button {
+        padding: 0.25rem;
+    }
+
+    .profile-image-container {
+        width: 32px;
+        height: 32px;
+    }
+
+    .username {
+        display: none;
+    }
+
+    .dropdown-content {
+        right: -1rem;
+    }
+}
+
+/* ...existing code... */
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+}
+
+.navbar-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin: 0 2rem;
+    flex-grow: 1;
+}
+
+.navbar-menu a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.navbar-menu a:hover {
+    background-color: var(--background-color);
+}
+
+.navbar-auth {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mobile-menu-button {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .navbar-menu {
+        display: none;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: var(--surface-bg);
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .navbar-menu.active {
+        display: flex;
+    }
+
+    .mobile-menu-button {
+        display: block;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.5rem;
+    }
+
+    .navbar-auth {
+        margin-left: 0;
+    }
+
+    .username {
+        display: none;
+    }
+}
+
+/* ...existing code... */
+
+/* 드롭다운 메뉴 스타일 추가 */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    padding-right: 1.5rem;
+    position: relative;
+}
+
+.dropdown-toggle::after {
+    content: '▼';
+    font-size: 0.8em;
+    margin-left: 0.5rem;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--surface-bg);
+    min-width: 200px;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--background-hover);
+}
+
+.dropdown-content a.highlight {
+    color: var(--primary-color);
+    font-weight: 500;
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.dropdown-content a.highlight i {
+    margin-right: 0.5rem;
+}
+
+/* 반응형 스타일 수정 */
+@media (max-width: 768px) {
+    .dropdown-content {
+        position: static;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+        margin-left: 1rem;
+    }
+
+    .dropdown-toggle::after {
+        display: none;
+    }
+}
+
+/* ...existing code... */
+
+.highlight-menu {
+    color: var(--primary-color) !important;
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.highlight-menu i {
+    margin-right: 0.5rem;
+}
+
+.highlight-menu:hover {
+    background-color: var(--primary-color);
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+/* ...existing code... */
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.logo-text:hover {
+    opacity: 0.9;
+}
+
+/* ...existing code... */
+
+.theme-toggle {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[data-theme="light"] .theme-toggle .dark-icon {
+    display: inline-block;
+}
+
+[data-theme="light"] .theme-toggle .light-icon {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .dark-icon {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .light-icon {
+    display: inline-block;
+}
+
+/* ...existing code... */
