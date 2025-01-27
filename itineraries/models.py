@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.urls import reverse
 from django.utils import timezone  # 추가
 
@@ -42,7 +42,7 @@ class ItineraryDay(models.Model):
     itinerary = models.ForeignKey(
         Itinerary,
         on_delete=models.CASCADE,
-        related_name='days',
+        related_name='itinerary_days',  # related_name 변경
         verbose_name=_('여행 일정')
     )
     day_number = models.PositiveIntegerField(_('일차'))
@@ -57,34 +57,35 @@ class ItineraryDay(models.Model):
     def __str__(self):
         return f"{self.itinerary.title} - {self.day_number}일차"
 
+# Day 클래스 삭제 (ItineraryDay로 통합)
+
 class Place(models.Model):
-    name = models.CharField(_('이름'), max_length=100)
-    address = models.CharField(_('주소'), max_length=200)
-    description = models.TextField(_('설명'))
-    latitude = models.FloatField(_('위도'))
-    longitude = models.FloatField(_('경도'))
-    category = models.CharField(
-        _('카테고리'),
-        max_length=50,
-        choices=[
-            ('관광', '관광'),
-            ('자연', '자연'),
-            ('문화', '문화'),
-            ('쇼핑', '쇼핑'),
-            ('맛집', '맛집'),
-        ],
-        default='관광'  # 기본값 추가
+    CATEGORY_CHOICES = [
+        ('attraction', '관광지'),
+        ('restaurant', '음식점'),
+        ('shopping', '쇼핑'),
+        ('accommodation', '숙소'),
+    ]
+
+    name = models.CharField(max_length=200)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    description = models.TextField(blank=True)
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100, default='서울')  # default 값 추가
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    visit_duration = models.DurationField(
+        help_text="예상 방문 시간",
+        default=timedelta(hours=1),  # 기본값 1시간으로 설정
+        null=True,  # null 허용
+        blank=True  # 폼에서 비워둘 수 있음
     )
-    rating = models.FloatField(_('평점'), default=0)
-    created_at = models.DateTimeField(
-        _('생성일'),
-        default=timezone.now  # 기본값 추가
-    )
+    recommended_time = models.TimeField(null=True, blank=True, help_text="추천 방문 시간")
 
     class Meta:
-        verbose_name = _('장소')
-        verbose_name_plural = _('장소들')
-        ordering = ['-rating']
+        verbose_name = '장소'
+        verbose_name_plural = '장소 목록'
 
     def __str__(self):
         return self.name
@@ -247,3 +248,45 @@ class WeatherAlert(models.Model):
     class Meta:
         verbose_name = _('날씨 알림')
         verbose_name_plural = _('날씨 알림들')
+
+class TravelPreference(models.Model):
+    STYLE_CHOICES = [
+        ('relaxed', '여유로운'),
+        ('active', '활동적인'),
+        ('cultural', '문화적인'),
+        ('adventurous', '모험적인'),
+    ]
+    
+    BUDGET_CHOICES = [
+        ('budget', '저예산'),
+        ('moderate', '중간'),
+        ('luxury', '고급'),
+    ]
+    
+    TRANSPORTATION_CHOICES = [
+        ('public', '대중교통'),
+        ('car', '자동차'),
+        ('walk', '도보'),
+        ('bicycle', '자전거'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    travel_style = models.CharField(max_length=20, choices=STYLE_CHOICES)
+    budget_range = models.CharField(max_length=20, choices=BUDGET_CHOICES)
+    preferred_transportation = models.CharField(max_length=20, choices=TRANSPORTATION_CHOICES)
+    
+    class Meta:
+        verbose_name = '여행 선호도'
+        verbose_name_plural = '여행 선호도 목록'
+
+class DayPlace(models.Model):
+    day = models.ForeignKey(ItineraryDay, on_delete=models.CASCADE)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()
+    arrival_time = models.TimeField()
+    departure_time = models.TimeField()
+
+    class Meta:
+        verbose_name = '일정 장소'
+        verbose_name_plural = '일정 장소 목록'
+        ordering = ['order']

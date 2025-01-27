@@ -6,6 +6,8 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from .forms import SignupForm, LoginForm, UserChangeForm  # UserChangeForm import 추가
 from django.contrib.auth import get_user_model
+from .models import Profile  # Profile 모델 import 추가
+from .forms import ProfileForm  # 프로필 폼 import (있다고 가정)
 
 User = get_user_model()
 
@@ -76,14 +78,26 @@ class UserProfileView(DetailView):
 @login_required
 def profile_view(request):
     try:
-        profile = request.user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=request.user)
+        # 프로필이 없는 경우 생성
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        
+        if request.method == 'POST':
+            form = ProfileForm(request.POST, request.FILES, instance=profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, '프로필이 업데이트되었습니다.')
+                return redirect('accounts:profile')
+        else:
+            form = ProfileForm(instance=profile)
+        
+        return render(request, 'accounts/profile.html', {
+            'profile': profile,
+            'form': form
+        })
     
-    context = {
-        'profile': profile,
-    }
-    return render(request, 'accounts/profile.html', context)
+    except Exception as e:
+        messages.error(request, f'프로필을 불러오는 중 오류가 발생했습니다: {str(e)}')
+        return redirect('home')
 
 @login_required
 def profile_edit(request):

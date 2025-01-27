@@ -37,7 +37,6 @@ DATABASE_URL=sqlite:///db.sqlite3
 ```
 
 ## 테스트용 데이터 생성
-숙소(admin페이지에서 수정가능) : python manage.py create_jeju_stays
 
 일정 생성(admin페이지에서 수정가능) : python manage.py create_jeju_places
 
@@ -56,10 +55,6 @@ python manage.py makemigrations
 python manage.py makemigrations itineraries
 
 python manage.py makemigrations accounts
-
-python manage.py makemigrations articles
-
-python manage.py makemigrations stays
 
 python manage.py makemigrations chatbot
 

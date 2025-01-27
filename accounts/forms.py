@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from .models import User
+from .models import User, Profile
 
 User = get_user_model()
 
@@ -23,12 +23,13 @@ class UserChangeForm(BaseUserChangeForm):
     
     class Meta:
         model = User
-        fields = ('nickname', 'profile_image', 'gender', 'bio')
+        fields = ('nickname', 'profile_image', 'gender', 'bio', 'birth_date')
         widgets = {
             'nickname': forms.TextInput(attrs={'class': 'form-control'}),
             'profile_image': forms.FileInput(attrs={'class': 'form-control'}),
             'gender': forms.Select(attrs={'class': 'form-control'}),
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
 class SignupForm(UserCreationForm):
@@ -109,3 +110,18 @@ class LoginForm(forms.Form):
             'placeholder': '비밀번호'
         })
     )
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['nickname', 'bio', 'avatar']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({
+                'class': 'form-control'
+            })

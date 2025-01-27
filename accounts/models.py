@@ -11,7 +11,6 @@ class RelatedModel(models.Model):
     def __str__(self):
         return f'Related data for {self.user.email}'
 
-
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -61,10 +60,10 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=50, blank=True)
     bio = models.TextField(max_length=500, blank=True)
-    avatar = models.ImageField(upload_to='profiles/', null=True, blank=True)  # profile_image를 avatar로 수정
+    avatar = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username}'s profile"
+        return f"{self.user.email}'s profile"
 
     class Meta:
         verbose_name = '프로필'
