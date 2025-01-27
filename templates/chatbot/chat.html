@@ -1,12 +1,63 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}AI 여행 플래너 - SmartTrip{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+<style>
+    /* 채팅 컨테이너 */
+    .chatbot-container {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+    /* 메인 채팅창 스타일 */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: #fff;
+        overflow: hidden;
+    }
+    /* 채팅 메시지 창 (스크롤 유지) */
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        max-height: 75vh; /* 최대 높이 지정 */
+    }
+    /* 사용자 메시지 (오른쪽 정렬) */
+    .chat-message.user {
+        text-align: right;
+        background-color: #DCF8C6;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 60%;
+        margin-left: auto;
+        margin-bottom: 10px;
+    }
+    /* 챗봇 메시지 (왼쪽 정렬) */
+    .chat-message.bot {
+        text-align: left;
+        background-color: #EAEAEA;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 60%;
+        margin-right: auto;
+        margin-bottom: 10px;
+    }
+    /* 채팅 입력창 (하단 고정) */
+    .chat-input {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+    }
+</style>
 {% endblock %}
-
 {% block content %}
 <div class="chatbot-container">
     <div class="sidebar">
@@ -16,39 +67,31 @@
                 새로운 대화
             </button>
         </div>
-        <div class="chat-history">
-            <h3>이전 대화</h3>
-            <div id="conversations-list">
-                <!-- 대화 목록이 여기에 동적으로 추가됩니다 -->
-            </div>
-        </div>
     </div>
-
     <div class="chat-main">
         <div class="chat-header">
             <h2><i class="fas fa-robot"></i> AI 여행 플래너</h2>
             <p>맞춤형 여행 계획을 도와드립니다</p>
         </div>
-
+        <!-- 📌 채팅 메시지 창 (스크롤 가능) -->
         <div class="chat-messages" id="chat-messages">
-            <!-- 메시지들이 여기에 동적으로 추가됩니다 -->
+            {% if new_message %}
+                <div class="chat-message user">
+                    {{ new_message.user_message }}
+                </div>
+                <div class="chat-message bot">
+                    {{ new_message.bot_reply }}
+                </div>
+            {% endif %}
         </div>
-
-        <div class="suggestions">
-            <div class="suggestion-chips">
-                <button class="chip">📍 서울 2박3일 여행</button>
-                <button class="chip">🏖️ 제주도 맛집</button>
-                <button class="chip">🌊 부산 관광지</button>
-                <button class="chip">❄️ 겨울 여행지</button>
-            </div>
-        </div>
-
+        <!-- 📌 입력창 (하단 고정) -->
         <div class="chat-input">
-            <form id="chat-form">
+            <form id="chat-form" method="POST">
                 {% csrf_token %}
                 <div class="input-group">
                     <input type="text" 
                            id="user-input" 
+                           name="user_message"
                            placeholder="여행 계획에 대해 물어보세요..." 
                            autocomplete="off"
                            required>
@@ -60,4 +103,54 @@
         </div>
     </div>
 </div>
+<!-- 📌 스크롤 유지 기능 추가 -->
+<script>
+    function scrollToBottom() {
+        var chatBox = document.getElementById("chat-messages");
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    window.onload = function() {
+        scrollToBottom();
+    };
+    // 폼 제출 시 새로운 메시지만 추가하고 스크롤 유지
+    document.getElementById("chat-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let userInput = document.getElementById("user-input");
+        let userMessage = userInput.value.trim();
+        if (userMessage === "") return;
+        // 사용자 메시지 추가
+        let chatBox = document.getElementById("chat-messages");
+        let userDiv = document.createElement("div");
+        userDiv.classList.add("chat-message", "user");
+        userDiv.innerHTML = userMessage;
+        chatBox.appendChild(userDiv);
+        // 입력 초기화
+        userInput.value = "";
+        scrollToBottom();
+        // 서버로 메시지 전송 (AJAX)
+        fetch("{% url 'chatbot:chat' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "user_message=" + encodeURIComponent(userMessage)
+        })
+        .then(response => response.text())
+        .then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, "text/html");
+            let newMessage = doc.querySelector(".chat-message.bot");
+            if (newMessage) {
+                chatBox.appendChild(newMessage);
+                scrollToBottom();
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+    // 새로운 대화 버튼 클릭 시 새로운 대화 뷰 호출
+    document.getElementById("new-chat").addEventListener("click", function() {
+        window.location.href = "{% url 'chatbot:new_chat' %}";
+    });
+</script>
 {% endblock %}
