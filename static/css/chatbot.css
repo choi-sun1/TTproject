@@ -13,16 +13,21 @@
 
 /* 사이드바 스타일 */
 .sidebar {
-    background: var(--surface-bg);
-    border-right: 1px solid var(--border-color);
-    padding: 1rem;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background-color);
+    border-right: 1px solid var(--border-color);
 }
 
+/* 사이드바 헤더 스타일 */
 .sidebar-header {
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1rem;
 }
 
 /* 새로운 대화 버튼 스타일 */
@@ -39,6 +44,7 @@
     justify-content: center;
     gap: 0.5rem;
     transition: all 0.2s ease;
+    margin-bottom: 0.5rem; /* 버튼 사이의 간격 */
 }
 
 .new-chat-btn:hover, .show-history-btn:hover {
@@ -49,6 +55,14 @@
 /* 이전 대화 버튼 스타일 */
 .show-history-btn {
     background-color: #6c757d; /* 현재 색상 유지 */
+}
+
+/* 바 스타일 */
+.divider {
+    width: 100%;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.5rem 0; /* 버튼 사이의 간격 */
 }
 
 .chat-history {
