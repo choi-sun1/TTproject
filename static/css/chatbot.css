@@ -25,7 +25,8 @@
     border-bottom: 1px solid var(--border-color);
 }
 
-.new-chat-btn {
+/* 새로운 대화 버튼 스타일 */
+.new-chat-btn, .show-history-btn {
     width: 100%;
     padding: 0.75rem;
     background: var(--primary-color);
@@ -40,9 +41,14 @@
     transition: all 0.2s ease;
 }
 
-.new-chat-btn:hover {
+.new-chat-btn:hover, .show-history-btn:hover {
     background: var(--primary-dark);
     transform: translateY(-1px);
+}
+
+/* 이전 대화 버튼 스타일 */
+.show-history-btn {
+    background-color: #6c757d; /* 현재 색상 유지 */
 }
 
 .chat-history {
@@ -105,14 +111,26 @@
     line-height: 1.5;
 }
 
+/* 사용자 메시지 (오른쪽 정렬) */
+.message.user .message-content {
+    background: var(--primary-color);
+    color: white; /* 텍스트 색상 유지 */
+}
+
+/* 챗봇 메시지 (왼쪽 정렬) */
 .message.bot .message-content {
     background: var(--background-color);
     border: 1px solid var(--border-color);
+    color: var(--text-primary); /* 텍스트 색상 유지 */
 }
 
-.message.user .message-content {
-    background: var(--primary-color);
-    color: white;
+/* 다크 모드에서 텍스트 색상 유지 */
+[data-theme="dark"] .message.user .message-content {
+    color: white; /* 텍스트 색상 유지 */
+}
+
+[data-theme="dark"] .message.bot .message-content {
+    color: var(--text-primary); /* 텍스트 색상 유지 */
 }
 
 /* 제안 칩 스타일 */
