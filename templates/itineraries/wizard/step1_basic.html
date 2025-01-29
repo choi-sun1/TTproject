@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}기본 정보 입력 - AI 일정 만들기{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <div class="wizard-progress">
+        <div class="progress-step active">
+            <div class="step-number">1</div>
+            <div class="step-label">기본정보</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">2</div>
+            <div class="step-label">장소선택</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">3</div>
+            <div class="step-label">일정배치</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">4</div>
+            <div class="step-label">상세설정</div>
+        </div>
+    </div>
+
+    <form id="basicForm" class="wizard-form">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-plane-departure"></i>
+                    <h3>여행 기본 정보</h3>
+                </div>
+                <div class="form-group">
+                    <label for="title">여행 제목</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-tag"></i>
+                        <input type="text" id="title" name="title" class="form-control" required
+                               placeholder="예: 제주도 3박 4일 가족 여행">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="destination">여행지</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input type="text" id="destination" name="destination" class="form-control" required
+                               placeholder="예: 제주도">
+                    </div>
+                </div>
+
+                <div class="date-range-group">
+                    <div class="form-group">
+                        <label for="start_date">시작일</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="start_date" name="start_date" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">종료일</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="end_date" name="end_date" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-heart"></i>
+                    <h3>여행 스타일</h3>
+                </div>
+                <div class="style-grid">
+                    <label class="style-card">
+                        <input type="checkbox" name="styles[]" value="문화">
+                        <div class="style-content">
+                            <i class="fas fa-landmark"></i>
+                            <span>문화/역사</span>
+                        </div>
+                    </label>
+                    <label class="style-card">
+                        <input type="checkbox" name="styles[]" value="자연">
+                        <div class="style-content">
+                            <i class="fas fa-mountain"></i>
+                            <span>자연/풍경</span>
+                        </div>
+                    </label>
+                    <label class="style-card">
+                        <input type="checkbox" name="styles[]" value="맛집">
+                        <div class="style-content">
+                            <i class="fas fa-utensils"></i>
+                            <span>맛집탐방</span>
+                        </div>
+                    </label>
+                    <label class="style-card">
+                        <input type="checkbox" name="styles[]" value="쇼핑">
+                        <div class="style-content">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>쇼핑</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'itineraries:wizard' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> 이전
+            </a>
+            <button type="submit" class="btn-next">
+                다음 단계 <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/wizard.js' %}"></script>
+<script src="{% static 'js/wizard/step1.js' %}"></script>
+{% endblock %}

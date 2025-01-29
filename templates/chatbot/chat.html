@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI 여행 플래너 - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="chatbot-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <button id="new-chat" class="new-chat-btn">
+                <i class="fas fa-plus"></i>
+                새로운 대화
+            </button>
+        </div>
+        <div class="chat-history">
+            <h3>이전 대화</h3>
+            <div id="conversations-list">
+                <!-- 대화 목록이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-main">
+        <div class="chat-header">
+            <h2><i class="fas fa-robot"></i> AI 여행 플래너</h2>
+            <p>맞춤형 여행 계획을 도와드립니다</p>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <!-- 메시지들이 여기에 동적으로 추가됩니다 -->
+        </div>
+
+        <div class="suggestions">
+            <div class="suggestion-chips">
+                <button class="chip">📍 서울 2박3일 여행</button>
+                <button class="chip">🏖️ 제주도 맛집</button>
+                <button class="chip">🌊 부산 관광지</button>
+                <button class="chip">❄️ 겨울 여행지</button>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <form id="chat-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" 
+                           id="user-input" 
+                           placeholder="여행 계획에 대해 물어보세요..." 
+                           autocomplete="off"
+                           required>
+                    <button type="submit" class="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

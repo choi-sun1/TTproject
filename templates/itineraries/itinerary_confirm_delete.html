@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="delete-confirmation">
+    <h2>일정 삭제 확인</h2>
+    <p>정말로 "{{ object.title }}" 일정을 삭제하시겠습니까?</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <a href="{% url 'itineraries:detail' object.pk %}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn-danger">삭제</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
