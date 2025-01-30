@@ -1,23 +1,43 @@
-from pathlib import Path
-import environ
 import os
+import environ
+from pathlib import Path
+from . import config
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# API 키 설정
+GOOGLE_MAPS_API_KEY = config.GOOGLE_MAPS_API_KEY
+OPENAI_API_KEY = config.OPENAI_API_KEY
+
+# 보안 설정
+SECRET_KEY = config.SECRET_KEY
+DEBUG = config.DEBUG
+ALLOWED_HOSTS = config.ALLOWED_HOSTS
+
+# 이메일 설정
+EMAIL_HOST = config.EMAIL_HOST
+EMAIL_PORT = config.EMAIL_PORT
+EMAIL_HOST_USER = config.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
+
+# CORS 설정
+CORS_ALLOWED_ORIGINS = config.CORS_ALLOWED_ORIGINS
 
 # environ 설정
 env = environ.Env(
     DEBUG=(bool, False)
 )
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 # .env 파일 읽기
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # 환경 변수에서 설정 가져오기
-SECRET_KEY = env('SECRET_KEY')
+OPENAI_API_KEY = config.OPENAI_API_KEY
+GOOGLE_MAPS_API_KEY = config.GOOGLE_MAPS_API_KEY
+SECRET_KEY = config.SECRET_KEY  # DJANGO_SECRET_KEY를 SECRET_KEY로 변경
 DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
-
 
 # Application definition
 
@@ -284,7 +304,7 @@ if DEBUG:
     mimetypes.add_type("text/css", ".css", True)
 
 # OpenAI API 설정
-OPENAI_API_KEY = env('OPENAI_API_KEY')
+OPENAI_API_KEY = OPENAI_API_KEY  # config.py에서 가져온 값 사용
 OPENAI_MODEL = 'gpt-4'  # 사용할 모델 지정
 
 # GPT 설정

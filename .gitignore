@@ -43,3 +43,6 @@ logs/*.log
 
 # SQLite
 *.sqlite3
+
+# Config file
+smart_trip/config.py

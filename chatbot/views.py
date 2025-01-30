@@ -1,147 +1,137 @@
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.http import JsonResponse
-from .models import ChatState, Conversation
-import re, openai
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from openai import OpenAI
+from .models import Conversation
+from .forms import ChatForm
+from django.http import StreamingHttpResponse
+import time
+import re
 
-openai.api_key = 'your-openai-api-key'
-# 환경변수나 설정파일에서 API 키 가져오는 방법 사용하기
 
-class ChatbotResponseView(APIView):
-    permission_classes = [IsAuthenticated]
+CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-    def post(self, request):
-        user = request.user  # 인증된 사용자
-        user_message = request.data.get('message', '')
+# 마크다운 제거 + 문단 구분 유지 함수 (한 줄 띄우기 적용)
+def remove_markdown(text):
+    """마크다운 문법을 제거하면서 문단 구분을 한 줄(`\n`)로 유지하는 함수"""
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # **굵은 글씨 제거**
+    text = re.sub(r'\*(.*?)\*', r'\1', text)  # *이탤릭체 제거*
+    text = re.sub(r'`(.*?)`', r'\1', text)  # `코드 블록 제거`
+    text = re.sub(r'#+\s', '', text)  # # 헤더 태그 제거
+    text = re.sub(r'(\n- |\n\*)', '\n', text)  # 리스트 기호 제거
+    text = text.replace('•', '')  # 점 리스트 제거
+    text = re.sub(r'(\d+\.\s)', '', text)  # 번호 리스트 제거
 
-        # 대화 상태 확인
-        chat_state, created = ChatState.objects.get_or_create(user=user)
+    # 문단 구분을 한 줄(`\n`)로 변경
+    text = re.sub(r'\n\s*\n', '\n', text)  # 기존 두 줄 띄우기를 한 줄로 변환
 
-        # 상태에 따른 로직 처리
-        if chat_state.current_step == 'start':
-            bot_reply = "여행 지역을 알려주세요."
-            chat_state.current_step = 'get_location'
+    return text.strip()
 
-        elif chat_state.current_step == 'get_location':
-            chat_state.context_data['location'] = user_message
-            bot_reply = f"{user_message}에서 여행을 계획하시나요? 예산을 알려주세요."
-            chat_state.current_step = 'get_budget'
 
-        elif chat_state.current_step == 'get_budget':
-            chat_state.context_data['budget'] = user_message
-            bot_reply = f"예산이 {user_message}원이군요! 여행 기간을 알려주세요."
-            chat_state.current_step = 'get_duration'
+@login_required
+def chat_view(request):
+    if request.method == 'GET':
+        show_history = request.GET.get('show_history', 'false') == 'true'
+        conversations = Conversation.objects.filter(user=request.user).order_by('timestamp') if show_history else []
+        return render(request, 'chatbot/chat.html', {'conversations': conversations, 'form': ChatForm(), 'show_history': show_history})
 
-        elif chat_state.current_step == 'get_duration':
-            # 여행 기간 입력 처리 (예: "2박 3일" 또는 "당일")
-            duration_match = re.match(r"(\d+)박 (\d+)일", user_message)
-            if duration_match:
-                num_nights = int(duration_match.group(1))  # 2박
-                num_days = int(duration_match.group(2))  # 3일
-                chat_state.context_data['duration'] = {'nights': num_nights, 'days': num_days}
+    # 프롬프트 수정 (한 줄 띄우기 적용)
+    prompt = '''
+    응답을 반드시 **일반 텍스트 형식**으로 작성해야 합니다.
 
-                # 당일여행 여부 확인
-                if num_nights == 0:
-                    bot_reply = f"{num_days}일 동안의 당일 여행을 계획하셨군요! 추천 활동을 준비 중입니다."
-                    chat_state.current_step = 'get_activities'  # 숙박 질문 건너뛰기
-                else:
-                    bot_reply = f"{num_nights}박 {num_days}일 여행을 계획하셨군요! 숙박 조건을 알려주세요."
-                    chat_state.current_step = 'get_accommodation'
-            else:
-                bot_reply = "여행 기간을 'X박 Y일' 형식으로 입력해주세요. 예: '2박 3일' 또는 '당일'"
+    1. 문장을 **줄글로 이어쓰지 말고, 문단 단위로 구분하세요.**  
+    2. 각 문단 사이에 **한 줄(`\n`)의 빈 줄을 추가하세요.**
+    3. 문장은 완전한 형태로 작성하고, 문단을 **짧고 간결하게 유지하세요.**
+    4. 텍스트만 사용하고, 마크다운을 **절대 포함하지 마세요.**
 
-        elif chat_state.current_step == 'get_accommodation':
-            # 숙박 조건 입력 받기
-            chat_state.context_data['accommodation'] = user_message
-            bot_reply = "숙박 조건을 저장했습니다. 추천 활동을 준비 중입니다."
-            chat_state.current_step = 'get_activities'
+    예제:
+    ---
+    사용자: 서울 2박 3일 여행 일정을 추천해줘.
+    AI:
+    강릉에서의 1박 2일 여행은 정말 멋진 선택이에요!
 
-        elif chat_state.current_step == 'get_activities':
-            # LLM 또는 RAG 기반 추천 로직 추가
-            bot_reply = "추천 활동 리스트를 준비 중이에요! 잠시만 기다려주세요."
-            chat_state.current_step = 'start'  # 대화 리셋
+첫째 날 일정을 추천해볼게요:
 
-        else:
-            bot_reply = "감사합니다. 추천 결과를 정리하고 있어요!"
-            chat_state.current_step = 'start'  # 대화 리셋
+오전: 도착 및 카페 탐방
+- 아침에 강릉에 도착한 후, 유명한 커피 명소인 ‘강릉커피거리’를 방문해보세요.
+- 다양한 카페에서 커피를 즐기며 바다가 보이는 멋진 경치를 감상할 수 있습니다.
 
-        # 대화 내용 Conversation 모델에 저장
-        Conversation.objects.create(
-            user=user,
-            message=user_message,
-            bot_reply=bot_reply
-        )
+점심: 지역 맛집
+- ‘초당순두부’나 ‘강릉회센터’ 같은 지역 맛집에서 점심을 먹어보세요.
+- 신선한 해산물이나 순두부 요리를 추천합니다.
 
-        # 상태 저장
-        chat_state.save()
+오후: 경포대 및 해변 산책
+- 점심 후 경포대로 이동해보세요.
+- 경포대에서 바다를 바라보며 산책하고, 주변 사진도 찍어보세요.
+- 경포해변에서 바다에 발을 담그며 여유로운 시간을 가져도 좋습니다.
 
-        return JsonResponse({'bot_reply': bot_reply})
+저녁: 바베큐 혹은 해산물 요리
+- 숙소에서 바베큐를 즐길 수도 있고, ‘속초 수산시장’에 가서 신선한 해산물을 즐기는 것도 좋습니다.
 
-from rest_framework import generics, permissions, status
-from rest_framework.response import Response
-from .models import Conversation, Message, Feedback
-from .serializers import ConversationSerializer, MessageSerializer, FeedbackSerializer
-from django.shortcuts import get_object_or_404
+밤: 해변 산책 또는 휴식
+- 저녁 식사 후에는 해변을 따라 산책하며 일몰을 감상해보세요.
+- 숙소에서 자유롭게 휴식을 취하는 것도 좋은 선택이에요.
 
-class StartConversationView(generics.CreateAPIView):
-    serializer_class = ConversationSerializer
-    permission_classes = [permissions.IsAuthenticated]
+둘째 날 일정을 제안해드릴게요:
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        conversation = serializer.save(user=request.user)
-        return Response({
-            'conversation_id': conversation.id,
-            'title': conversation.title,
-            'message': 'Conversation started successfully'
-        }, status=status.HTTP_201_CREATED)
+오전: 안목해변 카페 탐방
+- 아침 식사 후 안목해변으로 이동해 근처의 카페에서 아침 커피와 간단한 아침을 즐기세요.
+- 해안선 따라 걷는 것도 좋은 아침 산책이 됩니다.
 
-class SendMessageView(generics.CreateAPIView):
-    serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
+오후: 명소 방문 및 돌아가기
+- ‘선교장’이나 ‘오죽헌’을 방문해 전통적인 한국의 모습을 느껴보세요.
+- 강릉의 역사와 문화를 체험할 수 있는 좋은 기회가 될 것입니다.
 
-    def create(self, request, *args, **kwargs):
-        conversation_id = request.data.get('conversation_id')
-        if not conversation_id:
-            return Response(
-                {'error': 'conversation_id is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        conversation = get_object_or_404(
-            Conversation,
-            id=conversation_id,
-            user=request.user
-        )
-        
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(conversation=conversation)
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
+이후 여행을 마치고 돌아가는 일정으로 계획하면 좋겠네요. 필요에 따라 일정 수정도 가능하니 언제든지 말씀해 주세요!
+    ---
 
-class ConversationHistoryView(generics.RetrieveAPIView):
-    serializer_class = ConversationSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = Conversation.objects.all()
+    위 예제와 같은 방식으로 답변하세요.
+    '''
 
-class ProvideFeedbackView(generics.CreateAPIView):
-    serializer_class = FeedbackSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    if request.method == 'POST':
+        user = request.user
+        form = ChatForm(request.POST)
+        if form.is_valid():
+            user_message = form.cleaned_data["user_message"]
 
-    def perform_create(self, serializer):
-        message_id = self.kwargs.get('pk')
-        message = get_object_or_404(Message, id=message_id)
-        serializer.save(user=self.request.user, message=message)
+            def generate_response():
+                stream = CLIENT.chat.completions.create(
+                    model="gpt-4o",
+                    stream=True,  # Streaming 활성화
+                    messages=[
+                        {"role": "system", "content": prompt},  # 프롬프트 수정
+                        {"role": "user", "content": user_message}
+                    ]
+                )
 
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+                bot_reply = ""  # 전체 응답을 저장할 변수
 
-class ChatbotView(LoginRequiredMixin, TemplateView):
-    template_name = 'chatbot/chat.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['KAKAO_MAPS_API_KEY'] = self.request.COOKIES.get('KAKAO_MAPS_API_KEY', '')
-        return context
+                # Streaming 방식으로 데이터 처리
+                for chunk in stream:
+                    if hasattr(chunk, "choices") and chunk.choices:
+                        delta = chunk.choices[0].delta
+                        if hasattr(delta, "content") and delta.content:
+                            text = delta.content
+                            bot_reply += text  # 전체 응답 저장
+                            yield text  # 클라이언트에 스트리밍 전송
+                            time.sleep(0.05)  # 자연스러운 출력 효과
+
+                # 마크다운 제거 후 문단 유지 (한 줄 띄우기 적용)
+                clean_reply = remove_markdown(bot_reply)
+
+                # Conversation 저장
+                Conversation.objects.create(
+                    user=user,
+                    user_message=user_message,
+                    bot_reply=clean_reply
+                )
+
+            return StreamingHttpResponse(generate_response(), content_type='text/plain')
+
+    return render(request, 'chatbot/chat.html', {'form': ChatForm()})
+
+
+@login_required
+def new_chat(request):
+    request.session['new_chat'] = True
+    return redirect('chatbot:chat')  # chat_view로 리디렉션
