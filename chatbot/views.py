@@ -8,25 +8,18 @@ from django.http import StreamingHttpResponse
 import time
 import re
 
-
 CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-# 마크다운 제거 + 문단 구분 유지 함수 (한 줄 띄우기 적용)
-def remove_markdown(text):
-    """마크다운 문법을 제거하면서 문단 구분을 한 줄(`\n`)로 유지하는 함수"""
-    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # **굵은 글씨 제거**
-    text = re.sub(r'\*(.*?)\*', r'\1', text)  # *이탤릭체 제거*
-    text = re.sub(r'`(.*?)`', r'\1', text)  # `코드 블록 제거`
-    text = re.sub(r'#+\s', '', text)  # # 헤더 태그 제거
-    text = re.sub(r'(\n- |\n\*)', '\n', text)  # 리스트 기호 제거
-    text = text.replace('•', '')  # 점 리스트 제거
-    text = re.sub(r'(\d+\.\s)', '', text)  # 번호 리스트 제거
-
-    # 문단 구분을 한 줄(`\n`)로 변경
-    text = re.sub(r'\n\s*\n', '\n', text)  # 기존 두 줄 띄우기를 한 줄로 변환
-
-    return text.strip()
-
+# def remove_markdown(text):
+#     text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+#     text = re.sub(r'\*(.*?)\*', r'\1', text)
+#     text = re.sub(r'`(.*?)`', r'\1', text)
+#     text = re.sub(r'#+\s', '', text)
+#     text = re.sub(r'(\n- |\n\*)', '\n', text)
+#     text = text.replace('•', '')
+#     text = re.sub(r'(\d+\.\s)', '', text)
+#     text = re.sub(r'\n\s*\n', '\n', text)
+#     return text.strip()
 
 @login_required
 def chat_view(request):
@@ -35,7 +28,6 @@ def chat_view(request):
         conversations = Conversation.objects.filter(user=request.user).order_by('timestamp') if show_history else []
         return render(request, 'chatbot/chat.html', {'conversations': conversations, 'form': ChatForm(), 'show_history': show_history})
 
-    # 프롬프트 수정 (한 줄 띄우기 적용)
     prompt = '''
     응답을 반드시 **일반 텍스트 형식**으로 작성해야 합니다.
 
@@ -97,36 +89,33 @@ def chat_view(request):
             def generate_response():
                 stream = CLIENT.chat.completions.create(
                     model="gpt-4o",
-                    stream=True,  # Streaming 활성화
+                    stream=True,
                     messages=[
-                        {"role": "system", "content": prompt},  # 프롬프트 수정
+                        {"role": "system", "content": prompt},
                         {"role": "user", "content": user_message}
                     ]
                 )
 
-                bot_reply = ""  # 전체 응답을 저장할 변수
+                bot_reply = ""
 
-                # Streaming 방식으로 데이터 처리
                 for chunk in stream:
                     if hasattr(chunk, "choices") and chunk.choices:
                         delta = chunk.choices[0].delta
                         if hasattr(delta, "content") and delta.content:
                             text = delta.content
-                            bot_reply += text  # 전체 응답 저장
-                            yield text  # 클라이언트에 스트리밍 전송
-                            time.sleep(0.05)  # 자연스러운 출력 효과
+                            bot_reply += text
+                            yield text.replace('\n', '<br>')
+                            time.sleep(0.05)
 
-                # 마크다운 제거 후 문단 유지 (한 줄 띄우기 적용)
-                clean_reply = remove_markdown(bot_reply)
+        #        clean_reply = remove_markdown(bot_reply)
 
-                # Conversation 저장
                 Conversation.objects.create(
                     user=user,
                     user_message=user_message,
-                    bot_reply=clean_reply
+                    bot_reply=bot_reply # 현재 대화 내용과 DB 에 저장되는 이전 대화 내용을 같게 하기 위해 clean_reply 사용 X
                 )
 
-            return StreamingHttpResponse(generate_response(), content_type='text/plain')
+            return StreamingHttpResponse(generate_response(), content_type='text/html')
 
     return render(request, 'chatbot/chat.html', {'form': ChatForm()})
 
