@@ -115,19 +115,50 @@ class ItineraryDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # 일정의 모든 장소 데이터를 JSON으로 변환
-        places_data = []
-        for day in self.object.itinerary_days.all():
-            for place in day.places.all():
-                places_data.append({
-                    'id': place.id,
-                    'name': place.place.name,
-                    'lat': float(place.place.latitude),
-                    'lng': float(place.place.longitude),
-                    'day': day.day_number,
-                    'order': place.order
-                })
-        context['places_json'] = json.dumps(places_data)
+        itinerary = self.object
+        
+        # 일정 데이터 정리
+        schedule_items = ScheduleItem.objects.filter(
+            itinerary=itinerary
+        ).order_by('day', 'order')
+        
+        # 일차별로 데이터 구성
+        days_data = {}
+        for item in schedule_items:
+            if item.day not in days_data:
+                days_data[item.day] = {
+                    'attractions': [],
+                    'accommodations': []
+                }
+            
+            # 카테고리별로 분류
+            if item.place_id:  # place_id가 있는 경우만 처리
+                try:
+                    place = Place.objects.get(id=item.place_id)
+                    if place.place_type == 'attraction':
+                        days_data[item.day]['attractions'].append(item)
+                    elif place.place_type == 'accommodation':
+                        days_data[item.day]['accommodations'].append(item)
+                except Place.DoesNotExist:
+                    continue
+        
+        context.update({
+            'days_data': days_data,
+            'place_counts': {
+                'attractions': len([item for item in schedule_items if Place.objects.filter(id=item.place_id, place_type='attraction').exists()]),
+                'accommodations': len([item for item in schedule_items if Place.objects.filter(id=item.place_id, place_type='accommodation').exists()])
+            },
+            'total_budget': itinerary.get_total_budget(),
+            'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+            'places_json': json.dumps([{
+                'id': item.id,
+                'name': item.name,
+                'lat': float(item.latitude),
+                'lng': float(item.longitude),
+                'day': item.day,
+                'order': item.order
+            } for item in schedule_items])
+        })
         return context
 
 class ItineraryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

@@ -44,6 +44,36 @@ class Itinerary(models.Model):
     def get_absolute_url(self):
         return reverse('itineraries:detail', kwargs={'pk': self.pk})
 
+    def get_attraction_count(self):
+        """관광지 개수 반환"""
+        return ScheduleItem.objects.filter(
+            itinerary=self,
+            category='ATTRACTION'
+        ).count()
+
+    def get_accommodation_count(self):
+        """숙소 개수 반환"""
+        return ScheduleItem.objects.filter(
+            itinerary=self,
+            category='ACCOMMODATION'
+        ).count()
+
+    def get_total_budget(self):
+        """총 예산 반환"""
+        return Budget.objects.filter(
+            itinerary=self
+        ).aggregate(total=models.Sum('amount'))['total'] or 0
+
+    def get_schedule_by_day(self):
+        """일차별 일정 반환"""
+        return ScheduleItem.objects.filter(
+            itinerary=self
+        ).order_by('day', 'order')
+
+    def get_day_range(self):
+        """일정 기간 계산"""
+        return (self.end_date - self.start_date).days + 1
+
 class ItineraryDay(models.Model):
     itinerary = models.ForeignKey(
         Itinerary,
@@ -372,6 +402,14 @@ class ScheduleItem(models.Model):
     day = models.IntegerField()
     order = models.IntegerField()
     duration = models.IntegerField(default=60)  # 분 단위
+    category = models.CharField(  # category 필드 추가
+        max_length=20,
+        choices=[
+            ('ATTRACTION', '관광지'),
+            ('ACCOMMODATION', '숙소'),
+        ],
+        default='ATTRACTION'
+    )
     
     class Meta:
         ordering = ['day', 'order']

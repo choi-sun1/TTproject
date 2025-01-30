@@ -127,6 +127,207 @@
     cursor: pointer;
 }
 
+/* 여행 요약 정보 스타일 */
+.trip-summary {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.trip-summary h2 {
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.summary-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.card-header i {
+    font-size: 1.25rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.card-content p {
+    margin: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-primary);
+}
+
+.card-content strong {
+    color: var(--text-secondary);
+}
+
+/* 방문 장소 상세 스타일 */
+.place-details .card-content {
+    padding: 0;
+}
+
+.place-section {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.place-section:last-child {
+    border-bottom: none;
+}
+
+.place-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.places-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.place-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    position: relative;
+}
+
+.day-badge {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.place-info {
+    flex: 1;
+}
+
+.place-info h5 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.place-info p {
+    margin: 0.25rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.duration, .contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* ...existing code... */
+
+.places-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+}
+
+.places-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.places-section.attractions h4 i {
+    color: var(--primary-color);
+}
+
+.places-section.accommodations h4 i {
+    color: var(--secondary-color);
+}
+
+.place-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+}
+
+.time {
+    min-width: 60px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.place-info h5 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+}
+
+.place-info p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* ...existing code... */
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .itinerary-header {
@@ -140,5 +341,13 @@
 
     .itinerary-map {
         height: 300px;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .trip-summary {
+        padding: 1rem;
     }
 }

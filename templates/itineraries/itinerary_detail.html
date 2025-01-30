@@ -35,6 +35,112 @@
         </div>
     </header>
 
+    <!-- 여행 요약 정보 추가 -->
+    <section class="trip-summary">
+        <h2>여행 정보 요약</h2>
+        <div class="summary-grid">
+            <!-- Step 1 정보 -->
+            <div class="summary-card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>기본 정보</h3>
+                </div>
+                <div class="card-content">
+                    <p><strong>여행지:</strong> {{ itinerary.destination }}</p>
+                    <p><strong>기간:</strong> {{ itinerary.start_date|date:"Y.m.d" }} - {{ itinerary.end_date|date:"Y.m.d" }}</p>
+                    {% if itinerary.styles %}
+                    <p><strong>여행 스타일:</strong> {{ itinerary.styles|join:", " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Step 2 정보 수정 -->
+            <div class="summary-card place-details">
+                <div class="card-header">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>방문 장소</h3>
+                </div>
+                <div class="card-content">
+                    <!-- 관광지 섹션 -->
+                    <div class="place-section">
+                        <h4><i class="fas fa-camera-retro"></i> 관광지 ({{ itinerary.get_attraction_count }}곳)</h4>
+                        <div class="places-list">
+                            {% for day in itinerary.itinerary_days.all %}
+                                {% for place in day.places.all %}
+                                    {% if place.place.place_type == 'attraction' %}
+                                    <div class="place-item">
+                                        <span class="day-badge">Day {{ day.day_number }}</span>
+                                        <div class="place-info">
+                                            <h5>{{ place.place.name }}</h5>
+                                            <p>{{ place.place.address }}</p>
+                                            {% if place.duration %}
+                                            <span class="duration">
+                                                <i class="fas fa-clock"></i> {{ place.duration }}분
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 숙소 섹션 -->
+                    <div class="place-section">
+                        <h4><i class="fas fa-bed"></i> 숙소 ({{ itinerary.get_accommodation_count }}곳)</h4>
+                        <div class="places-list">
+                            {% for day in itinerary.itinerary_days.all %}
+                                {% for place in day.places.all %}
+                                    {% if place.place.place_type == 'accommodation' %}
+                                    <div class="place-item">
+                                        <span class="day-badge">Day {{ day.day_number }}</span>
+                                        <div class="place-info">
+                                            <h5>{{ place.place.name }}</h5>
+                                            <p>{{ place.place.address }}</p>
+                                            {% if place.place.phone_number %}
+                                            <p class="contact">
+                                                <i class="fas fa-phone"></i> {{ place.place.phone_number }}
+                                            </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 정보 -->
+            <div class="summary-card">
+                <div class="card-header">
+                    <i class="fas fa-route"></i>
+                    <h3>일정 정보</h3>
+                </div>
+                <div class="card-content">
+                    <p><strong>총 이동거리:</strong> {{ itinerary.total_distance|default:"0" }}km</p>
+                    <p><strong>예상 이동시간:</strong> {{ itinerary.total_duration|default:"0" }}분</p>
+                </div>
+            </div>
+
+            <!-- Step 4 정보 -->
+            <div class="summary-card">
+                <div class="card-header">
+                    <i class="fas fa-wallet"></i>
+                    <h3>예산 정보</h3>
+                </div>
+                <div class="card-content">
+                    {% for budget in itinerary.budgets.all %}
+                    <p><strong>{{ budget.get_category_display }}:</strong> {{ budget.amount|intcomma }}원</p>
+                    {% endfor %}
+                    <p><strong>총 예산:</strong> {{ itinerary.total_budget|intcomma }}원</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- 일정 지도 -->
     <div class="itinerary-map">
         <div id="map"></div>
@@ -42,26 +148,53 @@
 
     <!-- 일정 상세 -->
     <div class="itinerary-content">
-        <div class="schedule-timeline">
-            {% for day in itinerary.itinerary_days.all %}
-            <div class="day-schedule">
-                <h3>Day {{ day.day_number }}</h3>
-                <div class="timeline">
-                    {% for place in day.places.all %}
-                    <div class="timeline-item">
-                        <div class="time">{{ place.start_time|time:"H:i" }}</div>
-                        <div class="place-card">
-                            <h4>{{ place.place.name }}</h4>
-                            <p>{{ place.place.address }}</p>
-                            {% if place.note %}
-                            <div class="note">{{ place.note }}</div>
-                            {% endif %}
+        <!-- 여행 요약 수정 -->
+        <div class="trip-summary">
+            <div class="schedule-timeline">
+                {% for day in itinerary.schedule.all %}
+                <div class="day-schedule">
+                    <h3>Day {{ day.day_number }} ({{ day.date|date:"Y.m.d" }})</h3>
+                    <div class="timeline">
+                        <!-- 관광지 목록 -->
+                        <div class="places-section attractions">
+                            <h4><i class="fas fa-map-marker-alt"></i> 관광지</h4>
+                            {% for schedule in day.schedule_items.all %}
+                                {% if schedule.category == 'ATTRACTION' %}
+                                <div class="place-item">
+                                    <div class="time">{{ schedule.start_time|time:"H:i" }}</div>
+                                    <div class="place-info">
+                                        <h5>{{ schedule.name }}</h5>
+                                        <p>{{ schedule.address }}</p>
+                                        {% if schedule.duration %}
+                                        <span class="duration">
+                                            <i class="fas fa-clock"></i> {{ schedule.duration }}분
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <!-- 숙소 목록 -->
+                        <div class="places-section accommodations">
+                            <h4><i class="fas fa-bed"></i> 숙소</h4>
+                            {% for schedule in day.schedule_items.all %}
+                                {% if schedule.category == 'ACCOMMODATION' %}
+                                <div class="place-item">
+                                    <div class="time">{{ schedule.start_time|time:"H:i" }}</div>
+                                    <div class="place-info">
+                                        <h5>{{ schedule.name }}</h5>
+                                        <p>{{ schedule.address }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
 
         <!-- 예산 정보 -->
