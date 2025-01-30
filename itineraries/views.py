@@ -1,7 +1,17 @@
 from rest_framework import generics, permissions, viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import Itinerary, Place, ItineraryPlace, ItineraryComment
+from .models import (  # models import 수정
+    Itinerary, 
+    Place, 
+    ItineraryPlace, 
+    ItineraryComment,
+    ItineraryDay,
+    ItineraryLike,
+    Budget,  # Budget 모델 추가
+    ChecklistItem,  # ChecklistItem 모델 추가
+    ScheduleItem  # ScheduleItem 모델 추가
+)
 from .serializers import (
     ItinerarySerializer,
     PlaceSerializer,
@@ -16,8 +26,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.contrib.auth.decorators import login_required
-from .models import Itinerary, ItineraryDay, ItineraryPlace, ItineraryLike
-from .serializers import ItinerarySerializer, ItineraryDaySerializer
 from django.db.models import Q
 from datetime import datetime, timedelta, date
 from django.db.models import Count
@@ -759,21 +767,40 @@ def wizard_step4(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            
-            # wizardStorage에서 이전 단계 데이터 가져오기
             wizard_data = request.session.get('wizard_data', {})
             
+            # 예산 데이터 검증
+            budgets = data.get('budgets', {})
+            if not isinstance(budgets, dict):
+                raise ValueError("잘못된 예산 데이터 형식입니다.")
+
             # 새로운 여행 일정 생성
             itinerary = Itinerary.objects.create(
-                user=request.user,
+                author=request.user,
                 title=wizard_data.get('title'),
-                destination=wizard_data.get('destination'),
+                description=f"여행지: {wizard_data.get('destination')}",
                 start_date=wizard_data.get('start_date'),
                 end_date=wizard_data.get('end_date'),
                 is_public=data.get('is_public', True),
                 notes=data.get('notes', '')
             )
             
+            # 예산 정보 저장 - 에러 처리 추가
+            for category, amount in budgets.items():
+                try:
+                    amount = int(amount)  # 숫자로 변환
+                    if amount > 0:  # 양수인 경우만 저장
+                        Budget.objects.create(
+                            itinerary=itinerary,
+                            category=category,
+                            amount=amount
+                        )
+                except (ValueError, TypeError):
+                    continue  # 잘못된 값은 건너뜀
+            
+            # 나머지 코드는 동일...
+            # ...existing code...
+
             # 예산 정보 저장
             budgets = data.get('budgets', {})
             for category, amount in budgets.items():
@@ -788,22 +815,23 @@ def wizard_step4(request):
             for item in checklist:
                 ChecklistItem.objects.create(
                     itinerary=itinerary,
-                    text=item.get('text'),
-                    checked=item.get('checked', False)
+                    text=item
                 )
             
             # 일정 상세 정보 저장 (step3에서 저장한 스케줄 정보)
             schedule_data = wizard_data.get('schedule', {})
-            for day, places in schedule_data.get('days', {}).items():
+            days_data = schedule_data.get('days', {})
+            
+            for day_num, places in days_data.items():
                 for idx, place in enumerate(places):
                     ScheduleItem.objects.create(
                         itinerary=itinerary,
-                        place_id=place.get('id'),
+                        place_id=str(place.get('id')),  # place_id를 문자열로 저장
                         name=place.get('name'),
-                        address=place.get('address'),
-                        latitude=place.get('latitude'),
-                        longitude=place.get('longitude'),
-                        day=int(day),
+                        address=place.get('address', ''),
+                        latitude=float(place.get('latitude', 0)),
+                        longitude=float(place.get('longitude', 0)),
+                        day=int(day_num),
                         order=idx,
                         duration=place.get('duration', 60)  # 기본 1시간
                     )
@@ -818,6 +846,7 @@ def wizard_step4(request):
             })
             
         except Exception as e:
+            print(f"Error saving itinerary: {str(e)}")  # 디버깅용
             return JsonResponse({
                 'success': False,
                 'error': str(e)

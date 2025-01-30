@@ -45,7 +45,7 @@
         <div class="schedule-timeline">
             {% for day in itinerary.itinerary_days.all %}
             <div class="day-schedule">
-                <h3>Day {{ day.day_number }} ({{ day.date|date:"Y.m.d" }})</h3>
+                <h3>Day {{ day.day_number }}</h3>
                 <div class="timeline">
                     {% for place in day.places.all %}
                     <div class="timeline-item">
