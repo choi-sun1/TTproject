@@ -1,15 +1,15 @@
-// 전역 변수 삭제
-let map;
-let directionsService;
-let directionsRenderer;
-let markers = [];
-let scheduleData = {
-    unassigned: [],
-    days: {}
+// 전역 변수 선언
+let map;                  // Google Maps 객체
+let directionsService;    // 경로 계산 서비스
+let directionsRenderer;   // 경로 표시 렌더러
+let markers = [];         // 지도 마커 배열
+let scheduleData = {      // 일정 데이터 저장소
+    unassigned: [],      // 미배정 장소 목록
+    days: {}            // 일차별 배정된 장소
 };
-let currentDay = 1;
+let currentDay = 1;       // 현재 선택된 일차
 
-// Google Maps 초기화 함수만 수정
+// Google Maps 초기화 함수
 function initMap() {
     try {
         console.log('Initializing map...'); // 디버깅용
@@ -33,16 +33,25 @@ function initMap() {
     }
 }
 
-// 유틸리티 함수들
+// CSRF 토큰 가져오기
 function getCookie(name) {
-    // ...existing code...
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        // ...existing code...
+    }
+    return cookieValue;
 }
 
+// 시간 포맷팅 함수 (HH:MM 형식)
 function formatTime(date) {
-    // ...existing code...
+    return date.toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
 }
 
-// 페이지 초기화
+// 페이지 초기화 이벤트 핸들러
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Step 3 initialized'); // 디버깅용
     
@@ -101,52 +110,47 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// 일정표 초기화 함수
 function initializeSchedule(data) {
-    // 날짜 계산
+    // 총 여행 일수 계산
     const startDate = new Date(data.start_date);
     const endDate = new Date(data.end_date);
     const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
-    // 일차별 탭 생성
-    createDayTabs(totalDays);
-    
-    // 미배정 장소 표시
-    displayUnassignedPlaces();
-
-    // 첫째 날 일정 표시
-    showDaySchedule(1);
+    createDayTabs(totalDays); // 일차별 탭 생성
+    displayUnassignedPlaces(); // 미배정 장소 표시
+    showDaySchedule(1); // 첫째 날 일정 표시
 }
 
+// 일차별 탭 생성 함수
 function createDayTabs(totalDays) {
     const nav = document.getElementById('daysNav');
     nav.innerHTML = '';
     
+    // 각 일차별 탭 생성
     for (let i = 1; i <= totalDays; i++) {
         const tab = document.createElement('div');
         tab.className = 'day-tab';
         if (i === 1) tab.classList.add('active');
         
-        // 날짜 아이콘 추가
         tab.innerHTML = `
             <i class="fas fa-calendar-day"></i>
             <span>${i}일차</span>
         `;
         
+        // 탭 클릭 이벤트 핸들러
         tab.onclick = () => {
-            // 모든 탭의 active 클래스 제거
             document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
-            // 클릭된 탭에만 active 클래스 추가
             tab.classList.add('active');
             showDaySchedule(i);
         };
         
         nav.appendChild(tab);
-        
-        // 일차별 데이터 초기화
         scheduleData.days[i] = scheduleData.days[i] || [];
     }
 }
 
+// 드래그 앤 드롭 초기화 함수
 function initializeDragAndDrop(containerId) {
     const container = document.getElementById(containerId);
     if (container) {
@@ -158,35 +162,40 @@ function initializeDragAndDrop(containerId) {
     }
 }
 
+// 드래그 앤 드롭 종료 핸들러
 function handleDragEnd(evt) {
     const placeId = evt.item.dataset.id;
     const fromList = evt.from.id;
     const toList = evt.to.id;
     
+    // 드래그 앤 드롭 동작 처리
     if (fromList === 'unassignedList' && toList === 'scheduleTimeline') {
-        // 미배정 -> 일정 추가
         addToSchedule(placeId, currentDay);
     } else if (fromList === 'scheduleTimeline' && toList === 'unassignedList') {
-        // 일정 -> 미배정으로 이동
         removeFromSchedule(placeId, currentDay);
     }
     
-    updateRouteDisplay();
+    updateRouteDisplay(); // 경로 표시 업데이트
 }
 
+// 일정에 장소 추가 함수
 function addToSchedule(placeId, day) {
     const place = scheduleData.unassigned.find(p => p.id === placeId);
     if (!place) return;
     
+    // 해당 일차의 일정에 장소 추가
     scheduleData.days[day] = scheduleData.days[day] || [];
     scheduleData.days[day].push(place);
     
+    // 미배정 목록에서 제거
     scheduleData.unassigned = scheduleData.unassigned.filter(p => p.id !== placeId);
     
+    // 화면 업데이트
     showDaySchedule(day);
     displayUnassignedPlaces();
 }
 
+// 일차별 일정 표시 함수
 function showDaySchedule(day) {
     currentDay = day;
     
@@ -208,6 +217,7 @@ function showDaySchedule(day) {
     updateRouteDisplay();
 }
 
+// 타임라인 아이템 생성 함수
 function createTimelineItem(place, index) {
     const item = document.createElement('div');
     item.className = 'timeline-item';
@@ -234,6 +244,7 @@ function createTimelineItem(place, index) {
     return item;
 }
 
+// 경로 표시 업데이트 함수
 function updateRouteDisplay() {
     const dayPlaces = scheduleData.days[currentDay] || [];
     if (dayPlaces.length < 2) {
@@ -261,6 +272,7 @@ function updateRouteDisplay() {
     });
 }
 
+// 이벤트 리스너 설정 함수
 function setupEventListeners() {
     // 최적화 버튼
     document.getElementById('optimizeRoute').addEventListener('click', optimizeRoute);
@@ -269,7 +281,7 @@ function setupEventListeners() {
     document.getElementById('nextStep').addEventListener('click', saveAndProceed);
 }
 
-// 경로 최적화 함수
+// 경로 최적화 함수 (최단 거리 계산)
 function optimizeRoute() {
     const dayPlaces = scheduleData.days[currentDay] || [];
     if (dayPlaces.length < 2) {
@@ -307,7 +319,7 @@ function optimizeRoute() {
     }
 }
 
-// 최적 경로 계산 (Nearest Neighbor Algorithm)
+// 최적 경로 계산 함수 (Nearest Neighbor Algorithm)
 function calculateOptimalRoute(waypoints) {
     const n = waypoints.length;
     const visited = new Array(n).fill(false);
@@ -344,12 +356,12 @@ function calculateOptimalRoute(waypoints) {
     return order;
 }
 
-// 두 지점 간 거리 계산
+// 두 지점 간 거리 계산 함수
 function calculateDistance(p1, p2) {
     return google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
 }
 
-// 이동 시간과 거리 통계 업데이트
+// 경로 통계 업데이트 함수
 function updateRouteStatistics(places) {
     if (places.length < 2) return;
 
@@ -384,7 +396,7 @@ function updateRouteStatistics(places) {
     });
 }
 
-// 일정 저장 및 다음 단계로 이동
+// 일정 저장 및 다음 단계 이동 함수
 async function saveAndProceed() {
     try {
         showLoadingSpinner();
@@ -424,7 +436,7 @@ async function saveAndProceed() {
     }
 }
 
-// 방문 시간 설정 모달 관련 함수들
+// 시간 설정 모달 관련 함수들
 function openTimeSettingModal(placeId) {
     const modal = document.getElementById('timeSettingModal');
     modal.style.display = 'block';
@@ -447,9 +459,7 @@ function saveTimeSettings() {
     showDaySchedule(currentDay);
 }
 
-// 나머지 필요한 유틸리티 함수들...
-// ...existing code...
-
+// 미배정 장소 표시 함수
 function displayUnassignedPlaces() {
     const attractions = scheduleData.unassigned.filter(place => place.type === 'attraction');
     const accommodations = scheduleData.unassigned.filter(place => place.type === 'accommodation');
@@ -469,6 +479,7 @@ function displayUnassignedPlaces() {
     }
 }
 
+// 장소 카드 생성 함수
 function createPlaceCard(place, mode = 'unassigned') {
     const isUnassigned = mode === 'unassigned';
     return `
