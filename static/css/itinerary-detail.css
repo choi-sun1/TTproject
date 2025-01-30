@@ -1,270 +1,130 @@
 .itinerary-detail {
     max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
 .itinerary-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-    background: var(--surface-bg);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    box-shadow: var(--shadow-lg);
-}
-
-.header-info {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-primary);
 }
 
-.title-section h1 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-}
-
-.itinerary-meta {
+.meta-info {
     display: flex;
     gap: 1rem;
     color: var(--text-secondary);
     font-size: 0.9rem;
+}
+
+.meta-info span {
     display: flex;
-    gap: 1.5rem;
-    color: var(--text-secondary);
-}
-
-.author-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.author-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.author-name {
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.stats {
-    display: flex;
-    gap: 1.5rem;
-    color: var(--text-secondary);
-}
-
-.action-buttons {
-    display: flex;
-    gap: 1rem;
-}
-
-.btn {
-    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    transition: all 0.2s;
 }
 
-.btn-like {
-    background: var(--surface-bg);
-    border: 1px solid var(--border-color);
-}
-
-.btn-like.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-}
-
-.btn-share {
-    background: var(--surface-bg);
-    border: 1px solid var(--border-color);
-}
-
-.map-container {
+.itinerary-map {
+    height: 400px;
     margin-bottom: 2rem;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.daily-schedules {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+.schedule-timeline {
+    margin-bottom: 3rem;
 }
 
 .day-schedule {
-    background: var(--surface-bg);
-    border: 1px solid var(--border-color);
-    padding: 1.5rem;
-    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
 }
 
-.places-timeline {
+.timeline {
     position: relative;
     padding-left: 2rem;
-    margin-top: 1.5rem;
+    border-left: 2px solid var(--primary-color);
 }
 
-.place-item {
+.timeline-item {
     position: relative;
-    padding-bottom: 2rem;
-    border-left: 2px solid var(--secondary-color);
-    padding-left: 1.5rem;
     margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
 }
 
-.place-item::before {
+.timeline-item::before {
     content: '';
     position: absolute;
-    left: -2px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
+    left: -0.5rem;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
     background: var(--primary-color);
+    border-radius: 50%;
 }
 
-.place-item:last-child {
-    border-left: none;
-}
-
-.place-item:last-child::before {
-    height: 50%;
-}
-
-.time-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--primary-color);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-}
-
-.start-time, .end-time {
-    font-weight: bold;
-}
-
-.time-separator {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.duration {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(0, 0, 0, 0.2);
-    padding: 0.2rem 0.5rem;
-    border-radius: 10px;
-}
-
-.time-label {
-    position: absolute;
-    left: -2.5rem;
-    background: var(--secondary-color);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-}
-
-.place-content {
-    background: var(--background-color);
+.place-card {
+    background: var(--card-bg);
     padding: 1rem;
-    border-radius: 8px;
-    color: var(--text-color);
-}
-
-.place-content h3 {
-    margin: 0 0 0.5rem 0;
-    color: var(--primary-color);
-}
-
-.address {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.note {
-    font-style: italic;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .comments-section {
     margin-top: 3rem;
-    border-top: 1px solid var(--border-color);
     padding-top: 2rem;
+    border-top: 1px solid var(--border-primary);
 }
 
-/* 모달 스타일 */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
+.comment-form {
+    margin-bottom: 2rem;
+}
+
+.comment-form textarea {
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-
-.modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--surface-bg);
-    padding: 2rem;
-    border-radius: var(--radius-lg);
-    min-width: 320px;
-}
-
-.share-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin: 1.5rem 0;
-}
-
-.share-btn {
+    min-height: 100px;
+    margin-bottom: 1rem;
     padding: 1rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-primary);
     border-radius: var(--radius-md);
-    background: var(--surface-bg);
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s;
+    resize: vertical;
 }
 
-.share-btn:hover {
-    background: var(--background-color);
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.comment-item {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    position: relative;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.delete-comment {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
 }
 
 /* 반응형 디자인 */
@@ -273,32 +133,12 @@
         flex-direction: column;
         gap: 1rem;
     }
-    
-    .itinerary-meta {
+
+    .meta-info {
         flex-wrap: wrap;
     }
-    
-    .action-buttons {
-        width: 100%;
-        justify-content: space-between;
-    }
 
-    .header-info {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .header-actions {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .action-buttons {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .share-options {
-        grid-template-columns: 1fr;
+    .itinerary-map {
+        height: 300px;
     }
 }

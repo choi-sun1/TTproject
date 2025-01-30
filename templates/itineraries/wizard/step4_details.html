@@ -5,104 +5,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/wizard.css' %}">
-<style>
-    .budget-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .budget-item {
-        background: var(--card-bg);
-        padding: 1.5rem;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-primary);
-    }
-
-    .budget-input {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .budget-input input {
-        padding-right: 3rem;
-    }
-
-    .budget-input::after {
-        content: '원';
-        position: absolute;
-        right: 1rem;
-        color: var(--text-secondary);
-    }
-
-    .checklist-item {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.75rem;
-        background: var(--card-bg);
-        border-radius: var(--radius-md);
-        margin-bottom: 0.5rem;
-    }
-
-    .checklist-item input[type="checkbox"] {
-        width: 1.2rem;
-        height: 1.2rem;
-    }
-
-    .visibility-toggle {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 60px;
-        height: 34px;
-    }
-
-    .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--border-primary);
-        transition: .4s;
-        border-radius: 34px;
-    }
-
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-
-    input:checked + .slider {
-        background-color: var(--primary-color);
-    }
-
-    input:checked + .slider:before {
-        transform: translateX(26px);
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -114,7 +16,7 @@
         <div class="progress-step active">4. 상세설정</div>
     </div>
 
-    <form id="detailsForm" class="details-form">
+    <form id="detailsForm" class="details-form" method="POST" action="{% url 'itineraries:wizard_step4' %}">
         {% csrf_token %}
         
         <!-- 예산 설정 섹션 -->
@@ -212,7 +114,7 @@
             <a href="{% url 'itineraries:wizard_step3' %}" class="btn-back">
                 <i class="fas fa-arrow-left"></i> 이전
             </a>
-            <button type="submit" class="btn-next">
+            <button type="button" id="submitBtn" class="btn-next">  <!-- type="submit"에서 "button"으로 변경 -->
                 일정 만들기 <i class="fas fa-check"></i>
             </button>
         </div>
@@ -221,100 +123,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('detailsForm');
-    const checklistContainer = document.getElementById('checklistContainer');
-    
-    // 기본 체크리스트 아이템 추가
-    const defaultItems = [
-        '여권/신분증',
-        '숙소 예약 확인',
-        '필수 약품'
-    ];
-    
-    defaultItems.forEach(item => addChecklistItem(item));
-    
-    // 체크리스트 아이템 추가 버튼
-    document.getElementById('addChecklistItem').addEventListener('click', () => {
-        addChecklistItem();
-    });
-    
-    // 예산 입력 시 총액 계산
-    document.querySelectorAll('.budget-input input').forEach(input => {
-        input.addEventListener('input', calculateTotalBudget);
-    });
-    
-    // 폼 제출
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const formData = {
-            budgets: {},
-            checklist: [],
-            is_public: form.querySelector('[name="is_public"]').checked,
-            notes: form.querySelector('[name="notes"]').value
-        };
-        
-        // 예산 데이터 수집
-        document.querySelectorAll('.budget-input input').forEach(input => {
-            const category = input.name.replace('_budget', '');
-            const amount = parseInt(input.value) || 0;
-            if (amount > 0) {
-                formData.budgets[category] = amount;
-            }
-        });
-        
-        // 체크리스트 데이터 수집
-        document.querySelectorAll('.checklist-item input[type="text"]').forEach(input => {
-            if (input.value.trim()) {
-                formData.checklist.push(input.value.trim());
-            }
-        });
-        
-        try {
-            const response = await fetch('{% url "itineraries:wizard_step4" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                window.location.href = data.redirect_url;
-            } else {
-                throw new Error(data.error || '저장에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert(error.message);
-        }
-    });
-    
-    function addChecklistItem(value = '') {
-        const item = document.createElement('div');
-        item.className = 'checklist-item';
-        item.innerHTML = `
-            <i class="fas fa-grip-vertical"></i>
-            <input type="text" placeholder="체크리스트 항목 입력" value="${value}">
-            <button type="button" class="remove-btn" onclick="this.closest('.checklist-item').remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        checklistContainer.appendChild(item);
-    }
-    
-    function calculateTotalBudget() {
-        let total = 0;
-        document.querySelectorAll('.budget-input input').forEach(input => {
-            total += parseInt(input.value) || 0;
-        });
-        document.querySelector('#totalBudget').textContent = 
-            total.toLocaleString() + '원';
-    }
-});
-</script>
+<script src="{% static 'js/wizard/step4.js' %}"></script>
 {% endblock %}

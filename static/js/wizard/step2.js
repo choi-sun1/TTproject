@@ -299,7 +299,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // wizardStorage를 사용하여 데이터 저장
             const wizardData = wizardStorage.load();
-            wizardData.places = placeData; // 구조 변경
+            const selectedData = {
+                attractions: selectedAttractions,
+                accommodations: selectedAccommodations
+            };
+            wizardData.places = selectedData;
             wizardStorage.save(wizardData);
 
             console.log('Saved wizard data:', wizardData); // 디버깅용

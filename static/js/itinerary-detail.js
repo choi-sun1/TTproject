@@ -203,6 +203,132 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// 지도 초기화
+function initMap() {
+    const map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        mapTypeControl: false,
+        streetViewControl: false
+    });
+
+    // 경로 표시
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: true
+    });
+
+    // 마커와 경로 표시
+    showPlacesOnMap(map, places, directionsRenderer, directionsService);
+}
+
+// 장소들을 지도에 표시
+function showPlacesOnMap(map, places, directionsRenderer, directionsService) {
+    if (places.length === 0) return;
+
+    const bounds = new google.maps.LatLngBounds();
+    const markers = [];
+
+    // 마커 생성
+    places.forEach((place, index) => {
+        const position = { lat: place.lat, lng: place.lng };
+        const marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            label: String(index + 1),
+            title: place.name
+        });
+        markers.push(marker);
+        bounds.extend(position);
+    });
+
+    // 지도 범위 조정
+    map.fitBounds(bounds);
+
+    // 경로 표시
+    if (places.length >= 2) {
+        const waypoints = places.slice(1, -1).map(place => ({
+            location: new google.maps.LatLng(place.lat, place.lng),
+            stopover: true
+        }));
+
+        directionsService.route({
+            origin: new google.maps.LatLng(places[0].lat, places[0].lng),
+            destination: new google.maps.LatLng(places[places.length - 1].lat, places[places.length - 1].lng),
+            waypoints: waypoints,
+            optimizeWaypoints: false,
+            travelMode: 'DRIVING'
+        }, (response, status) => {
+            if (status === 'OK') {
+                directionsRenderer.setDirections(response);
+            }
+        });
+    }
+}
+
+// 좋아요 기능
+document.getElementById('likeBtn')?.addEventListener('click', async function() {
+    try {
+        const response = await fetch(`/itineraries/${itineraryId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        });
+        const data = await response.json();
+        
+        // 좋아요 상태 업데이트
+        this.classList.toggle('btn-danger', data.liked);
+        this.classList.toggle('btn-outline-danger', !data.liked);
+        document.getElementById('likeCount').textContent = data.likes_count;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+
+// 댓글 기능
+document.getElementById('submitComment')?.addEventListener('click', async function() {
+    const content = document.getElementById('commentText').value.trim();
+    if (!content) return;
+
+    try {
+        const response = await fetch(`/itineraries/${itineraryId}/comments/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            // 새 댓글 추가
+            const commentsList = document.getElementById('commentsList');
+            commentsList.insertAdjacentHTML('afterbegin', createCommentHTML(data));
+            document.getElementById('commentText').value = '';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+
+// 댓글 HTML 생성
+function createCommentHTML(comment) {
+    return `
+        <div class="comment-item">
+            <div class="comment-header">
+                <span class="author">${comment.author.nickname}</span>
+                <span class="date">${comment.created_at}</span>
+            </div>
+            <div class="comment-content">${comment.content}</div>
+            <button class="delete-comment" data-comment-id="${comment.id}">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+}
+
 // 댓글 기능 초기화
 function initializeComments() {
     const commentForm = document.getElementById('comment-form');

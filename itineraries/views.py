@@ -760,22 +760,58 @@ def wizard_step4(request):
         try:
             data = json.loads(request.body)
             
-            # wizard_data 가져오기 및 업데이트
+            # wizardStorage에서 이전 단계 데이터 가져오기
             wizard_data = request.session.get('wizard_data', {})
-            wizard_data.update({
-                'is_public': data.get('is_public', True),
-                'budgets': data.get('budgets', {}),
-                'checklist': data.get('checklist', [])
-            })
             
-            # 일정 생성
-            wizard_service = ItineraryWizardService()
-            itinerary = wizard_service.create_itinerary(request.user, wizard_data)
+            # 새로운 여행 일정 생성
+            itinerary = Itinerary.objects.create(
+                user=request.user,
+                title=wizard_data.get('title'),
+                destination=wizard_data.get('destination'),
+                start_date=wizard_data.get('start_date'),
+                end_date=wizard_data.get('end_date'),
+                is_public=data.get('is_public', True),
+                notes=data.get('notes', '')
+            )
             
-            # 세션 데이터 삭제
-            if 'wizard_data' in request.session:
-                del request.session['wizard_data']
+            # 예산 정보 저장
+            budgets = data.get('budgets', {})
+            for category, amount in budgets.items():
+                Budget.objects.create(
+                    itinerary=itinerary,
+                    category=category,
+                    amount=amount
+                )
             
+            # 체크리스트 저장
+            checklist = data.get('checklist', [])
+            for item in checklist:
+                ChecklistItem.objects.create(
+                    itinerary=itinerary,
+                    text=item.get('text'),
+                    checked=item.get('checked', False)
+                )
+            
+            # 일정 상세 정보 저장 (step3에서 저장한 스케줄 정보)
+            schedule_data = wizard_data.get('schedule', {})
+            for day, places in schedule_data.get('days', {}).items():
+                for idx, place in enumerate(places):
+                    ScheduleItem.objects.create(
+                        itinerary=itinerary,
+                        place_id=place.get('id'),
+                        name=place.get('name'),
+                        address=place.get('address'),
+                        latitude=place.get('latitude'),
+                        longitude=place.get('longitude'),
+                        day=int(day),
+                        order=idx,
+                        duration=place.get('duration', 60)  # 기본 1시간
+                    )
+            
+            # 세션 데이터 정리
+            request.session.pop('wizard_data', None)
+            
+            # 성공 응답 반환
             return JsonResponse({
                 'success': True,
                 'redirect_url': reverse('itineraries:detail', kwargs={'pk': itinerary.pk})
@@ -786,11 +822,9 @@ def wizard_step4(request):
                 'success': False,
                 'error': str(e)
             }, status=400)
-    
-    context = {
-        'budget_categories': ['교통', '숙박', '식비', '관광', '쇼핑', '기타']
-    }
-    return render(request, 'itineraries/wizard/step4_details.html', context)
+            
+    # GET 요청 처리
+    return render(request, 'itineraries/wizard/step4_details.html')
 
 class CommentCreateView(View):
     @method_decorator(login_required)
@@ -843,13 +877,4 @@ class CommentDeleteView(View):
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
-class CommentDeleteView(View):
-    @method_decorator(login_required)
-    @method_decorator(require_POST)
-    def post(self, request, pk, comment_pk):
-        try:
-            comment = get_object_or_404(ItineraryComment, pk=comment_pk, author=request.user)
-            comment.delete()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+

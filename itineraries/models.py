@@ -28,6 +28,7 @@ class Itinerary(models.Model):
         blank=True
     )
     is_sample = models.BooleanField('샘플 여부', default=False)
+    notes = models.TextField(blank=True)
 
     class Meta:
         verbose_name = _('여행 일정')
@@ -350,3 +351,27 @@ class DayPlace(models.Model):
         verbose_name = '일정 장소'
         verbose_name_plural = '일정 장소 목록'
         ordering = ['order']
+
+class Budget(models.Model):
+    itinerary = models.ForeignKey(Itinerary, on_delete=models.CASCADE)
+    category = models.CharField(max_length=50)  # transport, accommodation, food, extra
+    amount = models.IntegerField()
+
+class ChecklistItem(models.Model):
+    itinerary = models.ForeignKey(Itinerary, on_delete=models.CASCADE)
+    text = models.CharField(max_length=200)
+    checked = models.BooleanField(default=False)
+
+class ScheduleItem(models.Model):
+    itinerary = models.ForeignKey(Itinerary, on_delete=models.CASCADE)
+    place_id = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    address = models.CharField(max_length=500)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    day = models.IntegerField()
+    order = models.IntegerField()
+    duration = models.IntegerField(default=60)  # 분 단위
+    
+    class Meta:
+        ordering = ['day', 'order']

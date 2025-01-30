@@ -51,9 +51,35 @@ function formatTime(date) {
     });
 }
 
+// DOM 요소 초기화 확인 함수 추가
+function validateDOMElements() {
+    const requiredElements = [
+        'daysNav',
+        'map',
+        'unassignedAttractions',
+        'unassignedAccommodations',
+        'scheduleTimeline',
+        'nextStep'  // 다음 단계 버튼 추가
+    ];
+    
+    const missingElements = requiredElements.filter(id => !document.getElementById(id));
+    
+    if (missingElements.length > 0) {
+        console.error('Missing DOM elements:', missingElements);
+        return false;
+    }
+    return true;
+}
+
 // 페이지 초기화 이벤트 핸들러
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Step 3 initialized'); // 디버깅용
+    
+    // DOM 요소 검증
+    if (!validateDOMElements()) {
+        alert('페이지 구성 요소가 올바르게 로드되지 않았습니다.');
+        return;
+    }
     
     // 세션 데이터 로드 및 검증
     const wizardData = wizardStorage.load();
@@ -71,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Attractions:', attractions); // 디버깅용
     console.log('Accommodations:', accommodations); // 디버깅용
 
-    // 장소 데이터 초기화 수정
+    // 모든 장소를 미배정 목록에 추가
     scheduleData.unassigned = [
         ...attractions.map(place => ({ ...place, type: 'attraction' })),
         ...accommodations.map(place => ({ ...place, type: 'accommodation' }))
@@ -95,10 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 미배정 장소 표시
     displayUnassignedPlaces();
 
-    // 드래그 앤 드롭 초기화
-    initializeDragAndDrop('unassignedAttractions');
-    initializeDragAndDrop('unassignedAccommodations');
-
     // 지도 업데이트
     if (scheduleData.unassigned.length > 0) {
         const firstPlace = scheduleData.unassigned[0];
@@ -108,6 +130,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         map.setZoom(13);
     }
+
+    // 첫 번째 일차 선택
+    currentDay = 1;
+
+    // 일정표 초기화
+    if (wizardData.start_date && wizardData.end_date) {
+        initializeSchedule({
+            start_date: wizardData.start_date,
+            end_date: wizardData.end_date
+        });
+    } else {
+        console.error('Missing date information');
+        alert('날짜 정보가 없습니다. 기본 정보 입력 단계로 이동합니다.');
+        window.location.href = '/itineraries/wizard/step1/';
+        return;
+    }
+
+    // 첫 번째 일차의 일정 표시
+    showDaySchedule(currentDay);
+
+    // 이벤트 리스너 설정
+    setupEventListeners();
 });
 
 // 일정표 초기화 함수
@@ -139,76 +183,142 @@ function createDayTabs(totalDays) {
         `;
         
         // 탭 클릭 이벤트 핸들러
-        tab.onclick = () => {
+        tab.addEventListener('click', () => {
+            currentDay = i; // 현재 선택된 일차 업데이트
             document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             showDaySchedule(i);
-        };
+        });
         
         nav.appendChild(tab);
         scheduleData.days[i] = scheduleData.days[i] || [];
     }
 }
 
-// 드래그 앤 드롭 초기화 함수
-function initializeDragAndDrop(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) {
-        new Sortable(container, {
-            group: 'schedule',
-            animation: 150,
-            onEnd: handleDragEnd
-        });
-    }
-}
-
-// 드래그 앤 드롭 종료 핸들러
-function handleDragEnd(evt) {
-    const placeId = evt.item.dataset.id;
-    const fromList = evt.from.id;
-    const toList = evt.to.id;
+// 장소 클릭 이벤트 핸들러로 변경
+function handlePlaceClick(placeId, action) {
+    console.log('Handle place click:', placeId, action, 'currentDay:', currentDay); // 디버깅용
     
-    // 드래그 앤 드롭 동작 처리
-    if (fromList === 'unassignedList' && toList === 'scheduleTimeline') {
+    if (action === 'add') {
+        if (!currentDay) {
+            alert('먼저 일차를 선택해주세요.');
+            return;
+        }
+        if (!scheduleData.days[currentDay]) {
+            scheduleData.days[currentDay] = [];
+        }
         addToSchedule(placeId, currentDay);
-    } else if (fromList === 'scheduleTimeline' && toList === 'unassignedList') {
+    } else if (action === 'remove') {
         removeFromSchedule(placeId, currentDay);
     }
+    updateRouteDisplay();
+}
+
+// 장소 위치 이동 함수 추가
+function movePlaceInSchedule(placeId, direction) {
+    const dayPlaces = scheduleData.days[currentDay];
+    const currentIndex = dayPlaces.findIndex(place => place.id === placeId);
     
-    updateRouteDisplay(); // 경로 표시 업데이트
+    if (currentIndex === -1) return;
+    
+    if (direction === 'up' && currentIndex > 0) {
+        [dayPlaces[currentIndex], dayPlaces[currentIndex - 1]] = 
+        [dayPlaces[currentIndex - 1], dayPlaces[currentIndex]];
+    } else if (direction === 'down' && currentIndex < dayPlaces.length - 1) {
+        [dayPlaces[currentIndex], dayPlaces[currentIndex + 1]] = 
+        [dayPlaces[currentIndex + 1], dayPlaces[currentIndex]];
+    }
+    
+    showDaySchedule(currentDay);
+    updateRouteDisplay();
 }
 
 // 일정에 장소 추가 함수
 function addToSchedule(placeId, day) {
-    const place = scheduleData.unassigned.find(p => p.id === placeId);
-    if (!place) return;
+    console.log('Adding place to schedule:', placeId, 'day:', day); // 디버깅용
+    
+    // placeId를 문자열로 변환하여 비교
+    const place = scheduleData.unassigned.find(p => String(p.id) === String(placeId));
+    if (!place) {
+        console.error('Place not found:', placeId);
+        return;
+    }
+    
+    // 해당 일차가 없으면 배열 초기화
+    if (!scheduleData.days[day]) {
+        scheduleData.days[day] = [];
+    }
     
     // 해당 일차의 일정에 장소 추가
-    scheduleData.days[day] = scheduleData.days[day] || [];
     scheduleData.days[day].push(place);
     
     // 미배정 목록에서 제거
     scheduleData.unassigned = scheduleData.unassigned.filter(p => p.id !== placeId);
     
+    console.log('Updated schedule data:', scheduleData); // 디버깅용
+    
     // 화면 업데이트
     showDaySchedule(day);
     displayUnassignedPlaces();
+    updateRouteDisplay();
+}
+
+// 일정에서 장소 제거 함수 수정
+function removeFromSchedule(placeId, day) {
+    console.log('Removing place from schedule:', placeId, 'day:', day); // 디버깅용
+    
+    const dayPlaces = scheduleData.days[day];
+    if (!dayPlaces) return;
+    
+    // placeId를 문자열로 변환하여 비교
+    const placeIndex = dayPlaces.findIndex(p => String(p.id) === String(placeId));
+    if (placeIndex === -1) return;
+    
+    // 제거할 장소를 미배정 목록으로 이동
+    const removedPlace = dayPlaces.splice(placeIndex, 1)[0];
+    
+    // 이미 미배정 목록에 있는지 확인
+    const isAlreadyUnassigned = scheduleData.unassigned.some(p => String(p.id) === String(placeId));
+    if (!isAlreadyUnassigned) {
+        scheduleData.unassigned.push(removedPlace);
+    }
+    
+    // 빈 일정인 경우에도 배열은 유지
+    if (!scheduleData.days[day]) {
+        scheduleData.days[day] = [];
+    }
+    
+    // 화면 업데이트
+    showDaySchedule(day);
+    displayUnassignedPlaces();
+    updateRouteDisplay();
+    
+    console.log('Updated schedule data:', scheduleData); // 디버깅용
 }
 
 // 일차별 일정 표시 함수
 function showDaySchedule(day) {
+    console.log('Showing schedule for day:', day); // 디버깅용
     currentDay = day;
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.day-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.textContent === `${day}일차`);
+        const dayNumber = parseInt(tab.querySelector('span').textContent);
+        tab.classList.toggle('active', dayNumber === day);
     });
     
     // 일정 표시
     const timeline = document.getElementById('scheduleTimeline');
+    if (!timeline) {
+        console.error('Timeline element not found');
+        return;
+    }
+    
     timeline.innerHTML = '';
     
     const dayPlaces = scheduleData.days[day] || [];
+    console.log('Places for day:', day, dayPlaces); // 디버깅용
+    
     dayPlaces.forEach((place, index) => {
         timeline.appendChild(createTimelineItem(place, index));
     });
@@ -221,10 +331,20 @@ function showDaySchedule(day) {
 function createTimelineItem(place, index) {
     const item = document.createElement('div');
     item.className = 'timeline-item';
-    item.dataset.id = place.id;
+    item.dataset.id = String(place.id); // place.id를 문자열로 변환
     item.innerHTML = `
         <div class="time-slot">09:00</div>
         <div class="place-card">
+            <div class="move-buttons">
+                <button onclick="movePlaceInSchedule('${place.id}', 'up')" 
+                        ${index === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+                <button onclick="movePlaceInSchedule('${place.id}', 'down')"
+                        ${index === scheduleData.days[currentDay].length - 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
             <h4>${place.name}</h4>
             <p>${place.address}</p>
             <div class="duration-control">
@@ -239,6 +359,9 @@ function createTimelineItem(place, index) {
                 <i class="fas fa-walking"></i>
                 <span class="travel-time">이동시간 계산중...</span>
             </div>` : ''}
+            <button onclick="handlePlaceClick('${place.id}', 'remove')" class="remove-btn">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     `;
     return item;
@@ -274,11 +397,15 @@ function updateRouteDisplay() {
 
 // 이벤트 리스너 설정 함수
 function setupEventListeners() {
-    // 최적화 버튼
-    document.getElementById('optimizeRoute').addEventListener('click', optimizeRoute);
-    
-    // 다음 단계 버튼
-    document.getElementById('nextStep').addEventListener('click', saveAndProceed);
+    const nextButton = document.getElementById('nextStep');
+    if (nextButton) {
+        nextButton.addEventListener('click', saveAndProceed);
+    }
+
+    const optimizeButton = document.getElementById('optimizeRoute');
+    if (optimizeButton) {
+        optimizeButton.addEventListener('click', optimizeRoute);
+    }
 }
 
 // 경로 최적화 함수 (최단 거리 계산)
@@ -396,10 +523,19 @@ function updateRouteStatistics(places) {
     });
 }
 
-// 일정 저장 및 다음 단계 이동 함수
+// 일정 저장 및 다음 단계 이동 함수 수정
 async function saveAndProceed() {
     try {
         showLoadingSpinner();
+
+        // CSRF 토큰 확인
+        let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // 데이터 유효성 검사 추가
+        const totalPlaces = Object.values(scheduleData.days).reduce((sum, day) => sum + day.length, 0);
+        if (totalPlaces === 0) {
+            throw new Error('최소 1개 이상의 장소를 일정에 배치해주세요.');
+        }
 
         // 모든 일정 데이터 수집
         const scheduleToSave = {
@@ -407,30 +543,38 @@ async function saveAndProceed() {
             unassigned: scheduleData.unassigned
         };
 
-        // 세션 스토리지 업데이트
-        const wizardData = JSON.parse(sessionStorage.getItem('wizard_data') || '{}');
+        // wizardStorage 업데이트
+        const wizardData = wizardStorage.load();
         wizardData.schedule = scheduleToSave;
-        sessionStorage.setItem('wizard_data', JSON.stringify(wizardData));
+        wizardStorage.save(wizardData);
 
         // 서버로 데이터 전송
         const response = await fetch('/itineraries/wizard/step3/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify(scheduleToSave)
         });
 
+        if (!response.ok) {
+            throw new Error(`서버 응답 오류: ${response.status}`);
+        }
+
         const data = await response.json();
+        
+        // 성공 시 다음 페이지로 이동
         if (data.status === 'success') {
+            // 명시적으로 step4 URL로 이동
             window.location.href = '/itineraries/wizard/step4/';
         } else {
             throw new Error(data.error || '저장에 실패했습니다.');
         }
+
     } catch (error) {
         console.error('Save error:', error);
-        alert('저장 중 오류가 발생했습니다.');
+        alert(error.message);
     } finally {
         hideLoadingSpinner();
     }
@@ -459,43 +603,69 @@ function saveTimeSettings() {
     showDaySchedule(currentDay);
 }
 
-// 미배정 장소 표시 함수
+// displayUnassignedPlaces 함수 수정
 function displayUnassignedPlaces() {
-    const attractions = scheduleData.unassigned.filter(place => place.type === 'attraction');
-    const accommodations = scheduleData.unassigned.filter(place => place.type === 'accommodation');
+    // 중복 제거를 위해 Set 사용
+    const uniqueUnassigned = Array.from(new Set(scheduleData.unassigned.map(p => p.id)))
+        .map(id => scheduleData.unassigned.find(p => p.id === id));
+    
+    // 실제 미배정 장소만 필터링
+    const attractions = uniqueUnassigned.filter(place => 
+        place.type === 'attraction' && !isPlaceAssigned(place.id)
+    );
+    const accommodations = uniqueUnassigned.filter(place => 
+        place.type === 'accommodation' && !isPlaceAssigned(place.id)
+    );
     
     // 관광지 표시
     const attractionsContainer = document.getElementById('unassignedAttractions');
     if (attractionsContainer) {
-        attractionsContainer.innerHTML = attractions.map(place => createPlaceCard(place, 'unassigned')).join('');
+        attractionsContainer.innerHTML = attractions.map(place => `
+            <div class="place-item" data-id="${String(place.id)}" data-type="${place.type}">
+                <div class="place-info">
+                    <h4>${place.name}</h4>
+                    <p>${place.address || ''}</p>
+                </div>
+                <button onclick="handlePlaceClick('${String(place.id)}', 'add')" class="add-btn">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        `).join('');
         document.getElementById('unassignedAttractionCount').textContent = attractions.length;
     }
     
     // 숙소 표시
     const accommodationsContainer = document.getElementById('unassignedAccommodations');
     if (accommodationsContainer) {
-        accommodationsContainer.innerHTML = accommodations.map(place => createPlaceCard(place, 'unassigned')).join('');
+        accommodationsContainer.innerHTML = accommodations.map(place => `
+            <div class="place-item" data-id="${String(place.id)}" data-type="${place.type}">
+                <div class="place-info">
+                    <h4>${place.name}</h4>
+                    <p>${place.address || ''}</p>
+                </div>
+                <button onclick="handlePlaceClick('${String(place.id)}', 'add')" class="add-btn">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        `).join('');
         document.getElementById('unassignedAccommodationCount').textContent = accommodations.length;
     }
 }
 
-// 장소 카드 생성 함수
-function createPlaceCard(place, mode = 'unassigned') {
-    const isUnassigned = mode === 'unassigned';
-    return `
-        <div class="place-item" draggable="true" 
-             data-id="${place.id}" 
-             data-type="${place.type}"
-             onclick="${isUnassigned ? `addToSchedule('${place.id}', ${currentDay})` : ''}"
-             style="cursor: ${isUnassigned ? 'pointer' : 'move'}">
-            <div class="place-info">
-                <h4>${place.name}</h4>
-                <p>${place.address || ''}</p>
-            </div>
-            <div class="place-type-badge ${place.type}">
-                <i class="fas fa-${place.type === 'attraction' ? 'map-marker-alt' : 'bed'}"></i>
-                ${isUnassigned ? '<span class="add-hint">클릭하여 추가</span>' : ''}
-            </div>
-        </div>
-    `;
+// 장소가 이미 배정되었는지 확인하는 함수 수정
+function isPlaceAssigned(placeId) {
+    // 문자열로 변환하여 비교
+    const stringId = String(placeId);
+    return Object.values(scheduleData.days).some(dayPlaces => 
+        dayPlaces.some(place => String(place.id) === stringId)
+    );
+}
+
+// CSRF 토큰 가져오기 함수 수정
+function getCsrfToken() {
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrftoken) {
+        throw new Error('CSRF token not found');
+    }
+    return csrftoken.value;
 }
