@@ -1,7 +1,22 @@
-## ✨ SmartTrip - 똑똑한 여행 AI
+## 📖 목차
+
+1. [✨ 프로젝트 소개](#-프로젝트-소개)
+2. [🥳 팀소개](#-팀-소개)
+3. [🔮 주요기능](#-주요기능)
+4. [📚️ 기술스택](#️-기술스택)
+5. [💭 기술적 의사 결정](#-기술적-의사-결정)
+6. [🌐 Architecture](#-architecture)
+7. [🗂 ERD](#-erd)
+8. [🚨 Trouble Shooting](#-trouble-shooting)
+
+## ✨ 프로젝트 소개
+###  SmartTrip - 똑똑한 여행 AI
+![](https://blog.kakaocdn.net/dn/MVDYp/btsL11Tv1zv/3TuYD9yiPKyrNTH94beA9K/img.gif)
 > **여행 리뷰를 작성**하여 사용자끼리 여행 일정과 정보를 공유하고,
 > **AI 와의 대화**를 통해서 **여행 일정을 더 간편하게 계획** 할 수 있게 돕는 서비스
-## 🔥 팀소개
+
+
+## 🥳 팀 소개
 - **팀명 : T.T (Traveler Tip)**
 
 | 👑 리더 | 👑 부 리더 | ✨ 팀원 | ✨ 팀원 |
@@ -10,7 +25,8 @@
 |[@Dawol2205](https://github.com/Dawol2205)|[@choi-sun1](https://github.com/choi-sun1)|[@nyum76]()|[@createmycode](https://github.com/createmycode)|
 
 
-
+#### 🧑‍💻 개발기간
+- `2024.12.30(목)` ~ `2025.01.31(금)`
 
 ## 🔮 주요기능
 ### 🧑‍💻 회원기능
@@ -86,6 +102,8 @@
 <summary><b>여행 일정 생성</b></summary>
 <div markdown="1">
 
+![](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FTG5eD%2FbtsL4prACry%2FG5DLeejGE2rxwUB886mNWK%2Fimg.png)
+
 </div>
 </details>
 
@@ -108,8 +126,6 @@
 </details>
 
 
-## ⏲️ 개발기간
-- 2024.12.30(목) ~ 2025.01.31(금)
 
 ## 📚️ 기술스택
 
@@ -139,7 +155,6 @@
     <img src="https://camo.githubusercontent.com/4c4a57a11a83f99eafb6eaaaaf65ea43e0fc446fccbf8533aac7e9be1067aaf7/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f446a616e676f2d3039324532303f7374796c653d666f722d7468652d6261646765266c6f676f3d446a616e676f266c6f676f436f6c6f723d7768697465">
     <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white">
     <img src="https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white">
-    <img src="https://img.shields.io/badge/-HuggingFace-FDEE21?style=for-the-badge&logo=HuggingFace&logoColor=black">
     <img src="https://img.shields.io/badge/ChatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white">
     <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white"/>
     <img src="https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=Jira&logoColor=white">
@@ -149,7 +164,7 @@
     <img src="https://img.shields.io/badge/Colab-F9AB00?style=for-the-badge&logo=googlecolab&color=525252"/>
     <img src="https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white">
     <img src="https://img.shields.io/badge/ZEP-6758ff?style=for-the-badge&logo=visual%20studio%20code&logoColor=white">
-    <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white">
+    <img src="https://img.shields.io/badge/Sqlite-003B57?style=for-the-badge&logo=sqlite&logoColor=white">
     
 </div>
 
@@ -159,15 +174,58 @@
     <img src="https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white">
 </div>
 
+## 💭 기술적 의사 결정
+
+<details>
+<summary>React vs <b>HTML, CSS, JS</b></summary>
+<div markdown="1">
+
+- 프로젝트가 비교적 간단함.
+- 동적인 인터페이스가 크게 필요하지 않음.
+- Django 템플릿 엔진이 HTML, CSS, JS 와 완벽히 통합되어 있음.
+- 초기 로드가 가볍고 빠름.
+
+위와 같은 이유로 React 를 프론트엔드 프레임 워크로 사용하는 것 대신 HTML, CSS, JS 를 사용하기로 결정함.
+
+</div>
+</details>
+
+<details>
+<summary>NAVER Maps API, Kakao Maps API vs <b>Google Maps Places API</b></summary>
+<div markdown="1">
+
+SmartTrip에서 **사용자 경험 향상, 실시간 데이터 제공, 위치 기반 맞춤 추천**을 구현하는 데 Google Maps API가 더 적합한 것 같아서 선택함.
+
+- Places API를 사용해 사용자 위치 기반으로 인기 장소 추천
+- 숙박 조건(예: 가격, 편의 시설 등)에 따라 사용자 맞춤형 숙소 추천
+- 특정 지역과 날짜에 열리는 축제 정보를 사용자에게 안내
+- 공식문서에 레퍼런스가 가장 잘 정리되있고, 장소 별 리뷰가 가장 많음.
+
+</div>
+</details>
+
+<details>
+<summary>MySQL vs <b>SQLite3</b></summary>
+<div markdown="1">
+
+초반에는 MySQL 로 `settings.py` 도 설정하고 migrate 도 진행해 보았지만, MySQL 이 다중 사용자 환경에서 성능이 더 우수하고 대규모 프로젝트에 좋지만 그만큼 복잡하고  설정이 매우 번거로워서 아래와 같은 이유로 SQLite3 로 변경함.
+
+- 원활한 데이터 공유
+- SQL 서버 설정 따로 필요없음.
+- 패키지 설치로 쉽게 설치
+- 테스트용 데이터 입력 쉬움.
+
+</div>
+</details>
+
+
 ## 🌐 Architecture
 
 ![Architecture](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FRlUBs%2FbtsL4a2l7mo%2FK1VVuknLl0w4KiTaEhhBkK%2Fimg.png)
 
 
-## ⚙️ 기술적 의사 결정
 
-
-## ERD
+## 🗂 ERD
 
 
 
@@ -176,7 +234,7 @@
 
 ## 🚨 Trouble Shooting
 
-#### 🌝 FE
+### 🌝 FE
 
 <details>
 <summary><b>로그인 후 프로필 사진 사이즈 조절문제</b></summary>
@@ -219,7 +277,7 @@ ___
 </div>
 </details>
 
-#### 🌚 BE
+### 🌚 BE
 
 <details>
 <summary><b>MySQL에 접속시 Access Denied 오류 발생</b></summary>
@@ -464,5 +522,3 @@ ___
 
 </div>
 </details>
-
-## 🗂️ 프로젝트 파일 구조
