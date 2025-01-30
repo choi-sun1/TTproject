@@ -1,10 +1,10 @@
-## 📖 Navigation
+## 📖 목차
 
 1. [✨ 프로젝트 소개](#-프로젝트-소개)
 2. [🥳 팀소개](#-팀-소개)
 3. [🔮 주요기능](#-주요기능)
 4. [📚️ 기술스택](#️-기술스택)
-5. [💭 기술적 의사 결정](#️-기술적-의사-결정)
+5. [💭 기술적 의사 결정](#-기술적-의사-결정)
 6. [🌐 Architecture](#-architecture)
 7. [🗂 ERD](#-erd)
 8. [🚨 Trouble Shooting](#-trouble-shooting)
@@ -234,7 +234,7 @@ SmartTrip에서 **사용자 경험 향상, 실시간 데이터 제공, 위치 �
 
 ## 🚨 Trouble Shooting
 
-#### 🌝 FE
+### 🌝 FE
 
 <details>
 <summary><b>로그인 후 프로필 사진 사이즈 조절문제</b></summary>
@@ -277,7 +277,7 @@ ___
 </div>
 </details>
 
-#### 🌚 BE
+### 🌚 BE
 
 <details>
 <summary><b>MySQL에 접속시 Access Denied 오류 발생</b></summary>
