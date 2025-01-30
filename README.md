@@ -13,7 +13,7 @@
 
 
 ## 🔮 주요기능
-#### 🧑‍💻 회원기능
+### 🧑‍💻 회원기능
 <details>
 <summary><b>회원가입</b></summary>
 <div markdown="1">
@@ -62,7 +62,7 @@
 </details>
 
 
-#### 🤖 챗봇 기능
+### 🤖 챗봇 기능
 <details>
 <summary><b>streaming 대화 기능</b></summary>
 <div markdown="1">
@@ -81,7 +81,7 @@
 </div>
 </details>
 
-#### 📆 여행 일정 기능
+### 📆 여행 일정 기능
 <details>
 <summary><b>여행 일정 생성</b></summary>
 <div markdown="1">
@@ -96,7 +96,7 @@
 </div>
 </details>
 
-#### 🎨 그 외 기능
+### 🎨 그 외 기능
 
 <details>
 <summary><b>화면 다크/라이트 모드</b></summary>
