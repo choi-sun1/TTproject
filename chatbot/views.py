@@ -4,60 +4,134 @@ from django.conf import settings
 from openai import OpenAI
 from .models import Conversation
 from .forms import ChatForm
+from django.http import StreamingHttpResponse
+import time
+import re
+
 
 CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+# 마크다운 제거 + 문단 구분 유지 함수 (한 줄 띄우기 적용)
+def remove_markdown(text):
+    """마크다운 문법을 제거하면서 문단 구분을 한 줄(`\n`)로 유지하는 함수"""
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # **굵은 글씨 제거**
+    text = re.sub(r'\*(.*?)\*', r'\1', text)  # *이탤릭체 제거*
+    text = re.sub(r'`(.*?)`', r'\1', text)  # `코드 블록 제거`
+    text = re.sub(r'#+\s', '', text)  # # 헤더 태그 제거
+    text = re.sub(r'(\n- |\n\*)', '\n', text)  # 리스트 기호 제거
+    text = text.replace('•', '')  # 점 리스트 제거
+    text = re.sub(r'(\d+\.\s)', '', text)  # 번호 리스트 제거
+
+    # 문단 구분을 한 줄(`\n`)로 변경
+    text = re.sub(r'\n\s*\n', '\n', text)  # 기존 두 줄 띄우기를 한 줄로 변환
+
+    return text.strip()
+
 
 @login_required
 def chat_view(request):
     if request.method == 'GET':
-        # 새로운 대화 플래그 확인
         show_history = request.GET.get('show_history', 'false') == 'true'
-        if show_history:
-            conversations = Conversation.objects.filter(user=request.user).order_by('timestamp')
-        else:
-            conversations = []
-
+        conversations = Conversation.objects.filter(user=request.user).order_by('timestamp') if show_history else []
         return render(request, 'chatbot/chat.html', {'conversations': conversations, 'form': ChatForm(), 'show_history': show_history})
 
-    completion = None
+    # 프롬프트 수정 (한 줄 띄우기 적용)
     prompt = '''
-    너는 여행 계획을 돕는 챗봇이야.
-    국내 여행만을 대상으로 도와줄 수 있어.'''
-    
+    응답을 반드시 **일반 텍스트 형식**으로 작성해야 합니다.
+
+    1. 문장을 **줄글로 이어쓰지 말고, 문단 단위로 구분하세요.**  
+    2. 각 문단 사이에 **한 줄(`\n`)의 빈 줄을 추가하세요.**
+    3. 문장은 완전한 형태로 작성하고, 문단을 **짧고 간결하게 유지하세요.**
+    4. 텍스트만 사용하고, 마크다운을 **절대 포함하지 마세요.**
+
+    예제:
+    ---
+    사용자: 서울 2박 3일 여행 일정을 추천해줘.
+    AI:
+    강릉에서의 1박 2일 여행은 정말 멋진 선택이에요!
+
+첫째 날 일정을 추천해볼게요:
+
+오전: 도착 및 카페 탐방
+- 아침에 강릉에 도착한 후, 유명한 커피 명소인 ‘강릉커피거리’를 방문해보세요.
+- 다양한 카페에서 커피를 즐기며 바다가 보이는 멋진 경치를 감상할 수 있습니다.
+
+점심: 지역 맛집
+- ‘초당순두부’나 ‘강릉회센터’ 같은 지역 맛집에서 점심을 먹어보세요.
+- 신선한 해산물이나 순두부 요리를 추천합니다.
+
+오후: 경포대 및 해변 산책
+- 점심 후 경포대로 이동해보세요.
+- 경포대에서 바다를 바라보며 산책하고, 주변 사진도 찍어보세요.
+- 경포해변에서 바다에 발을 담그며 여유로운 시간을 가져도 좋습니다.
+
+저녁: 바베큐 혹은 해산물 요리
+- 숙소에서 바베큐를 즐길 수도 있고, ‘속초 수산시장’에 가서 신선한 해산물을 즐기는 것도 좋습니다.
+
+밤: 해변 산책 또는 휴식
+- 저녁 식사 후에는 해변을 따라 산책하며 일몰을 감상해보세요.
+- 숙소에서 자유롭게 휴식을 취하는 것도 좋은 선택이에요.
+
+둘째 날 일정을 제안해드릴게요:
+
+오전: 안목해변 카페 탐방
+- 아침 식사 후 안목해변으로 이동해 근처의 카페에서 아침 커피와 간단한 아침을 즐기세요.
+- 해안선 따라 걷는 것도 좋은 아침 산책이 됩니다.
+
+오후: 명소 방문 및 돌아가기
+- ‘선교장’이나 ‘오죽헌’을 방문해 전통적인 한국의 모습을 느껴보세요.
+- 강릉의 역사와 문화를 체험할 수 있는 좋은 기회가 될 것입니다.
+
+이후 여행을 마치고 돌아가는 일정으로 계획하면 좋겠네요. 필요에 따라 일정 수정도 가능하니 언제든지 말씀해 주세요!
+    ---
+
+    위 예제와 같은 방식으로 답변하세요.
+    '''
+
     if request.method == 'POST':
         user = request.user
         form = ChatForm(request.POST)
         if form.is_valid():
             user_message = form.cleaned_data["user_message"]
 
-            # OpenAI API 호출
-            completion = CLIENT.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": prompt},
-                    {"role": "user", "content": user_message}
-                ]
-            )
-            bot_reply = completion.choices[0].message.content
-        
-            # 새로운 메시지만 저장
-            conversation = Conversation.objects.create(
-                user=user,
-                user_message=user_message,
-                bot_reply=bot_reply
-            )
+            def generate_response():
+                stream = CLIENT.chat.completions.create(
+                    model="gpt-4o",
+                    stream=True,  # Streaming 활성화
+                    messages=[
+                        {"role": "system", "content": prompt},  # 프롬프트 수정
+                        {"role": "user", "content": user_message}
+                    ]
+                )
 
-            # 새로운 메시지만 반환 (이전 대화 불러오지 않음)
-            return render(request, 'chatbot/chat.html', {
-                'form': form,
-                'new_message': conversation,  # 새 메시지만 전달
-                'conversations': Conversation.objects.filter(user=request.user).order_by('timestamp')
-            })
+                bot_reply = ""  # 전체 응답을 저장할 변수
+
+                # Streaming 방식으로 데이터 처리
+                for chunk in stream:
+                    if hasattr(chunk, "choices") and chunk.choices:
+                        delta = chunk.choices[0].delta
+                        if hasattr(delta, "content") and delta.content:
+                            text = delta.content
+                            bot_reply += text  # 전체 응답 저장
+                            yield text  # 클라이언트에 스트리밍 전송
+                            time.sleep(0.05)  # 자연스러운 출력 효과
+
+                # 마크다운 제거 후 문단 유지 (한 줄 띄우기 적용)
+                clean_reply = remove_markdown(bot_reply)
+
+                # Conversation 저장
+                Conversation.objects.create(
+                    user=user,
+                    user_message=user_message,
+                    bot_reply=clean_reply
+                )
+
+            return StreamingHttpResponse(generate_response(), content_type='text/plain')
 
     return render(request, 'chatbot/chat.html', {'form': ChatForm()})
 
+
 @login_required
 def new_chat(request):
-    # 새로운 대화를 시작할 때 기존 대화 내역을 숨기기 위해 플래그 설정
     request.session['new_chat'] = True
     return redirect('chatbot:chat')  # chat_view로 리디렉션
