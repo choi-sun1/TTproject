@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}상세 설정 - AI 일정 만들기{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+<style>
+    .budget-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .budget-item {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-primary);
+    }
+
+    .budget-input {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .budget-input input {
+        padding-right: 3rem;
+    }
+
+    .budget-input::after {
+        content: '원';
+        position: absolute;
+        right: 1rem;
+        color: var(--text-secondary);
+    }
+
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background: var(--card-bg);
+        border-radius: var(--radius-md);
+        margin-bottom: 0.5rem;
+    }
+
+    .checklist-item input[type="checkbox"] {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .visibility-toggle {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--border-primary);
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <div class="wizard-progress">
+        <div class="progress-step complete">1. 기본정보</div>
+        <div class="progress-step complete">2. 장소선택</div>
+        <div class="progress-step complete">3. 일정배치</div>
+        <div class="progress-step active">4. 상세설정</div>
+    </div>
+
+    <form id="detailsForm" class="details-form">
+        {% csrf_token %}
+        
+        <!-- 예산 설정 섹션 -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-wallet"></i>
+                <h3>예산 설정</h3>
+            </div>
+            <div class="budget-container">
+                <!-- 교통비 -->
+                <div class="budget-item">
+                    <label>교통비</label>
+                    <div class="budget-input">
+                        <input type="number" name="transport_budget" 
+                               class="form-control" placeholder="0" min="0"
+                               onchange="calculateTotal()">
+                    </div>
+                </div>
+                <!-- 숙박비 -->
+                <div class="budget-item">
+                    <label>숙박비</label>
+                    <div class="budget-input">
+                        <input type="number" name="accommodation_budget" 
+                               class="form-control" placeholder="0" min="0"
+                               onchange="calculateTotal()">
+                    </div>
+                </div>
+                <!-- 식비 -->
+                <div class="budget-item">
+                    <label>식비</label>
+                    <div class="budget-input">
+                        <input type="number" name="food_budget" 
+                               class="form-control" placeholder="0" min="0"
+                               onchange="calculateTotal()">
+                    </div>
+                </div>
+                <!-- 기타 비용 -->
+                <div class="budget-item">
+                    <label>기타 비용</label>
+                    <div class="budget-input">
+                        <input type="number" name="extra_budget" 
+                               class="form-control" placeholder="0" min="0"
+                               onchange="calculateTotal()">
+                    </div>
+                </div>
+            </div>
+            <div class="budget-summary">
+                <h4>총 예산: <span id="totalBudget">0</span>원</h4>
+            </div>
+        </div>
+
+        <!-- 체크리스트 섹션 -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-tasks"></i>
+                <h3>준비물 체크리스트</h3>
+            </div>
+            <div id="checklistContainer">
+                <!-- 기본 체크리스트 아이템들 -->
+            </div>
+            <button type="button" class="btn-secondary" onclick="addChecklistItem()">
+                <i class="fas fa-plus"></i> 항목 추가
+            </button>
+        </div>
+
+        <!-- 공개 설정 섹션 -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-globe"></i>
+                <h3>공개 설정</h3>
+            </div>
+            <div class="visibility-toggle">
+                <label class="switch">
+                    <input type="checkbox" name="is_public" checked>
+                    <span class="slider"></span>
+                </label>
+                <div class="visibility-info">
+                    <h4>일정 공개</h4>
+                    <p class="help-text">다른 사용자들이 내 일정을 볼 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메모 섹션 -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-sticky-note"></i>
+                <h3>메모</h3>
+            </div>
+            <textarea name="notes" class="form-control" rows="4"
+                      placeholder="여행과 관련된 메모를 자유롭게 작성하세요."></textarea>
+        </div>
+
+        <div class="wizard-actions">
+            <a href="{% url 'itineraries:wizard_step3' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> 이전
+            </a>
+            <button type="submit" class="btn-next">
+                일정 만들기 <i class="fas fa-check"></i>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('detailsForm');
+    const checklistContainer = document.getElementById('checklistContainer');
+    
+    // 기본 체크리스트 아이템 추가
+    const defaultItems = [
+        '여권/신분증',
+        '숙소 예약 확인',
+        '필수 약품'
+    ];
+    
+    defaultItems.forEach(item => addChecklistItem(item));
+    
+    // 체크리스트 아이템 추가 버튼
+    document.getElementById('addChecklistItem').addEventListener('click', () => {
+        addChecklistItem();
+    });
+    
+    // 예산 입력 시 총액 계산
+    document.querySelectorAll('.budget-input input').forEach(input => {
+        input.addEventListener('input', calculateTotalBudget);
+    });
+    
+    // 폼 제출
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            budgets: {},
+            checklist: [],
+            is_public: form.querySelector('[name="is_public"]').checked,
+            notes: form.querySelector('[name="notes"]').value
+        };
+        
+        // 예산 데이터 수집
+        document.querySelectorAll('.budget-input input').forEach(input => {
+            const category = input.name.replace('_budget', '');
+            const amount = parseInt(input.value) || 0;
+            if (amount > 0) {
+                formData.budgets[category] = amount;
+            }
+        });
+        
+        // 체크리스트 데이터 수집
+        document.querySelectorAll('.checklist-item input[type="text"]').forEach(input => {
+            if (input.value.trim()) {
+                formData.checklist.push(input.value.trim());
+            }
+        });
+        
+        try {
+            const response = await fetch('{% url "itineraries:wizard_step4" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                throw new Error(data.error || '저장에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message);
+        }
+    });
+    
+    function addChecklistItem(value = '') {
+        const item = document.createElement('div');
+        item.className = 'checklist-item';
+        item.innerHTML = `
+            <i class="fas fa-grip-vertical"></i>
+            <input type="text" placeholder="체크리스트 항목 입력" value="${value}">
+            <button type="button" class="remove-btn" onclick="this.closest('.checklist-item').remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        checklistContainer.appendChild(item);
+    }
+    
+    function calculateTotalBudget() {
+        let total = 0;
+        document.querySelectorAll('.budget-input input').forEach(input => {
+            total += parseInt(input.value) || 0;
+        });
+        document.querySelector('#totalBudget').textContent = 
+            total.toLocaleString() + '원';
+    }
+});
+</script>
+{% endblock %}

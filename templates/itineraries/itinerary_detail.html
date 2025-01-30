@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ itinerary.title }} - SmartTrip{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/itinerary-detail.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="itinerary-detail">
+    <!-- 헤더 섹션 -->
+    <div class="itinerary-header">
+        <div class="header-info">
+            <div class="title-section">
+                <h1>{{ itinerary.title }}</h1>
+                <div class="itinerary-meta">
+                    <span class="dates">
+                        <i class="fas fa-calendar"></i>
+                        {{ itinerary.start_date|date:"Y.m.d" }} ~ {{ itinerary.end_date|date:"Y.m.d" }}
+                    </span>
+                    <span class="duration">
+                        <i class="fas fa-clock"></i>
+                        {{ itinerary.total_days }}일
+                    </span>
+                </div>
+            </div>
+            <div class="author-info">
+                {% if itinerary.author.profile_image and itinerary.author.profile_image.url %}
+                    <img src="{{ itinerary.author.profile_image.url }}" 
+                         alt="{{ itinerary.author.nickname }}"
+                         class="author-avatar">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" 
+                         alt="{{ itinerary.author.nickname }}"
+                         class="author-avatar">
+                {% endif %}
+                <span class="author-name">{{ itinerary.author.nickname }}</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="stats">
+                <span class="views">
+                    <i class="fas fa-eye"></i> {{ itinerary.views }}
+                </span>
+                <span class="likes" id="likes-count">
+                    <i class="fas fa-heart"></i> {{ itinerary.likes.count }}
+                </span>
+            </div>
+            <div class="action-buttons" data-itinerary-id="{{ itinerary.pk }}">
+                {% if user == itinerary.author %}
+                <a href="{% url 'itineraries:edit' itinerary.pk %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> 수정
+                </a>
+                <button class="btn btn-delete" id="delete-itinerary">
+                    <i class="fas fa-trash"></i> 삭제
+                </button>
+                {% endif %}
+                <button id="like-button" 
+                        class="btn btn-like {% if user in itinerary.likes.all %}active{% endif %}"
+                        data-itinerary-id="{{ itinerary.pk }}">
+                    <i class="fas fa-heart"></i> 
+                    <span>좋아요</span>
+                </button>
+                <button class="btn btn-share" id="share-itinerary">
+                    <i class="fas fa-share"></i> 공유
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="itinerary-content">
+        {% if itinerary.description %}
+        <div class="description-section">
+            <h2>여행 설명</h2>
+            <p>{{ itinerary.description|linebreaks }}</p>
+        </div>
+        {% endif %}
+
+        <div class="map-container">
+            <div id="map" 
+                 data-places="{{ places_json|safe }}"
+                 style="width:100%; height:400px;">
+            </div>
+        </div>
+
+        <div class="daily-schedules">
+            {% for day in itinerary.days.all %}
+            <div class="day-schedule" id="day-{{ day.day_number }}">
+                <h2>DAY {{ day.day_number }} - {{ day.date|date:"Y.m.d (D)" }}</h2>
+                
+                <!-- 날씨 정보 표시 -->
+                {% if day.weather_info %}
+                <div class="weather-info">
+                    <i class="fas fa-{{ day.weather_info.icon }}"></i>
+                    <span>{{ day.weather_info.temp }}°C</span>
+                    <span>{{ day.weather_info.description }}</span>
+                </div>
+                {% endif %}
+
+                <div class="places-timeline">
+                    {% for place in day.places.all %}
+                    <div class="place-item" 
+                         data-place-id="{{ place.id }}"
+                         data-lat="{{ place.place.latitude }}" 
+                         data-lng="{{ place.place.longitude }}">
+                        <div class="time-info">
+                            {% if place.start_time %}
+                            <span class="start-time">{{ place.start_time|time:"H:i" }}</span>
+                            {% endif %}
+                            {% if place.end_time %}
+                            <span class="time-separator">~</span>
+                            <span class="end-time">{{ place.end_time|time:"H:i" }}</span>
+                            {% endif %}
+                            {% if place.duration %}
+                            <span class="duration">({{ place.duration }})</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="place-content">
+                            <h3>{{ place.place.name }}</h3>
+                            <p class="address">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ place.place.address }}
+                            </p>
+                            {% if place.category %}
+                            <span class="category-badge">{{ place.get_category_display }}</span>
+                            {% endif %}
+                            {% if place.estimated_cost %}
+                            <p class="cost">
+                                <i class="fas fa-won-sign"></i>
+                                예상 비용: {{ place.estimated_cost|intcomma }}원
+                            </p>
+                            {% endif %}
+                            {% if place.note %}
+                            <p class="note">
+                                <i class="fas fa-sticky-note"></i>
+                                {{ place.note }}
+                            </p>
+                            {% endif %}
+                            {% if place.transport_details %}
+                            <div class="transport-info">
+                                <i class="fas fa-route"></i>
+                                <span>{{ place.transport_mode }}</span>
+                                <span>{{ place.transport_details.duration }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if user == itinerary.author %}
+                        <div class="place-actions">
+                            <button class="btn-edit-place" data-place-id="{{ place.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-delete-place" data-place-id="{{ place.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="no-places">등록된 장소가 없습니다.</p>
+                    {% endfor %}
+
+                    {% if user == itinerary.author %}
+                    <button class="btn btn-add-place" data-day="{{ day.id }}">
+                        <i class="fas fa-plus"></i> 장소 추가
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 일정 최적화 버튼 -->
+        {% if user == itinerary.author %}
+        <div class="optimization-section">
+            <button id="optimize-route" class="btn btn-primary">
+                <i class="fas fa-magic"></i> 일정 최적화
+            </button>
+        </div>
+        {% endif %}
+
+        <!-- 체크리스트 섹션 -->
+        {% if checklist_items %}
+        <div class="checklist-section">
+            <h2>준비물 체크리스트</h2>
+            <div class="checklist-items">
+                {% for item in checklist_items %}
+                <div class="checklist-item">
+                    <input type="checkbox" id="item-{{ item.id }}" 
+                           {% if item.is_checked %}checked{% endif %}>
+                    <label for="item-{{ item.id }}">{{ item.item }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 예산 정보 섹션 -->
+        {% if expenses %}
+        <div class="expenses-section">
+            <h2>예상 경비</h2>
+            <div class="expense-summary">
+                <div class="total-expense">
+                    총 예상 비용: ₩{{ total_expense|intcomma }}
+                </div>
+                <div class="expense-categories">
+                    {% for category, amount in expenses_by_category.items %}
+                    <div class="expense-category">
+                        <span class="category">{{ category }}</span>
+                        <span class="amount">₩{{ amount|intcomma }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 댓글 섹션 -->
+    <div class="comments-section">
+        <h2>댓글 <span class="comments-count">{{ itinerary.comments.count }}</span></h2>
+        
+        {% if user.is_authenticated %}
+        <form id="comment-form" class="comment-form" data-itinerary-id="{{ itinerary.pk }}" method="post">
+            {% csrf_token %}
+            <textarea name="content" placeholder="댓글을 작성해주세요" required></textarea>
+            <button type="submit" class="btn btn-primary">댓글 작성</button>
+        </form>
+        {% endif %}
+
+        <div class="comments-list">
+            {% for comment in itinerary.comments.all %}
+            <div class="comment" data-comment-id="{{ comment.id }}">
+                <div class="comment-header">
+                    <div class="comment-author">
+                        {% if comment.author.profile_image and comment.author.profile_image.url %}
+                            <img src="{{ comment.author.profile_image.url }}" 
+                                 alt="{{ comment.author.nickname }}"
+                                 class="author-avatar">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" 
+                                 alt="{{ comment.author.nickname }}"
+                                 class="author-avatar">
+                        {% endif %}
+                        <span>{{ comment.author.nickname }}</span>
+                    </div>
+                    <span class="comment-date">{{ comment.created_at|date:"Y.m.d H:i" }}</span>
+                </div>
+                <div class="comment-content">{{ comment.content }}</div>
+                {% if user == comment.author %}
+                <div class="comment-actions">
+                    <button class="btn-edit-comment">수정</button>
+                    <button class="btn-delete-comment">삭제</button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- 장소 추가/수정 모달 -->
+<div id="place-modal" class="modal">
+    <div class="modal-content">
+        <!-- 이미지 슬라이더 추가 -->
+        <div class="swiper image-slider">
+            <div class="swiper-wrapper">
+                {% for image in place.images.all %}
+                <div class="swiper-slide">
+                    <img src="{{ image.url }}" alt="Place image" class="modal-image">
+                </div>
+                {% endfor %}
+            </div>
+            <!-- 네비게이션 버튼 -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <!-- 페이지네이션 -->
+            <div class="swiper-pagination"></div>
+        </div>
+        <!-- ...existing modal content... -->
+        <h3>장소 정보</h3>
+        <form id="place-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="place-search">장소 검색</label>
+                <input type="text" id="place-search" required>
+            </div>
+            <div class="form-group">
+                <label for="start-time">시작 시간</label>
+                <input type="time" id="start-time" name="start_time">
+            </div>
+            <div class="form-group">
+                <label for="end-time">종료 시간</label>
+                <input type="time" id="end-time" name="end_time">
+            </div>
+            <div class="form-group">
+                <label for="category">장소 유형</label>
+                <select id="category" name="category" required>
+                    <option value="FOOD">음식점</option>
+                    <option value="ATTRACTION">관광지</option>
+                    <option value="SHOPPING">쇼핑</option>
+                    <option value="ACCOMMODATION">숙박</option>
+                    <option value="TRANSPORTATION">교통</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="estimated-cost">예상 비용</label>
+                <input type="number" id="estimated-cost" name="estimated_cost">
+            </div>
+            <div class="form-group">
+                <label for="note">메모</label>
+                <textarea id="note" name="note"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">저장</button>
+                <button type="button" class="btn btn-secondary" id="close-modal">취소</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 공유 모달 -->
+<div id="share-modal" class="modal">
+    <div class="modal-content">
+        <h3>일정 공유하기</h3>
+        <div class="share-options">
+            <button class="share-btn" data-platform="kakao">
+                <i class="fab fa-kickstarter"></i> 카카오톡
+            </button>
+            <button class="share-btn" data-platform="facebook">
+                <i class="fab fa-facebook"></i> 페이스북
+            </button>
+            <button class="share-btn" data-platform="twitter">
+                <i class="fab fa-twitter"></i> 트위터
+            </button>
+            <button class="share-btn" data-platform="link">
+                <i class="fas fa-link"></i> 링크 복사
+            </button>
+        </div>
+        <button type="button" class="btn-close">닫기</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+<script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+<!-- Google Maps API 스크립트 -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+<script src="{% static 'js/itinerary-detail.js' %}"></script>
+{% endblock %}

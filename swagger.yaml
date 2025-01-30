@@ -1,0 +1,52 @@
+openapi: 3.0.0
+info:
+  title: SmartTrip API
+  description: SmartTrip 서비스의 API 문서
+  version: 1.0.0
+
+paths:
+  /api/v1/chatbot/send/:
+    post:
+      summary: 챗봇 메시지 전송
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                conversation_id:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: 성공적인 응답
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bot_reply:
+                    type: string
+                  conversation_id:
+                    type: string
+
+  /api/v1/users/profile/:
+    get:
+      summary: 사용자 프로필 조회
+      responses:
+        '200':
+          description: 프로필 정보
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  profile_image:
+                    type: string

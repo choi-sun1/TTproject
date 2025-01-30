@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}장소 선택 - AI 일정 만들기{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wizard.css' %}">
+<!-- Font Awesome이 필요한 경우 추가 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    {% csrf_token %}  <!-- CSRF 토큰 추가 -->
+    <div class="wizard-progress">
+        <div class="progress-step complete">
+            <div class="step-number"><i class="fas fa-check"></i></div>
+            <div class="step-label">기본정보</div>
+        </div>
+        <div class="progress-step active">
+            <div class="step-number">2</div>
+            <div class="step-label">장소선택</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">3</div>
+            <div class="step-label">일정배치</div>
+        </div>
+        <div class="progress-step">
+            <div class="step-number">4</div>
+            <div class="step-label">상세설정</div>
+        </div>
+    </div>
+
+    <div class="map-overview">
+        <div id="map"></div>
+        <div class="map-info">
+            <i class="fas fa-search-location"></i>
+            <span>장소를 선택하면 지도에서 위치를 확인할 수 있습니다</span>
+        </div>
+    </div>
+
+    <div class="search-layout">
+        <div class="search-column">
+            <div class="search-container attractions">
+                <div class="section-header">
+                    <h3><i class="fas fa-map-marker-alt"></i> 관광지 검색</h3>
+                    <span class="place-count" id="attractionCount">(0)</span>
+                </div>
+                <div class="search-box">
+                    <input type="text" 
+                           id="attractionSearch" 
+                           placeholder="방문할 관광지를 검색해보세요"
+                           autocomplete="off">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="attractionResults" class="search-results">
+                    <!-- 검색 결과는 JavaScript로 동적 생성됨 -->
+                </div>
+                <div id="selectedAttractions" class="selected-list">
+                    <div class="section-header">
+                        <h4>선택된 관광지</h4>
+                    </div>
+                    <div class="selected-places sortable-list">
+                        <!-- 선택된 장소는 JavaScript로 동적 생성됨 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-column">
+            <div class="search-container accommodations">
+                <div class="section-header">
+                    <h3><i class="fas fa-bed"></i> 숙소 검색</h3>
+                    <span class="place-count" id="accommodationCount">(0)</span>
+                </div>
+                <div class="search-box">
+                    <input type="text" 
+                           id="accommodationSearch" 
+                           placeholder="숙소를 검색해보세요"
+                           autocomplete="off">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="accommodationResults" class="search-results">
+                    <!-- 검색 결과는 JavaScript로 동적 생성됨 -->
+                </div>
+                <div id="selectedAccommodations" class="selected-list">
+                    <div class="section-header">
+                        <h4>선택된 숙소</h4>
+                    </div>
+                    <div class="selected-places sortable-list">
+                        <!-- 선택된 장소는 JavaScript로 동적 생성됨 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="wizard-actions">
+        <a href="{% url 'itineraries:wizard_step1' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> 이전
+        </a>
+        <button id="nextStep" class="btn-next" disabled>
+            다음 단계 <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/wizard/step2.js' %}"></script>
+<script src="{% static 'js/wizard.js' %}"></script>
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap">
+</script>
+{% endblock %}
