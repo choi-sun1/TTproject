@@ -24,7 +24,7 @@
 | 정용선 | 최해찬 | 차아인 | 이유림 |
 |[@Dawol2205](https://github.com/Dawol2205)|[@choi-sun1](https://github.com/choi-sun1)|[@nyum76]()|[@createmycode](https://github.com/createmycode)|
 
-## [SA 문서 보기](https://teamsparta.notion.site/T-T-SA-v1-80b1b36366234f1d936d21b152bd4f86)
+#### 📌 [SA 문서 보기](https://teamsparta.notion.site/T-T-SA-v1-80b1b36366234f1d936d21b152bd4f86)
 
 
 #### 🧑‍💻 개발기간
