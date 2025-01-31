@@ -12,7 +12,7 @@
 ## ✨ 프로젝트 소개
 ###  SmartTrip - 똑똑한 여행 AI
 ![](https://blog.kakaocdn.net/dn/MVDYp/btsL11Tv1zv/3TuYD9yiPKyrNTH94beA9K/img.gif)
-> **여행 리뷰를 작성**하여 사용자끼리 여행 일정과 정보를 공유하고,
+> **여행 일정을 리뷰**하여 사용자끼리 여행 일정과 정보를 공유하고,
 > **AI 와의 대화**를 통해서 **여행 일정을 더 간편하게 계획** 할 수 있게 돕는 서비스
 
 
