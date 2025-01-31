@@ -227,7 +227,7 @@ SmartTrip에서 **사용자 경험 향상, 실시간 데이터 제공, 위치 �
 
 ## 🗂 ERD
 
-
+![ERD](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2F5a2lG%2FbtsL3hOM2xG%2F2txVf3SkK8hQSJwuk5bGW0%2Fimg.png)
 
 
 
