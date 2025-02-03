@@ -1,5 +1,4 @@
 import os
-import environ
 from pathlib import Path
 from . import config
 
@@ -20,24 +19,10 @@ EMAIL_HOST = config.EMAIL_HOST
 EMAIL_PORT = config.EMAIL_PORT
 EMAIL_HOST_USER = config.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
+DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL
 
 # CORS 설정
 CORS_ALLOWED_ORIGINS = config.CORS_ALLOWED_ORIGINS
-
-# environ 설정
-env = environ.Env(
-    DEBUG=(bool, False)
-)
-
-# .env 파일 읽기
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-# 환경 변수에서 설정 가져오기
-OPENAI_API_KEY = config.OPENAI_API_KEY
-GOOGLE_MAPS_API_KEY = config.GOOGLE_MAPS_API_KEY
-SECRET_KEY = config.SECRET_KEY  # DJANGO_SECRET_KEY를 SECRET_KEY로 변경
-DEBUG = env('DEBUG')
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 # Application definition
 
@@ -219,7 +204,7 @@ CACHES = {
 }
 
 # CORS 설정 추가
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
+CORS_ALLOWED_ORIGINS = config.CORS_ALLOWED_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
 
 # 로깅 설정 수정
@@ -253,7 +238,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': env('DJANGO_LOG_LEVEL', default='INFO'),
+            'level': 'INFO',
             'propagate': True,
         },
         'chatbot': {
@@ -268,15 +253,6 @@ LOGGING = {
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
-
-# 이메일 설정
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = env('EMAIL_PORT', default=587)
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 
 # Debug-toolbar 설정을 DEBUG=True일 때만 활성화
 if DEBUG:
@@ -364,7 +340,7 @@ LOGGING = {
 }
 
 # Google Maps API Key
-GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')  # .env 파일에서 키를 가져오는지 확인
+GOOGLE_MAPS_API_KEY = config.GOOGLE_MAPS_API_KEY    # config.py에서 가져온 값 사용
 
 # 개발 환경에서만 디버그 툴바와 소스맵 활성화
 if DEBUG:
